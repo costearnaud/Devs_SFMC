@@ -10,7 +10,7 @@
     data() {
       return {
         cookieValue: '',
-        test: 'vueTranslate 69',
+        test: 'vueTranslate 74',
         trads: ref([]),
         refs: ref([]),
         type: ref('branded'),
@@ -40,6 +40,8 @@
         blockHTML: ref(''),
         saveOkMessage: ref(''),
         saveErrorMessage: ref(''),
+        validateOkMessage: ref(''),
+        validateErrorMessage: ref(''),
         emailPreview: ref(''),
         showPreview: ref(false),
         showValidate: ref(false),
@@ -268,13 +270,34 @@
             var country = block.country;
             console.log('getOneHTML > snippet : ',snippet);
             const parser = new DOMParser();
-
             axios.get('https://cloud.email.westfield.com/displayBlock?snippet='+snippet+'&pcCode='+pcCode+'&emailCode='+emailCode+'&country='+country+'&type='+this.type)
             .then((response) => {
               const doc = parser.parseFromString(response.data, 'text/html');
               const divBlock = doc.getElementById('block');
               if(divBlock) {
                 this.draftSnippetHTML = divBlock.innerHTML;
+              }
+            });
+        } catch(error) {
+          console.error('getOneHTML > Error : ', error);
+          return '';
+        }
+      },
+      getLiveHTML(block) {
+        console.log('getLiveHTML > block : ', block);
+        try {
+            var snippet = block.snippet;
+            var emailCode = block.email_code;
+            var pcCode = block.pc_code;
+            var country = block.country;
+            console.log('getLiveHTML > snippet : ',snippet);
+            const parser = new DOMParser();
+            axios.get('https://cloud.email.westfield.com/displayBlock?snippet='+snippet+'&pcCode='+pcCode+'&emailCode='+emailCode+'&country='+country+'&type='+this.type)
+            .then((response) => {
+              const doc = parser.parseFromString(response.data, 'text/html');
+              const divBlock = doc.getElementById('block');
+              if(divBlock) {
+                this.currentBlock.snippetHTML = divBlock.innerHTML;
               }
             });
         } catch(error) {
@@ -289,6 +312,8 @@
         this.dataBlockKeys = {};
         this.saveOkMessage = '';
         this.saveErrorMessage = '';
+        this.validateOkMessage = '';
+        this.validateErrorMessage = '';
       },
       getEmailPreview(session, email, country) {
         this.showPreview = false;
@@ -327,7 +352,6 @@
       },
       cancelValidate() {
         this.showValidate = false;
-        //this.validationChecked = false;
       },
       getBlocks(session, email, country, pcCode) {
         this.blockLoading = true;
@@ -483,11 +507,61 @@
             console.log('saveTradDraft > Save response: ', response.data);
             if (response.data.callback == 1) {
               this.saveOkMessage = 'Draft version updated successfully!';
+              this.validateOkMessage = '';
+              this.validateErrorMessage = '';
               // Reload the full block (live and draft version)
               this.openBlock(session, this.currentBlock, this.selectedCountry, this.selectedCenter, this.selectedEmail, this.type)
               this.activeTab ='draft';
             } else {
               this.saveErrorMessage = 'A technical issue has occured!';
+              this.validateOkMessage = '';
+              this.validateErrorMessage = '';
+            }
+          });
+        } catch (error) {
+            console.error('saveTradDraft > Error: ', error);
+        }
+      },
+      validateTrad(session) {
+        this.validateOkMessage = '';
+        this.validateErrorMessage = '';
+        console.log('validateTrad');
+        this.getLiveHTML(this.currentBlock);
+        var keys_columns = Object.keys(this.dataBlockDEKeys);
+        var keys_values = Object.values(this.dataBlockDEKeys);
+        var data_columns = Object.keys(this.formData);
+        var data_values = Object.values(this.formData);
+        console.log('validateTrad > all params for backend => keys_columns/keys_values/data_columns/data_values/block : ',keys_columns,'/', keys_values,'/', data_columns,'/', data_values,'/', this.selectedBlock);
+        try {
+          axios.post(
+            'https://cloud.email.westfield.com/translate_backend',
+            {
+              action: 'validateTrad',
+              session: session,
+              keys_columns: keys_columns,
+              keys_values: keys_values,
+              data_columns: data_columns,
+              data_values: data_values,
+              block: this.selectedBlock
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json;charset=UTF-8'
+              }
+            }
+          ).then((response) => {
+            console.log('validateTrad > Validate response: ', response.data);
+            if (response.data.callback == 1) {
+              this.showValidate = false;
+              this.validateOkMessage = 'Live version updated successfully!';
+              this.validateErrorMessage = '';
+              this.saveOkMessage = '';
+              this.saveErrorMessage = '';
+              // Reload the full block (live and draft version)
+              this.openBlock(session, this.currentBlock, this.selectedCountry, this.selectedCenter, this.selectedEmail, this.type)
+              this.activeTab ='live';
+            } else {
+              this.validateErrorMessage = 'A technical issue has occured!';
             }
           });
         } catch (error) {

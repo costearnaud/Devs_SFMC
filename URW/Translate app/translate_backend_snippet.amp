@@ -285,11 +285,25 @@
                         var data_values = parsedData.data_values;
                         var targetDE = 'ent.'+block+'_draft';
                         var result = Platform.Function.UpdateData(targetDE,
-                                              keys_columns,
-                                              keys_values,
-                                              data_columns,
-                                              data_values);
+                                        keys_columns,
+                                        keys_values,
+                                        data_columns,
+                                        data_values);
                         response = { message: 'Hello saveTradDraft', callback: result };
+                        break;
+                    case 'validateTrad':
+                        var block = parsedData.block;
+                        var keys_columns = parsedData.keys_columns;
+                        var keys_values = parsedData.keys_values;
+                        var data_columns = parsedData.data_columns;
+                        var data_values = parsedData.data_values;
+                        var targetDE = 'ent.'+block;
+                        var result = Platform.Function.UpdateData(targetDE,
+                                        keys_columns,
+                                        keys_values,
+                                        data_columns,
+                                        data_values);
+                        response = { message: 'Hello validateTrad', callback: result };
                         break;
                     case 'resetTrad':
                         var block = parsedData.block;
