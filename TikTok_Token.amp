@@ -1,0 +1,109 @@
+<script runat="server">
+Platform.Load("core", "1.1.1");
+
+var token = "ABCDEFG";
+var advertiser_id = "7341004018493325314";
+var sourceDEKey = "Tiktok_FR";
+var idType = "EMAIL_SHA256";
+
+var config = {
+    name: sourceDEKey,
+    cols: ["email"]
+}
+
+var body = {
+    "advertiser_ids": [advertiser_id],
+    "data": []
+}
+
+var prox = new Script.Util.WSProxy();
+var data = prox.retrieve("DataExtensionObject[" + config.name + "]", config.cols);
+
+var audienceId = createAudience();
+
+for (var i = 0; i < data.Results.length; i++) {
+    var row = data.Results[i];
+    var email = row.Properties[0].Value;
+    Variable.SetValue("email", email);
+    var ampscript = "\%\%[Output(SHA256(@email))]\%\%";
+    var emailHashed = Platform.Function.TreatAsContent(ampscript);
+    Write("</br>Email hashed: "+emailHashed);
+
+    body.data.push({
+        "id": emailHashed,
+        "id_type": idType,
+        "audience_ids": [audienceId]
+    })
+}
+
+Write("</br>Body created: "+Stringify(body));
+
+/*
+
+var app_id = "XXXXXX";
+var secret = "YYYYYYY";
+var auth_code = "AAAAA"
+
+function getToken() {
+    var accessToken = undefined;
+    var token_payload = {
+        "auth_code": auth_code,
+        "app_id": app_id,
+        "secret": secret
+    };
+    var url = "https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token";
+    var contentType = "application/json";
+    var accessTokenRequest = HTTP.Post(url, contentType, Stringify(token_payload));
+    if (accessTokenRequest.StatusCode == 200) {
+        var tokenResponse = Platform.Function.ParseJSON(accessTokenRequest.Response[0]);
+        var accessToken = tokenResponse.access_token;
+    }
+    return accessToken
+}
+*/
+
+/* Body example to add user IDs to the audience
+{
+  "advertiser_ids": ["{{adv_id}}"],
+  "data": [
+    {
+      "id": "{{user_id}}",
+      "id_type": "{{id_type}}",
+      "audience_ids": ["{{audience_id}}"]
+     }
+  ]
+}
+*/
+
+function createAudience() {
+    Write("</br></br>function createAudience");
+    // Check input
+    if (!token) { return undefined }
+
+    // Do API Call
+    var url = "https://business-api.tiktok.com/open_api/v1.3/segment/audience";
+    var auth = 'Bearer ' + token;
+    var req = new Script.Util.HttpRequest(url);
+    req.emptyContentHandling = 0;
+    req.retries = 2;
+    req.continueOnError = true;
+    req.contentType = "application/json";
+    req.setHeader("Authorization", auth);
+    req.method = "POST";
+    req.postData = Stringify({
+        "custom_audience_name": "firstAudience",
+        "advertiser_id": advertiser_id,
+        "action": "create"
+    });
+    try {
+        var resp = req.send();
+        var reponse = resp.content
+        Write("</br>createAudience > reponse: "+reponse);
+        // var audience = reponse.data.audience_id;
+        return 'KOKO' // audience;
+    } catch(err) {
+        Write("</br>createAudience > catch error: "+err);
+        return 'KO';
+    }
+}
+</script>

@@ -1,0 +1,576 @@
+%%[
+    SET @data_trad = 'ent.data_trad_offers'
+    ContentBlockByKey("varGenericAllBlocks")
+
+    IF @centerRebranded == TRUE THEN
+        SET @cta_offers_color = @genericBgColorRed
+        SET @bloc_text_color = @genericBgColorWhite
+        SET @offers_banner_color = @genericBgColorRed
+    ELSE
+        SET @cta_offers_color = @genericBgColorYellow
+        SET @bloc_text_color = @genericBgColorBlack
+        SET @offers_banner_color = @genericBgColorYellow
+    ENDIF
+
+    SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code',@DisplayPcCode,'type',@DisplayCenterRebranded,'mail',@DisplayMail)
+    IF RowCount(@DataTrad) > 0 THEN
+        SET @DataTradRow = Row(@DataTrad,1)
+        SET @title_offers_block = Field(@DataTradRow,'title_offers_block')
+        SET @cta1_offers = Field(@DataTradRow,'cta1_offers')
+        SET @cta2_offers = Field(@DataTradRow,'cta2_offers')
+        SET @cta3_offers = Field(@DataTradRow,'cta3_offers')
+        SET @cta4_offers = Field(@DataTradRow,'cta4_offers')
+        SET @legal_notice = Field(@DataTradRow,'legal_notice')
+    ELSE
+        SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail',@DisplayMail)
+        IF RowCount(@DataTrad) > 0 THEN
+            SET @DataTradRow = Row(@DataTrad,1)
+            SET @title_offers_block = Field(@DataTradRow,'title_offers_block')
+            SET @cta1_offers = Field(@DataTradRow,'cta1_offers')
+            SET @cta2_offers = Field(@DataTradRow,'cta2_offers')
+            SET @cta3_offers = Field(@DataTradRow,'cta3_offers')
+            SET @cta4_offers = Field(@DataTradRow,'cta4_offers')
+            SET @legal_notice = Field(@DataTradRow,'legal_notice')
+        ELSE
+            SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail','all')
+            IF RowCount(@DataTrad) > 0 THEN
+                SET @DataTradRow = Row(@DataTrad,1)
+                SET @title_offers_block = Field(@DataTradRow,'title_offers_block')
+                SET @cta1_offers = Field(@DataTradRow,'cta1_offers')
+                SET @cta2_offers = Field(@DataTradRow,'cta2_offers')
+                SET @cta3_offers = Field(@DataTradRow,'cta3_offers')
+                SET @cta4_offers = Field(@DataTradRow,'cta4_offers')
+                SET @legal_notice = Field(@DataTradRow,'legal_notice')
+            ENDIF
+        ENDIF
+    ENDIF
+
+    SET @centerDetailsDE       =       "ent.PROD_center_details"
+
+/* OFFER 1*/
+    set @offer1Visual = Lookup(@centerDetailsDE,'offer_1_visual','pc_code',@DisplayPcCode)
+    set @offer1Link = Lookup(@centerDetailsDE,'offer_1_link','pc_code',@DisplayPcCode)
+    set @offer1Teaser = Lookup(@centerDetailsDE,'offer_1_teaser','pc_code',@DisplayPcCode)
+    set @offer1Title = Lookup(@centerDetailsDE,'offer_1_sticker','pc_code',@DisplayPcCode)
+    set @retailer1BaseName = Lookup(@centerDetailsDE,'offer_1_shop','pc_code',@DisplayPcCode)
+    set @alias_offer1 = 'generic_offer1'
+    set @offer1_legalmentions = Lookup(@centerDetailsDE,'legal_mentions_offer_1','pc_code',@DisplayPcCode)
+
+/* OFFER 2*/
+    set @offer2Visual = Lookup(@centerDetailsDE,'offer_2_visual','pc_code',@DisplayPcCode)
+    set @offer2Link = Lookup(@centerDetailsDE,'offer_2_link','pc_code',@DisplayPcCode)
+    set @offer2Teaser = Lookup(@centerDetailsDE,'offer_2_teaser','pc_code',@DisplayPcCode)
+    set @offer2Title = Lookup(@centerDetailsDE,'offer_2_sticker','pc_code',@DisplayPcCode)
+    set @retailer2BaseName = Lookup(@centerDetailsDE,'offer_2_shop','pc_code',@DisplayPcCode)
+    set @alias_offer2 = "generic_offer2"
+    set @offer2_legalmentions = Lookup(@centerDetailsDE,'legal_mentions_offer_2','pc_code',@DisplayPcCode)
+
+/* OFFER 3*/  
+    set @offer3Visual = Lookup(@centerDetailsDE,'offer_3_visual','pc_code',@DisplayPcCode)
+    set @offer3Link = Lookup(@centerDetailsDE,'offer_3_link','pc_code',@DisplayPcCode)
+    set @offer3Teaser = Lookup(@centerDetailsDE,'offer_3_teaser','pc_code',@DisplayPcCode)
+    set @offer3Title = Lookup(@centerDetailsDE,'offer_3_sticker','pc_code',@DisplayPcCode)
+    set @retailer3BaseName = Lookup(@centerDetailsDE,'offer_3_shop','pc_code',@DisplayPcCode)
+    set @alias_offer3 = "generic_offer3"
+    set @offer3_legalmentions = Lookup(@centerDetailsDE,'legal_mentions_offer_3','pc_code',@DisplayPcCode)
+
+/* OFFER 4*/
+     set @offer4Visual = Lookup(@centerDetailsDE,'offer_4_visual','pc_code',@DisplayPcCode)
+     set @offer4Link = Lookup(@centerDetailsDE,'offer_4_link','pc_code',@DisplayPcCode)
+     set @offer4Teaser = Lookup(@centerDetailsDE,'offer_4_teaser','pc_code',@DisplayPcCode)
+     set @offer4Title = Lookup(@centerDetailsDE,'offer_4_sticker','pc_code',@DisplayPcCode)
+     set @retailer4BaseName = Lookup(@centerDetailsDE,'offer_4_shop','pc_code',@DisplayPcCode)
+     set @alias_offer4 = "generic_offer4"
+     set @offer4_legalmentions = Lookup(@centerDetailsDE,'legal_mentions_offer_4','pc_code',@DisplayPcCode)
+
+/* Substring Country Prefix */
+
+if indexOf(@retailer1BaseName, "-") > 0 then
+  set @retailer1Name = Substring(@retailer1BaseName,Add(indexOf(@retailer1BaseName, "-"),1))
+else
+  set @retailer1Name = @retailer1BaseName
+endif
+if indexOf(@retailer2BaseName, "-") > 0 then
+  set @retailer2Name = Substring(@retailer2BaseName,Add(indexOf(@retailer2BaseName, "-"),1))
+  else
+  set @retailer2Name = @retailer2BaseName
+endif
+if indexOf(@retailer3BaseName, "-") > 0 then
+  set @retailer3Name = Substring(@retailer3BaseName,Add(indexOf(@retailer3BaseName, "-"),1))
+  else
+  set @retailer3Name = @retailer3BaseName
+endif
+if indexOf(@retailer4BaseName, "-") > 0 then
+  set @retailer4Name = Substring(@retailer4BaseName,Add(indexOf(@retailer4BaseName, "-"),1))
+  else
+  set @retailer4Name = @retailer4BaseName
+endif
+
+]%%
+<div id="block">
+    <table cellpadding="0" cellspacing="0" border="0" width="640" align="center"
+        style="margin:auto;background-color:%%=v(@offers_banner_color)=%%" class="d_center t_flnone t_mauto t_w100p 
+    m_flnone m_mauto m_w100p" role="presentation">
+        <tr>
+            <td>
+                <table cellpadding="0" cellspacing="0" border="0" width="576" align="center" style="margin:auto"
+                    class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w65p" role="presentation">
+                    <tr>
+                        <td style="font-family:Helvetica,Arial,sans-serif;color:%%=v(@bloc_text_color)=%%;text-align:center;font-size:36px;
+    padding-top:26px;padding-bottom:26px;vertical-align:middle;line-height:38px;font-weight:700"
+                            class="t_fz34px t_pt14px t_pb14px t_lh36px m_fz30px m_pt25px m_pb25px m_lh32px">
+                            %%=treatascontent(@title_offers_block)=%% </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    <table cellpadding="0" cellspacing="0" border="0" width="640" align="center"
+        style="margin:auto;background-color:#EFEFEF" class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p"
+        role="presentation">
+        <tr>
+            <td>
+                <table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="margin:auto;clear:both"
+                    class="d_center t_w100p m_w100p" aria-hidden="true">
+                    <tr>
+                        <td height="32" style="height:32px;font-size:32px;line-height:32px"
+                            class="m_h16px m_fz16px m_lh16px"> &nbsp; </td>
+                    </tr>
+                </table>
+                <table cellpadding="0" cellspacing="0" border="0" width="576" align="center" style="margin:auto"
+                    class="d_center t_flnone t_mauto t_w90p m_flnone m_mauto m_w90p" role="presentation">
+                    <tr>
+                        <td>
+                            <table cellpadding="0" cellspacing="0" border="0" width="282" align="left"
+                                class="d_left t_w49p t_flleft m_w100p m_flright" role="presentation">
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="282" align="center"
+                                            style="margin:auto"
+                                            class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p"
+                                            role="presentation">
+                                            <tr>
+                                                <td>
+                                                    <div style="border-top-left-radius:8px;border-top-right-radius:8px;border-bottom-left-radius:8px;border-bottom-right-radius:8px;
+    display:block;overflow:hidden;mso-border-alt:none #ffffff 0;background-color:#ffffff">
+                                                        <!--[if gte mso 9]><table cellpadding="0" cellspacing="0" border="0" width="282" style="background-color:#ffffff;border-collapse:collapse"><tr><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+                                                        <table cellpadding="0" cellspacing="0" border="0" width="155"
+                                                            align="center" style="margin:auto"
+                                                            class="d_center t_flnone t_mauto t_w155px m_flnone m_mauto m_w155px"
+                                                            role="presentation">
+                                                            <tr>
+                                                                <td>
+                                                                    <table cellpadding="0" cellspacing="0" border="0"
+                                                                        width="100%" align="center"
+                                                                        class="d_center t_w100p m_w100p"
+                                                                        role="presentation">
+                                                                        <tr>
+                                                                            <td style="padding-top:65px;padding-bottom:65px;text-align:center;vertical-align:middle"
+                                                                                class="t_pt45px t_pb45px">
+                                                                                <img src="%%=treatascontent(@offer1Visual)=%%"
+                                                                                    alt="" width="155"
+                                                                                    style="font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#000000;line-height:16px;display:block;border:none"
+                                                                                    class="t_w100p 
+    m_w100p" />
+                                                                            </td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                        <!--[if gte mso 9]></td></tr></table><![endif]-->
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="253" align="center"
+                                            style="margin:auto"
+                                            class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w95p"
+                                            role="presentation">
+                                            <tr>
+                                                <td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;font-size:18px;padding-top:10px;
+    padding-bottom:10px;vertical-align:middle;line-height:20px;font-weight:700">
+                                                    %%=treatascontent(@Retailer1Name)=%% </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="282" align="center"
+                                            style="margin:auto"
+                                            class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w80p"
+                                            role="presentation">
+                                            <tr>
+                                                <td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;font-size:15px;padding-bottom:20px;
+    vertical-align:middle;line-height:17px">
+                                                    %%=treatascontent(@offer1Title)=%% %%=treatascontent(@offer1Teaser)=%%
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="205" align="center"
+                                            style="margin:auto;border-collapse:separate" class="d_center t_flnone t_mauto t_bdclseparate t_w90p m_flnone 
+    m_mauto m_bdclseparate m_w85p" role="presentation">
+                                            <tr>
+                                                <td style="font-family:Helvetica,Arial,sans-serif;color:%%=v(@bloc_text_color)=%%;text-align:center;font-size:20px;
+    background-color:%%=v(@cta_offers_color)=%%;border-top-left-radius:50px;border-top-right-radius:50px;
+    border-bottom-left-radius:50px;border-bottom-right-radius:50px;padding-top:14px;padding-bottom:14px;vertical-align:middle;
+    line-height:22px;font-weight:700" class="m_fz18px m_pt15px m_pb15px m_lh20px">
+                                                    <a href="%%=RedirectTo(@offer1Link)=%%"
+                                                        style="color:%%=v(@bloc_text_color)=%%;line-height:22px;display:block;text-decoration:none;outline:0"
+                                                        class="m_lh20px" alias="%%=treatascontent(@alias_offer1)=%%">
+                                                        %%=treatascontent(@cta1_offers)=%% </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!--[if gte mso 9]> </td><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+                            <table cellpadding="0" cellspacing="0" border="0" width="11" align="left"
+                                class="d_left t_w2p t_flleft m_w100p m_flright" role="presentation">
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="11" align="center"
+                                            style="margin:auto;clear:both" class="d_center t_w100p m_w100p"
+                                            aria-hidden="true">
+                                            <tr>
+                                                <td height="20" style="height:20px;font-size:20px;line-height:20px"
+                                                    class="m_h30px m_fz30px m_lh30px"> &nbsp; </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!--[if gte mso 9]> </td><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+                            <table cellpadding="0" cellspacing="0" border="0" width="283" align="right"
+                                class="d_right t_w49p t_flright m_w100p m_flright" role="presentation">
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="283" align="center"
+                                            style="margin:auto"
+                                            class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p"
+                                            role="presentation">
+                                            <tr>
+                                                <td>
+                                                    <div style="border-top-left-radius:8px;border-top-right-radius:8px;border-bottom-left-radius:8px;border-bottom-right-radius:8px;
+    display:block;overflow:hidden;mso-border-alt:none #ffffff 0;background-color:#ffffff">
+                                                        <!--[if gte mso 9]><table cellpadding="0" cellspacing="0" border="0" width="283" style="background-color:#ffffff;border-collapse:collapse"><tr><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+                                                        <table cellpadding="0" cellspacing="0" border="0" width="155"
+                                                            align="center" style="margin:auto"
+                                                            class="d_center t_flnone t_mauto t_w155px m_flnone m_mauto m_w155px"
+                                                            role="presentation">
+                                                            <tr>
+                                                                <td>
+                                                                    <table cellpadding="0" cellspacing="0" border="0"
+                                                                        width="100%" align="center"
+                                                                        class="d_center t_w100p m_w100p"
+                                                                        role="presentation">
+                                                                        <tr>
+                                                                            <td style="padding-top:65px;padding-bottom:65px;text-align:center;vertical-align:middle"
+                                                                                class="t_pt45px t_pb45px">
+                                                                                <img src="%%=treatascontent(@offer2Visual)=%%"
+                                                                                    alt="" width="155"
+                                                                                    style="font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#000000;line-height:16px;display:block;border:none"
+                                                                                    class="t_w100p 
+    m_w100p" />
+                                                                            </td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                        <!--[if gte mso 9]></td></tr></table><![endif]-->
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="254" align="center"
+                                            style="margin:auto"
+                                            class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w95p"
+                                            role="presentation">
+                                            <tr>
+                                                <td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;font-size:18px;padding-top:10px;
+    padding-bottom:10px;vertical-align:middle;line-height:20px;font-weight:700">
+                                                    %%=treatascontent(@Retailer2Name)=%% </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="283" align="center"
+                                            style="margin:auto"
+                                            class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w80p"
+                                            role="presentation">
+                                            <tr>
+                                                <td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;font-size:15px;padding-bottom:20px;
+    vertical-align:middle;line-height:17px">
+                                                    %%=treatascontent(@offer2Title)=%% %%=treatascontent(@offer2Teaser)=%%
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="206" align="center"
+                                            style="margin:auto;border-collapse:separate" class="d_center t_flnone t_mauto t_bdclseparate t_w90p m_flnone 
+    m_mauto m_bdclseparate m_w85p" role="presentation">
+                                            <tr>
+                                                <td style="font-family:Helvetica,Arial,sans-serif;color:%%=v(@bloc_text_color)=%%;text-align:center;font-size:20px;
+    background-color:%%=v(@cta_offers_color)=%%;border-top-left-radius:50px;border-top-right-radius:50px;
+    border-bottom-left-radius:50px;border-bottom-right-radius:50px;padding-top:14px;padding-bottom:14px;vertical-align:middle;
+    line-height:22px;font-weight:700" class="m_fz18px m_pt15px m_pb15px m_lh20px">
+                                                    <a href="%%=RedirectTo(@offer2Link)=%%"
+                                                        style="color:%%=v(@bloc_text_color)=%%;line-height:22px;display:block;text-decoration:none;outline:0"
+                                                        class="m_lh20px" alias="%%=treatascontent(@alias_offer2)=%%">
+                                                        %%=treatascontent(@cta2_offers)=%% </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="margin:auto;clear:both"
+                    class="d_center t_w100p m_w100p" aria-hidden="true">
+                    <tr>
+                        <td height="40" style="height:40px;font-size:40px;line-height:40px"
+                            class="m_h30px m_fz30px m_lh30px"> &nbsp; </td>
+                    </tr>
+                </table>
+                <table cellpadding="0" cellspacing="0" border="0" width="576" align="center" style="margin:auto"
+                    class="d_center t_flnone t_mauto t_w90p m_flnone m_mauto m_w90p" role="presentation">
+                    <tr>
+                        <td>
+                            <table cellpadding="0" cellspacing="0" border="0" width="282" align="left"
+                                class="d_left t_w49p t_flleft m_w100p m_flright" role="presentation">
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="282" align="center"
+                                            style="margin:auto"
+                                            class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p"
+                                            role="presentation">
+                                            <tr>
+                                                <td>
+                                                    <div style="border-top-left-radius:8px;border-top-right-radius:8px;border-bottom-left-radius:8px;border-bottom-right-radius:8px;
+    display:block;overflow:hidden;mso-border-alt:none #ffffff 0;background-color:#ffffff">
+                                                        <!--[if gte mso 9]><table cellpadding="0" cellspacing="0" border="0" width="282" style="background-color:#ffffff;border-collapse:collapse"><tr><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+                                                        <table cellpadding="0" cellspacing="0" border="0" width="155"
+                                                            align="center" style="margin:auto"
+                                                            class="d_center t_flnone t_mauto t_w155px m_flnone m_mauto m_w155px"
+                                                            role="presentation">
+                                                            <tr>
+                                                                <td>
+                                                                    <table cellpadding="0" cellspacing="0" border="0"
+                                                                        width="100%" align="center"
+                                                                        class="d_center t_w100p m_w100p"
+                                                                        role="presentation">
+                                                                        <tr>
+                                                                            <td style="padding-top:65px;padding-bottom:65px;text-align:center;vertical-align:middle"
+                                                                                class="t_pt45px t_pb45px">
+                                                                                <img src="%%=treatascontent(@offer3Visual)=%%"
+                                                                                    alt="" width="155"
+                                                                                    style="font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#000000;line-height:16px;display:block;border:none"
+                                                                                    class="t_w100p 
+    m_w100p" />
+                                                                            </td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                        <!--[if gte mso 9]></td></tr></table><![endif]-->
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="253" align="center"
+                                            style="margin:auto"
+                                            class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w95p"
+                                            role="presentation">
+                                            <tr>
+                                                <td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;font-size:18px;padding-top:10px;
+    padding-bottom:10px;vertical-align:middle;line-height:20px;font-weight:700">
+                                                    %%=treatascontent(@Retailer3Name)=%% </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="282" align="center"
+                                            style="margin:auto"
+                                            class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w80p"
+                                            role="presentation">
+                                            <tr>
+                                                <td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;font-size:15px;padding-bottom:20px;
+    vertical-align:middle;line-height:17px">
+                                                    %%=treatascontent(@offer3Title)=%% %%=treatascontent(@offer3Teaser)=%%
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="205" align="center"
+                                            style="margin:auto;border-collapse:separate" class="d_center t_flnone t_mauto t_bdclseparate t_w90p m_flnone 
+    m_mauto m_bdclseparate m_w85p" role="presentation">
+                                            <tr>
+                                                <td style="font-family:Helvetica,Arial,sans-serif;color:%%=v(@bloc_text_color)=%%;text-align:center;font-size:20px;
+    background-color:%%=v(@cta_offers_color)=%%;border-top-left-radius:50px;border-top-right-radius:50px;
+    border-bottom-left-radius:50px;border-bottom-right-radius:50px;padding-top:14px;padding-bottom:14px;vertical-align:middle;
+    line-height:22px;font-weight:700" class="m_fz18px m_pt15px m_pb15px m_lh20px">
+                                                    <a href="%%=RedirectTo(@offer3Link)=%%"
+                                                        style="color:%%=v(@bloc_text_color)=%%;line-height:22px;display:block;text-decoration:none;outline:0"
+                                                        class="m_lh20px" alias="%%=treatascontent(@alias_offer3)=%%">
+                                                        %%=treatascontent(@cta3_offers)=%% </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!--[if gte mso 9]> </td><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+                            <table cellpadding="0" cellspacing="0" border="0" width="11" align="left"
+                                class="d_left t_w2p t_flleft m_w100p m_flright" role="presentation">
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="11" align="center"
+                                            style="margin:auto;clear:both" class="d_center t_w100p m_w100p"
+                                            aria-hidden="true">
+                                            <tr>
+                                                <td height="20" style="height:20px;font-size:20px;line-height:20px"
+                                                    class="m_h30px m_fz30px m_lh30px"> &nbsp; </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!--[if gte mso 9]> </td><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+                            <table cellpadding="0" cellspacing="0" border="0" width="283" align="right"
+                                class="d_right t_w49p t_flright m_w100p m_flright" role="presentation">
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="283" align="center"
+                                            style="margin:auto"
+                                            class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p"
+                                            role="presentation">
+                                            <tr>
+                                                <td>
+                                                    <div style="border-top-left-radius:8px;border-top-right-radius:8px;border-bottom-left-radius:8px;border-bottom-right-radius:8px;
+    display:block;overflow:hidden;mso-border-alt:none #ffffff 0;background-color:#ffffff">
+                                                        <!--[if gte mso 9]><table cellpadding="0" cellspacing="0" border="0" width="283" style="background-color:#ffffff;border-collapse:collapse"><tr><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+                                                        <table cellpadding="0" cellspacing="0" border="0" width="155"
+                                                            align="center" style="margin:auto"
+                                                            class="d_center t_flnone t_mauto t_w155px m_flnone m_mauto m_w155px"
+                                                            role="presentation">
+                                                            <tr>
+                                                                <td>
+                                                                    <table cellpadding="0" cellspacing="0" border="0"
+                                                                        width="100%" align="center"
+                                                                        class="d_center t_w100p m_w100p"
+                                                                        role="presentation">
+                                                                        <tr>
+                                                                            <td style="padding-top:65px;padding-bottom:65px;text-align:center;vertical-align:middle"
+                                                                                class="t_pt45px t_pb45px">
+                                                                                <img src="%%=treatascontent(@offer4Visual)=%%"
+                                                                                    alt="" width="155"
+                                                                                    style="font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#000000;line-height:16px;display:block;border:none"
+                                                                                    class="t_w100p 
+    m_w100p" />
+                                                                            </td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                        <!--[if gte mso 9]></td></tr></table><![endif]-->
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="254" align="center"
+                                            style="margin:auto"
+                                            class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w95p"
+                                            role="presentation">
+                                            <tr>
+                                                <td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;font-size:18px;padding-top:10px;
+    padding-bottom:10px;vertical-align:middle;line-height:20px;font-weight:700">
+                                                    %%=treatascontent(@Retailer4Name)=%% </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="283" align="center"
+                                            style="margin:auto"
+                                            class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w80p"
+                                            role="presentation">
+                                            <tr>
+                                                <td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;font-size:15px;padding-bottom:20px;
+    vertical-align:middle;line-height:17px">
+                                                    %%=treatascontent(@offer4Title)=%% %%=treatascontent(@offer4Teaser)=%%
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="206" align="center"
+                                            style="margin:auto;border-collapse:separate" class="d_center t_flnone t_mauto t_bdclseparate t_w90p m_flnone 
+    m_mauto m_bdclseparate m_w85p" role="presentation">
+                                            <tr>
+                                                <td style="font-family:Helvetica,Arial,sans-serif;color:%%=v(@bloc_text_color)=%%;text-align:center;font-size:20px;
+    background-color:%%=v(@cta_offers_color)=%%;border-top-left-radius:50px;border-top-right-radius:50px;
+    border-bottom-left-radius:50px;border-bottom-right-radius:50px;padding-top:14px;padding-bottom:14px;vertical-align:middle;
+    line-height:22px;font-weight:700" class="m_fz18px m_pt15px m_pb15px m_lh20px">
+                                                    <a href="%%=RedirectTo(@offer4Link)=%%"
+                                                        style="color:%%=v(@bloc_text_color)=%%;line-height:22px;display:block;text-decoration:none;outline:0"
+                                                        class="m_lh20px" alias="%%=treatascontent(@alias_offer4)=%%">
+                                                        %%=treatascontent(@cta4_offers)=%% </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="margin:auto;clear:both"
+                    class="d_center t_w100p m_w100p" aria-hidden="true">
+                    <tr>
+                        <td height="32" style="height:32px;font-size:32px;line-height:32px"> &nbsp; </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>

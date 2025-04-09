@@ -1,0 +1,449 @@
+%%[
+    /* ------------------------------- Environment Mode -------------------------------- */
+    /* 
+       Choose the environment the scripts should be running on
+       0: DEV
+       1: UAT (=PREPROD)
+       2: PROD
+    */
+    
+    /* WARNING : WE USE CAMEL CASE TO DEFINE OUR VARIABLES */
+    
+    SET @EnvironmentMode   =  2
+    
+    SET @DEBUG = FALSE
+    
+    SET @colorswitch = 'yellow'
+    
+    /* Define the Data Extension sources and other constants to use for each environment */
+    
+    IF     @EnvironmentMode           ==      0 THEN
+           SET @sendLogDE             =       "ENT.DEV_email_send_log"
+           SET @errorLogDE            =       "ENT.DEV_var_error_log"
+           SET @realizedOffersDE      =       "ENT.DEV_realized_offers"
+           SET @personalizedOffersDE  =       "ENT.DEV_personalized_offers"
+           SET @offersDetailsDE       =       "ENT.DEV_offers_details"
+           SET @centerDetailsDE       =       "ENT.DEV_center_details"
+           SET @dailyCommercialPressureDE = "ENT.DEV_daily_commercial_pressure"
+           SET @varUnsubJWT           =       "DEVvarUnsubJWT"
+           SET @varUpgradeJWT         =       "DEVvarUpgradeJWT"
+           SET @snippetCommercialPressure = "DEVsnippetCommercialPressure"
+           SET @centerHostNamePrefix  =       "https://qacd."
+           SET @connectHostName       =       "https://qa.id.westfield.com/" 
+           SET @unsubBaseUrl                =       "https://qacd.westfield.com/" 
+           SET @barcodeBaseCPURL          =        "https://cloud.email.westfield.com/DEVbarcodeLandingPage"
+           SET @enrichmentFormBaseCPURL   =        "https://cloud.email.westfield.com/DEVfallbackEnrichmentForm"
+           SET @inactiveMembersBaseCPURL  =         "https://cloud.email.westfield.com/DEVinactiveMembersReactivation"
+           SET @unsubRedirectBaseCPURL  =      "https://cloud.email.westfield.com/DEVunsub"
+           SET @upgradeRedirectBaseCPURL  =      "https://cloud.email.westfield.com/DEVupgrade"
+           SET @connectJwtUrl         =       "https://qa.id.westfield.com/v1/token"
+           SET @clientIdJwt           =       "4B8AFE7526C73970DEDD8AADD96CAD33"
+           SET @clientSecretJwt       =       "D0F4E2472F2A028B4516F03EE9CBB5AD0683B3820497A11EA1CE3A5B8C75E195"
+           SET @clientIdConnect       =       "9E3C41767A4B06191971C249A5F095BA"
+           SET @clientIdQuiz          =       "A37CE4306D244DFB9A18960D7512A8F0"
+           SET @visitorRepositoryName =       "DEVvarVisitorRepository"
+           SET @ukOmniLabDe           =       "ENT.UK_CHALLENGE_TRANSACTION_API_EVENT_DEV"
+           SET @interestsDE           =       "ENT.DEV_interest"
+           
+    
+    ELSEIF @EnvironmentMode           ==      1 THEN
+           SET @sendLogDE             =       "ENT.UAT_email_send_log"
+           SET @errorLogDE            =       "ENT.UAT_var_error_log"
+           SET @realizedOffersDE      =       "ENT.UAT_realized_offers"
+           SET @personalizedOffersDE  =       "ENT.UAT_personalized_offers"
+           SET @offersDetailsDE       =       "ENT.UAT_offers_details"
+           SET @centerDetailsDE       =       "ENT.UAT_center_details"
+           SET @dailyCommercialPressureDE = "ENT.UAT_daily_commercial_pressure"
+           SET @varUnsubJWT           =       "UATvarUnsubJWT"
+           SET @varUpgradeJWT         =       "UATvarUpgradeJWT"
+           SET @snippetCommercialPressure = "UATsnippetCommercialPressure"
+           SET @centerHostNamePrefix  =       "https://pprod."
+           SET @connectHostName       =       "https://preprod.id.westfield.com/"  
+           SET @unsubBaseUrl          =       "https://pprod.westfield.com/" 
+           SET @barcodeBaseCPURL          =   "https://cloud.email.westfield.com/UATbarcodeLandingPage"
+           SET @enrichmentFormBaseCPURL   =   "https://cloud.email.westfield.com/UATfallbackEnrichmentForm"
+           SET @inactiveMembersBaseCPURL  =   "https://cloud.email.westfield.com/UATinactiveMembersReactivation"
+           SET @unsubRedirectBaseCPURL  =     "https://cloud.email.westfield.com/UATunsub"
+           SET @upgradeRedirectBaseCPURL  =   "https://cloud.email.westfield.com/UATupgrade"
+           SET @connectJwtUrl         =       "https://preprod.id.westfield.com/v1/token"
+           SET @clientIdJwt           =       "05BC3A5963BA04313B0D025D45236031"
+           SET @clientSecretJwt       =       "D24249B260791609A052BE65874DBB4676F1A5C24BB49DF1B826B6797101BF37"
+           SET @clientIdConnect       =       "0195A6C141F8F1CD274DD8107590E432"
+           SET @clientIdQuiz          =       "D1D5A2B441A943668292EF41EC039D1F"
+           SET @visitorRepositoryName =       "UATvarVisitorRepository"
+           SET @ukOmniLabDe           =       "ENT.UK_CHALLENGE_TRANSACTION_API_EVENT_PREPROD"
+           SET @interestsDE           =       "ENT.UAT_interest"
+    
+    
+    ELSEIF @EnvironmentMode           ==      2 THEN
+           SET @sendLogDE             =       "ENT.PROD_email_send_log"
+           SET @errorLogDE            =       "ENT.PROD_var_error_log"
+           SET @realizedOffersDE      =       "ENT.PROD_realized_offers"
+           SET @personalizedOffersDE  =       "ENT.PROD_personalized_offers"
+           SET @offersDetailsDE       =       "ENT.PROD_offers_details"
+           SET @centerDetailsDE       =       "ENT.PROD_center_details" 
+           SET @dailyCommercialPressureDE = "ENT.PROD_daily_commercial_pressure"
+           SET @varUnsubJWT           =       "varUnsubJWT"
+           SET @varUpgradeJWT         =       "varUpgradeJWT"
+           SET @snippetCommercialPressure = "snippetCommercialPressure"
+           SET @centerHostNamePrefix  =       "https://www."
+           SET @connectHostName       =       "https://id.westfield.com/" 
+           SET @unsubBaseUrl          =       "https://www.westfield.com/"
+           SET @barcodeBaseCPURL          =   "https://cloud.email.westfield.com/barcodeLandingPage"
+           SET @enrichmentFormBaseCPURL   =   "https://cloud.email.westfield.com/fallbackEnrichmentForm"
+           SET @inactiveMembersBaseCPURL  =   "https://cloud.email.westfield.com/inactiveMembersReactivation"
+           SET @unsubRedirectBaseCPURL  =     "https://cloud.email.westfield.com/unsub"
+           SET @upgradeRedirectBaseCPURL  =   "https://cloud.email.westfield.com/upgrade"
+           SET @connectJwtUrl         =       "https://id.westfield.com/v1/token"
+           SET @clientIdJwt           =       "8FAE5601C0E75A518564C8C545B03FCE"
+           SET @clientSecretJwt       =       "57AA6F83E3CFE25578433A875B43F81957DFB84F6C954D090AA18D7F20498BC0"
+           SET @clientIdConnect       =       "F479228F6DDC2231373A4A669419DA6F"
+           SET @clientIdQuiz          =       "05140DA72BB74BF6B1AEEAD50331A7A8"
+           SET @visitorRepositoryName =       "varVisitorRepository"
+           SET @ukOmniLabDe           =       "ENT.UK_CHALLENGE_TRANSACTION_API_EVENT_PROD"
+           SET @interestsDE           =       "ENT.interest"
+    ENDIF
+    
+    /* ------------------------------- varMaster -------------------------------- */
+    
+    
+    /* Visitor variables */
+    
+    VAR @visitorId, @visitorPcCode, @visitorAccountType, @visitorPrivateId, @visitorFirstName, @visitorGender
+    VAR @visitorOptinType, @visitorOptinCommercial, @visitorOptinLoyalty
+    
+    
+    /* VAR @fromNameCenter, @fromEmailCenter, @emailReplyCenter */
+    
+    /* Center variables */
+    VAR @centerName, @centerCountry, @centerRebranded, @centerLinkdispatcher, @centerLogo, @centerTitlePilar1, @centerTitlePilar2, @centerTitlePilar3, @centerTextPilar1, @centerTextPilar2, @centerTextPilar3, @centerPictoPilar1, @centerPictoPilar2, @centerPictoPilar3, @centerCreatePassword, @centerMyAccount, @centerOptinUpgrade
+    
+    /* Font variables */
+    VAR @fontBody, @fontTitle
+    
+    /* Style variables */ 
+    VAR @bgColorFooter
+    
+    /* Email attributes */
+    /* 05.10.23 recycling type for branded center value
+    VAR @emailType, @emailCode */
+    VAR @emailCode
+    VAR @EmailName
+    SET @EmailName = emailname_
+    VAR @emailMirrorLink 
+    SET @emailMirrorLink = view_email_url
+    
+    SET @visitorId = visitor_id /* _SubscriberKey <=> visitor_id */
+    SET @visitorPcCode = pc_code
+    SET @vpc = pc_code /* do not delete, it's used in the interactive email block (enrichment) Welcome 4 */
+
+    IF empty(@visitorPcCode) THEN
+     SET @visitorPcCode = 'all'
+    ENDIF
+
+    SET @UK_CHALLENGE_TRANSACTION_API_EVENT = 'UK_CHALLENGE_TRANSACTION_API_EVENT'
+    
+    /* Retrieving the Visitor from visitor_repository or _DataSourceName */
+    /* Check if it's a transactional (sent from PROD BU) email */
+    IF IndexOf(emailname_, "TR_") == 1 THEN
+        SET @visitorRows = LookupRows(ContentBlockByKey(@visitorRepositoryName),'visitor_id', @visitorId)
+    ELSEIF IndexOf(emailname_, "OMNILAB_CHALLENGE_UK") > 0 THEN
+        SET @visitorRows = LookupRows(@ukOmniLabDe,'visitor_id', @visitorId)
+    ELSE
+        SET @visitorRows = LookupRows(_DataSourceName,'visitor_id', @visitorId)
+    ENDIF
+    IF RowCount(@visitorRows) == 0 THEN
+        /* Visitor doesnt exist in source data extension */
+        InsertDE(@errorLogDE,
+            'subscriber_key', _subscriberkey,
+            'pc_code', pc_code,
+            'email', emailaddr,
+            'email_name', emailname_,
+            'error_message', 'Visitor doesnt exist in source data extension',
+            'date', Now(),
+            'job_id', JobID,
+            'data_source_name', _DataSourceName,
+            'list_name', _listname,
+            'is_test_send', _IsTestSend,
+            'message_context', _messagecontext
+            )
+        /* Skip the send for the current user if the Customer or Prospect is not found */
+        RaiseError('Visitor doesnt exist in source data extension',true)
+    ENDIF
+    
+    SET @visitorRow = Row(@visitorRows, 1)
+    
+    /* Retrieving the Center from Center Details */
+    SET @centerRows = LookupRows(@centerDetailsDE,'pc_code', @visitorPcCode)
+    
+    IF RowCount(@centerRows) == 0 THEN
+        /* Center doesnt exist in center details */
+        InsertDE(@errorLogDE,
+            'subscriber_key', _subscriberkey,
+            'pc_code', pc_code,
+            'email', emailaddr,
+            'email_name', emailname_,
+            'error_message', 'Center doesnt exist in center details',
+            'date', Now(),
+            'job_id', JobID,
+            'data_source_name', _DataSourceName,
+            'list_name', _listname,
+            'is_test_send', _IsTestSend,
+            'message_context', _messagecontext
+            )
+        /* Skip the send for the current user if the Customer or Prospect is not found */
+        RaiseError('Center does not exist in center details',true)
+    ENDIF
+    
+    SET @centerRow = Row(@centerRows, 1)
+    
+    /* Initializing visitor variables */
+    SET @visitorFirstName = Field(@visitorRow, 'first_name')
+    SET @visitorLastName = Field(@visitorRow, 'last_name')
+    SET @visitorPrivateId = Field(@visitorRow, 'visitor_private_id')
+    SET @visitorAccountType = Field(@visitorRow, 'account_type')
+    SET @visitorBarcode = Field(@visitorRow, 'barcode')
+    SET @visitorOptinLoyalty = Field(@visitorRow, 'optin_loyalty')
+    SET @visitorOptinCommercial = Field(@visitorRow, 'optin_commercial')
+    SET @visitorGender = Field(@visitorRow, 'gender')
+    SET @visitorEmail = Field(@visitorRow, 'email')
+    SET @visitorPhone = Field(@visitorRow, 'phone')
+    SET @visitorCommunity = Field(@visitorRow, 'community_name')
+
+    /* short first Name variable (empty if length > 13) */
+    SET @shortFirstName = IIf(length(@visitorFirstName) < 14, @visitorFirstName, '')
+    
+    /* Initializing center variables */
+    SET @centerName = Field(@centerRow, 'name')
+    SET @centerCountry = Field(@centerRow, 'country')
+    SET @centerRebranded = Field(@centerRow, 'rebranded')
+    SET @centerHostName = Concat(@centerHostNamePrefix, Field(@centerRow, 'hostname'))
+    SET @centerLogo = Field(@centerRow, 'logo_light')
+    SET @centerFacebookLink = Field(@centerRow, 'fb_link')
+    SET @centerInstagramLink = Field(@centerRow, 'instagram_link')
+    SET @centerLinkdispatcher = Field(@CenterRow,'linkdispatcher') 
+    SET @centerLoyaltyPage = Concat(@centerHostName,"/loyaltyprogram")
+    SET @centerAccess = Concat(@centerHostName,"/access")
+    SET @centerStateParameter = Field(@centerRow, 'state_parameter')
+    SET @centerCaptainWalletContextId = Field(@centerRow, 'wallet_context_id')
+    SET @centerOffersUrl = Concat(@centerHostName, "/offers")
+
+    SET @centerTiktokLink = Field(@centerRow, 'tiktok_link')
+    SET @centerAddress = Field(@centerRow, 'address')
+    SET @centerTelephone = Field(@centerRow, 'phone_number')
+    SET @centerTimetable = Field(@centerRow, 'timetable_text')
+    
+     /* SQUAD NEW  */
+     /* New fields Logos Setup */
+    SET @centerLogoSC = Field(@centerRow, 'logo_centre')/* Field to be created in center_details_static, SQL Queries in automation to be modified */
+    SET @centerSCClub = Field(@centerRow, 'logo_club')/* Field to be created, SQL Queries in automation to be modified */
+    
+    /* Initializing email, font and style variables */
+    SET @ADD3 = AttributeValue("__AdditionalEmailAttribute3")
+    IF NOT EMPTY(@ADD3) THEN
+     SET @emailCode = @ADD3
+    ELSE
+     SET @emailCode = "all"
+    ENDIF
+    
+    SET @fontBody = "Open Sans, Arial, Helvetica, sans-serif"
+    IF @centerRebranded == TRUE THEN
+        SET @fontTitle = "Oswald, Arial, Helvetica, sans-serif"
+        SET @bgColorFooter = '#29292B'
+    ELSE
+        SET @fontTitle = "Arial, Helvetica, sans-serif"
+        SET @bgColorFooter = '#6B6D6F'
+    ENDIF
+    
+    /* SQUAD TEST PURPOSES - TO BE DELETED AFTER - PLEASE DO NOT DELETE UNTIL TESTS ARE CONCLUDED */ 
+   IF  @centerRebranded == TRUE THEN
+    SET @brandtestunbran = 'W'
+   ELSE
+    SET @brandtestunbran = 'U'
+   ENDIF
+
+    /* Init Unsub Link */
+    VAR @unsubQS, @encryptedUnsubQS
+    
+    SET @unsubQS  = Concat('{ "type": "0", "postData" : { "grant_type": "client_credentials", "client_id": "', @clientIdJwt, '", "client_secret":"', @clientSecretJwt, '", "redirect_uri":"https://google.com", "data": { "visitor_id": "', @visitorId, '", "pc_code": "', @visitorPcCode, '", "country_code": "', @centerCountry, '", "email": "" } }, "unsubBaseUrl": "', @unsubBaseUrl, '", "connectJwtUrl": "', @connectJwtUrl, '" }')
+    SET @encryptedUnsubQS = EncryptSymmetric(@unsubQS, 'aes', 'LP_INT_PWD', @null, 'LP_INT_SALT', @null, 'LP_INT_IV', @null)
+    SET @unsubscribeLink = WrapLongURL(Concat(@unsubRedirectBaseCPURL, '?encryptedQS=', Base64Encode(@encryptedUnsubQS)))
+
+    /* Init PreferedCenter Link */
+    SET @unsubQS  = Concat('{ "type": "1", "postData" : { "grant_type": "client_credentials", "client_id": "', @clientIdJwt, '", "client_secret":"', @clientSecretJwt, '", "redirect_uri":"https://google.com", "data": { "visitor_id": "', @visitorId, '", "pc_code": "', @visitorPcCode, '", "country_code": "', @centerCountry, '", "email": "" } }, "unsubBaseUrl": "', @unsubBaseUrl, '", "connectJwtUrl": "', @connectJwtUrl, '" }')
+    SET @encryptedUnsubQS = EncryptSymmetric(@unsubQS, 'aes', 'LP_INT_PWD', @null, 'LP_INT_SALT', @null, 'LP_INT_IV', @null)
+    SET @preferedCenterLink = WrapLongURL(Concat(@unsubRedirectBaseCPURL, '?encryptedQS=', Base64Encode(@encryptedUnsubQS)))
+
+    /* Init MyAccount Link */
+    SET @unsubQS  = Concat('{ "type": "3", "postData" : { "grant_type": "client_credentials", "client_id": "', @clientIdJwt, '", "client_secret":"', @clientSecretJwt, '", "redirect_uri":"https://google.com", "data": { "visitor_id": "', @visitorId, '", "pc_code": "', @visitorPcCode, '", "country_code": "', @centerCountry, '", "email": "', @visitorEmail, '", "scope":"profile" } }, "unsubBaseUrl": "', @unsubBaseUrl, '", "connectJwtUrl": "', @connectJwtUrl, '" }')
+    SET @encryptedUnsubQS = EncryptSymmetric(@unsubQS, 'aes', 'LP_INT_PWD', @null, 'LP_INT_SALT', @null, 'LP_INT_IV', @null)
+    SET @centerMyAccount = WrapLongURL(Concat(@unsubRedirectBaseCPURL, '?encryptedQS=', Base64Encode(@encryptedUnsubQS)))
+    
+    /* Init Account Deletion Link */
+    SET @unsubQS  = Concat('{ "type": "4", "postData" : { "grant_type": "client_credentials", "client_id": "', @clientIdJwt, '", "client_secret":"', @clientSecretJwt, '", "redirect_uri":"https://google.com", "data": { "visitor_id": "', @visitorId, '", "pc_code": "', @visitorPcCode, '", "country_code": "', @centerCountry, '", "email": "', @visitorEmail, '" } }, "unsubBaseUrl": "', @unsubBaseUrl, '", "connectJwtUrl": "', @connectJwtUrl, '" }')
+    SET @encryptedUnsubQS = EncryptSymmetric(@unsubQS, 'aes', 'LP_INT_PWD', @null, 'LP_INT_SALT', @null, 'LP_INT_IV', @null)
+    SET @accountDeletionLink = WrapLongURL(Concat(@unsubRedirectBaseCPURL, '?encryptedQS=', Base64Encode(@encryptedUnsubQS)))
+
+    /* Init Upgrade Link > Newsletter only and Account creation */
+    
+    /* NEW 21/08/23 > interests */
+    SET @interestsList = LookupRows(@interestsDE, "visitor_id", @visitorId)
+    SET @rowCount = Rowcount(@interestsList)
+    SET @interests = ''
+    IF @rowCount > 0 THEN
+        FOR @i = 1 TO @rowCount DO
+            VAR @row, @interest
+            SET @row = Row(@interestsList, @i)
+            SET @interest = Field(@row, "external_id")
+            IF EMPTY(@interests ) THEN
+                SET @interests = @interest
+            ELSE
+                SET @interests = CONCAT(@interests,'|',@interest)
+            ENDIF
+        NEXT @i
+    ENDIF
+   
+    VAR @upgradeQS, @encryptedUpgradeQS
+    
+    SET @upgradeQS  = Concat('{ "postData" : { "grant_type": "client_credentials", "client_id": "', @clientIdJwt, '", "client_secret":"', @clientSecretJwt, '", "redirect_uri":"https://google.com", "data": { "first_name": "', @visitorFirstName, '", "last_name": "', @visitorLastName, '", "email": "', @visitorEmail, '", "gender": "', @visitorGender, '", "phone_number": "', @visitorPhone, '", "pc_code": "', @visitorPcCode, '", "country_code": "', @centerCountry, '", "visitor_id": "', @visitorId, '", "interests": "', @interests, '" } }, "unsubBaseUrl": "', @unsubBaseUrl, '", "connectJwtUrl": "', @connectJwtUrl, '", "connectHostName":"', @connectHostName, '", "centerStateParameter":"', @centerStateParameter, '", "client_secret":"', @clientSecretJwt, '", "client_idconnect":"', @clientIdConnect, '" }')
+    SET @encryptedUpgradeQS = EncryptSymmetric(@upgradeQS, 'aes', 'LP_INT_PWD', @null, 'LP_INT_SALT', @null, 'LP_INT_IV', @null)
+    SET @upgradeAccountLink = WrapLongURL(Concat(@upgradeRedirectBaseCPURL, '?encryptedQS=', Base64Encode(@encryptedUpgradeQS)))
+    
+    /* Init Community quiz link, login or quiz link */
+
+    SET @centerLocaleParameter = Substring(@centerStateParameter,Subtract(Length(@centerStateParameter),4),5)
+    SET @communityQuiz = Concat (@connectHostName, 'v1/community-campaign/', @visitorId, '?redirect_uri=https://cloud.email.westfield.com/communities-campaign', '&locale=', @centerLocaleParameter, '&state=', @centerLocaleParameter, @visitorPcCode, '&client_id=', @clientIdQuiz)
+
+    SET @loginLink = @centerMyAccount
+    SET @quizLink = @communityQuiz
+    
+    IF empty(@visitorCommunity) THEN
+        SET @visitorCommunity = 'all'
+        SET @loginOrQuiz = @quizLink
+    ELSE
+        SET @loginOrQuiz = @loginLink
+    ENDIF
+    
+    /* Init Create Password Link */
+    SET @centerCreatePassword = @upgradeAccountLink
+    
+    /* Init Newsletter Optin link unsubRedirectBaseCPURL */
+    SET @unsubQS  = Concat('{ "type": "2", "postData" : { "grant_type": "client_credentials", "client_id": "', @clientIdJwt, '", "client_secret":"', @clientSecretJwt, '", "redirect_uri":"https://google.com", "data": { "visitor_id": "', @visitorId, '", "pc_code": "', @visitorPcCode, '", "country_code": "', @centerCountry, '" } }, "unsubBaseUrl": "', @unsubBaseUrl, '", "connectJwtUrl": "', @connectJwtUrl, '" }')
+    SET @encryptedUnsubQS = EncryptSymmetric(@unsubQS, 'aes', 'LP_INT_PWD', @null, 'LP_INT_SALT', @null, 'LP_INT_IV', @null)
+    SET @newsletterOptinLink = WrapLongURL(Concat(@unsubRedirectBaseCPURL, '?encryptedQS=', Base64Encode(@encryptedUnsubQS)))
+    
+    /* Init Newsletter Optin Link : Workarround on hold of a new variable managing Optin */
+    /* 16/06/2023 : Update to set 'newsletterOptinLink' value instead of 'unsubscribeLink' */
+    SET @centerOptinUpgrade = @newsletterOptinLink
+    
+    /* Init CommercialPressure Snippet */
+    /* Check if email is not transactional and visitor_id not in mandatory list and send is not a test one. 'XCPX' can be used in the email name to avoid the application of the daily commercial pressure */
+    IF ((IndexOf(emailname_, "TR_") == 0) AND (IndexOf(_subscriberkey, "SEED_VID_") == 0) AND (_isTestSend == false) AND (IndexOf(emailname_, "TLP") == 0) AND (IndexOf(emailname_, "tlp") == 0) AND (IndexOf(emailname_, "XCPX") == 0)) THEN
+    Output(ContentBlockByKey(@snippetCommercialPressure))
+    ENDIF
+    
+    /* Init Captain Wallet Link */
+    SET @captainWalletSalt = "r7h^U=g/eReh<2W"
+    SET @captainWalletConcat = Concat(@visitorId, @captainWalletSalt)
+    SET @captainWalletSignature = SHA256(@captainWalletConcat)
+    SET @currentDateTime = NOW ()
+    SET @currentMonth = DatePart(@currentDateTime,"M")
+    SET @currentYear = DatePart(@currentDateTime,"Y")
+    
+    IF IndexOf(emailname_, "TR_") != 1 THEN 
+      SET @captainWalletLink = Concat ("https://loyalty-urw.captainwallet.com/", @centerCaptainWalletContextId, "/loyalty?user[identifier]=", @visitorId, "&channel=email&tag=dedicated_", @currentMonth, "_", @currentYear, "&signature=", @captainWalletSignature)
+      ELSE
+      SET @captainWalletLink = Concat ("https://loyalty-urw.captainwallet.com/", @centerCaptainWalletContextId, "/loyalty?user[identifier]=", @visitorId, "&channel=email&tag=footer&signature=", @captainWalletSignature)
+    ENDIF
+    
+    /* Init Enrichment Game Link */
+    SET @enrichmentGameSalt = "7ce5b7877247a2be"
+    SET @enrichmentGameTimestamp = format(@currentDateTime,"yyyyMMddhhmmss")
+    SET @enrichmentGameConcat = Concat(@visitorId, @enrichmentGameTimestamp, @enrichmentGameSalt)
+    SET @enrichmentGameToken = SHA256(@enrichmentGameConcat)
+    SET @enrichmentGameLink = WrapLongURL(Concat(@centerHostName, "/gamepage/gameenrich?visitorId=", @visitorId, "&timestamp=", @enrichmentGameTimestamp, "&pcCode=", @visitorPcCode, "&token=", @enrichmentGameToken))
+    
+    /* ADD CODE TO FORCE SENDING TO ALL SUBSCRIBERS */
+    IF @visitorOptinLoyalty == FALSE and @visitorOptinCommercial == FALSE THEN
+        SET @visitorOptinType = 'optedout'
+    ELSEIF @visitorOptinLoyalty == TRUE and @visitorOptinCommercial == FALSE THEN
+        SET @visitorOptinType = 'loyalty'
+    ELSEIF @visitorOptinCommercial == TRUE THEN
+        SET @visitorOptinType = 'commercial'
+    ENDIF
+
+
+/* Déclaration des variables pour l'email critizr goodays */
+
+Var @cz_user_concat
+Var @cz_user
+Var @cz_open
+Var @cz_extuid
+Var @cz_x_gender
+Var @cz_x_loyalty_member
+Var @cz_x_nl_subscriber
+Var @cz_lang
+Var @cz_on_close
+
+SET @cz_open = concat("send_feedback:",@visitorPcCode)
+SET @cz_user_concat = Concat(@visitorFirstName, "|", @visitorLastName, "|", @visitorEmail, "|", @visitorPhone, "|", @visitorId)
+SET @cz_user = Base64Encode(@cz_user_concat, "UTF-8")
+SET @cz_extuid = Base64Encode(Concat(@visitorId,GetSendTime(1)), "UTF-8")
+
+IF 
+@visitorGender == "F" THEN SET @cz_x_gender = "Female"
+ELSEIF @visitorGender == "M" THEN SET @cz_x_gender = "Male"
+ELSEIF @visitorGender == "U" THEN SET @cz_x_gender = "Unknown"
+ELSE SET @cz_x_gender = "Unknown" 
+ENDIF
+
+SET @cz_x_loyalty_member = @visitorOptinLoyalty
+SET @cz_x_nl_subscriber =  @visitorOptinCommercial
+
+IF
+@centerCountry == "CZ" THEN SET @cz_lang = "CS"
+ELSEIF @centerCountry == "UK" THEN SET @cz_lang = "EN"
+ELSEIF @centerCountry == "FR" THEN SET @cz_lang = "FR"
+ELSEIF @centerCountry == "AT" THEN SET @cz_lang = "de-at"
+ELSEIF @centerCountry == "SE" THEN SET @cz_lang = "SV"
+ELSEIF @centerCountry == "DK" THEN SET @cz_lang = "da"
+
+ELSE SET @cz_lang = @centerCountry
+ENDIF
+SET @cz_on_close = @centerHostName
+
+
+    /* Outputing all variables for debug mode */
+    IF @DEBUG == TRUE THEN
+        Output(Concat("<strong>Printing Visitor variables...</strong><br /><br />"))
+        Output(Concat("visitor_id: ", @visitorId, "<br />"))
+        Output(Concat("visitor_private_id: ", @visitorId, "<br />"))
+        Output(Concat("visitor_first_name: ", @visitorFirstName, "<br />"))
+        Output(Concat("visitor_gender: ", @visitorGender, "<br />"))
+        Output(Concat("visitor_pc_code: ", @visitorPcCode, "<br />"))
+        Output(Concat("visitor_account_type: ", @visitorAccountType, "<br />"))
+        Output(Concat("visitor_optin_type: ", @visitorOptinType, "<br />"))
+        Output(Concat("<br/><strong>Printing Center variables...</strong><br /><br />"))
+        Output(Concat("center_name: ", @centerName, "<br />"))
+        Output(Concat("center_rebranded: ", @centerRebranded, "<br />"))
+        Output(Concat("center_country: ", @centerCountry, "<br />"))
+    
+    ENDIF
+    
+    /* ------------------------------- Write in Shared Data Extensions>0_SYSTEM>Log>XXX_email_send_log -------------------------------- */
+    
+    IF _messagecontext == "SEND" and jobid > 0 then
+         InsertDE(@sendLogDE,
+         "visitor_id", @visitorId, 
+         "visitor_private_id", @visitorPrivateId,
+         "client_id", memberid,
+         "send_id", jobid,
+         "list_id", listid,
+         "batch_id", _JobSubscriberBatchID,
+         "pc_code", @visitorPcCode,
+         "email_name", emailname_,
+         "event_date", Now(), 
+         "emailMirrorLink",@emailMirrorLink)
+    ENDIF
+    
+]%%

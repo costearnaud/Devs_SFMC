@@ -1,0 +1,843 @@
+<script runat="server">
+Platform.Load("core", "1.1.1");
+
+// Business needs reminder :
+
+// Create 4 national segments per 12 countries : ['Austria', 'Czech_Republic', 'Denmark', 'Germany', 'France', 'Netherlands', 'Poland', 'Slovakia', 'Spain', 'Sweden', 'UK', 'US']
+
+// Loyalty Commercial Optin (with commercial pressure) : account_type = full / optin_commercial = true
+// Loyalty Commercial Optin (no commercial pressure) : same but without count_email_4d criteria
+// Loyalty Members (with commercial pressure) : account_type = full / optin_commercial = false / optin_loyalty = true
+// Loyalty Members (no commercial pressure) : same but without count_email_4d criteria
+
+// countryList : Array avec liste Pays (No filters created for Sweden and Slovakia because there is only one Shopping Center)
+var countryList = ['AT', 'CZ', 'DK', 'DE', 'FR', 'NL', 'PL', 'SK', 'ES', 'SE', 'UK', 'US'];
+
+var CorpMID = 524006045; // CORP BU Shared DE are created in the Enterprise BU
+var DevMID = 524006078;
+var ProdMID = 524006077;
+var UatMID = 524006079;
+
+var DevAutomationCategoryID = 380294;
+var UatAutomationCategoryID = 390384;
+var ProdAutomationCategoryID = 390385;
+
+// Environment DEV / UAT / PROD
+var env = 'PROD';
+
+// Default variables <=> DEV
+var sourceMID = DevMID;
+var prefixeDE = 'DEV_';
+var automationCategoryID = DevAutomationCategoryID;
+var payload = {
+    "grant_type": "client_credentials",
+    "client_id": "47b5nflev3okfa6cwujzo8ep",
+    "client_secret": "Hy2oX4YLSKBdsHDQ8aSgBd4B"
+};
+
+if (env == 'UAT') {
+    sourceMID = UatMID;
+    prefixeDE = 'UAT_';
+    automationCategoryID = UatAutomationCategoryID;
+    payload = {
+        "grant_type": "client_credentials",
+        "client_id": "ppx33jin5okgdccvkpio365w",
+        "client_secret": "KxQ00znaRPL70zlSXBkLO2Zr"
+    };
+}
+
+if (env == 'PROD') {
+    sourceMID = ProdMID;
+    prefixeDE = '';
+    automationCategoryID = ProdAutomationCategoryID;
+    payload = {
+        "grant_type": "client_credentials",
+        "client_id": "of86kc758rjrzjrkbvsrc8wq",
+        "client_secret": "DACzSIUsa6xc2CUFZJDxXdQz"
+    };
+}
+
+var hasChanged = false;
+var automationCustomerKey = env + '_REFRESH_SEGMENTS_SERVICE_CHECKIN';
+
+var targetMID = CorpMID; // Mandatory to create all Shared DE with client CORP!
+
+// Folders list for filters
+var countryFoldersList = ['Austria_FILTERS', 'Czech_Republic_FILTERS', 'Denmark_FILTERS', 'Germany_FILTERS', 'France_FILTERS', 'Netherlands_FILTERS', 'Poland_FILTERS', 'Slovakia_FILTERS', 'Spain_FILTERS', 'Sweeden_FILTERS', 'UK_FILTERS', 'US_FILTERS'];
+// Folders list for DE
+var countryFoldersDEList = ['Austria', 'Czech_Republic', 'Denmark', 'Germany', 'France', 'Netherlands', 'Poland', 'Slovakia', 'Spain', 'Sweden', 'UK', 'US'];
+
+// DE External key used as Data Source
+var dataSource = 'all_visitors';
+
+// BU Client for the dataSource
+var prox = new Script.Util.WSProxy();
+prox.setClientId({"ID": sourceMID});
+
+// Destination DE creation and Object ID retrieval
+var deProx = new Script.Util.WSProxy();
+deProx.setClientId({"ID": targetMID});
+
+var DESource = prox.retrieve("DataExtension", ["ObjectID"], {
+    Property: "CustomerKey",
+    SimpleOperator: "equals",
+    Value: dataSource
+});
+// DE ObjectID for Data Source
+var DESourceObjectID = DESource.Results[0].ObjectID;
+
+// INIT
+var result = 'NADA'
+var pc_code = {}
+var filterDefinition = {}
+var countryFilter = {}
+var countryFilterFCO = {}
+var countryFilterFCOU = {}
+var countryFilterPCO = {}
+var countryFilterPCOU = {}
+
+// Folder ID <=> Category ID, in DEV BU : folder 1_DEV_SEGMENTS_FILTERS => categoryID=381741
+var categoryID = 0
+// Folder ID <=> Category ID, in DEV BU : folder Shared Items>Shared Data Extensions>1_SEGMENTS >1_DEV_SEGMENTS>DEV_Austria => categoryID=379288
+var categoryDEID = 0
+
+// To build the 4 National filters
+
+//  specific filters
+var accountTypeFull = {"__Type__": "SimpleFilterPart", Property: "account_type", SimpleOperator: "equals", Value: ["full"]};
+var pressionCoCommercial = {"__Type__": "SimpleFilterPart", Property: "count_email_4d", SimpleOperator: "equals", Value: ["0"]};
+var pressionCoLoyalty = {"__Type__": "SimpleFilterPart", Property: "count_email_7d", SimpleOperator: "equals", Value: ["0"]};
+var optin_commercial= {"__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["true"]};
+var optin_loyalty= {"__Type__": "SimpleFilterPart", Property: "optin_loyalty", SimpleOperator: "equals", Value: ["true"]};
+var optout_commercial= {"__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["false"]};
+
+//  generic filters
+var active = {"__Type__": "SimpleFilterPart", Property: "is_inactive", SimpleOperator: "equals", Value: ["false"]};
+var email_valid = {"__Type__": "SimpleFilterPart", Property: "email_invalid", SimpleOperator: "equals", Value: ["false"]};
+var is_favorite = {"__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"]};
+
+// Final generic filter
+var generalFilter = {"__Type__": "ComplexFilterPart"
+                     , LeftOperand: active
+                     , LogicalOperator: "AND"
+                     , RightOperand: {"__Type__": "ComplexFilterPart"
+                        , LeftOperand: email_valid
+                        , LogicalOperator: "AND"
+                        , RightOperand: is_favorite
+                    }
+};
+
+// If Partial segments are needed later
+
+var accountTypePartial = {"__Type__": "SimpleFilterPart", Property: "account_type", SimpleOperator: "equals", Value: ["partial"]};
+
+// 4 filters managed here
+var specificFilter_FCO = {
+    "__Type__": "ComplexFilterPart"
+  , LeftOperand: generalFilter
+  , LogicalOperator: "AND"
+  , RightOperand: {
+        "__Type__": "ComplexFilterPart"
+        , LeftOperand: accountTypeFull
+        , LogicalOperator: "AND"
+        , RightOperand: {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: optin_commercial
+            , LogicalOperator: "AND"
+            , RightOperand: pressionCoCommercial
+        }
+    }
+};
+
+var specificFilter_FCO_U = {
+    "__Type__": "ComplexFilterPart"
+  , LeftOperand: generalFilter
+  , LogicalOperator: "AND"
+  , RightOperand: {
+        "__Type__": "ComplexFilterPart"
+        , LeftOperand: accountTypeFull
+        , LogicalOperator: "AND"
+        , RightOperand: optin_commercial
+    }
+};
+
+var specificFilter_FLO = {
+    "__Type__": "ComplexFilterPart"
+  , LeftOperand: generalFilter
+  , LogicalOperator: "AND"
+  , RightOperand: {
+        "__Type__": "ComplexFilterPart"
+        , LeftOperand: accountTypeFull
+        , LogicalOperator: "AND"
+        , RightOperand: {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: optin_loyalty
+            , LogicalOperator: "AND"
+            , RightOperand: {
+                "__Type__": "ComplexFilterPart"
+                , LeftOperand: optout_commercial
+                , LogicalOperator: "AND"
+                , RightOperand: pressionCoLoyalty
+            }
+        }
+    }
+};
+
+var specificFilter_FLO_U = {
+    "__Type__": "ComplexFilterPart"
+  , LeftOperand: generalFilter
+  , LogicalOperator: "AND"
+  , RightOperand: {
+        "__Type__": "ComplexFilterPart"
+        , LeftOperand: accountTypeFull
+        , LogicalOperator: "AND"
+        , RightOperand: {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: optin_loyalty
+            , LogicalOperator: "AND"
+            , RightOperand: optout_commercial
+        }
+    }
+};
+
+var currentActivity = [];
+var automationTasks = [];
+var activities = [];
+
+try {
+    var i = 0;
+    var DEObjectID = 0;
+    for (i=0; i<countryList.length; i++) {
+        Write("<br/>BEGIN Boucle FOR</br>");
+        // Prepare the 4 FilterDefinitions for each country / Rule exception UK becomes GB
+        if (countryList[i] == "UK") {
+            countryFilter = "GB_SC"
+        } else {
+            countryFilter = countryList[i]+"_SC"
+        }
+        pc_code = {"__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "beginsWith", Value: [countryFilter]};
+        countryFilterFCO = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: specificFilter_FCO
+            , LogicalOperator: "AND"
+            , RightOperand: pc_code
+        };
+        countryFilterFCOU = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: specificFilter_FCO_U
+            , LogicalOperator: "AND"
+            , RightOperand: pc_code
+        };
+        countryFilterFLO = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: specificFilter_FLO
+            , LogicalOperator: "AND"
+            , RightOperand: pc_code
+        };
+        countryFilterFLOU = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: specificFilter_FLO_U
+            , LogicalOperator: "AND"
+            , RightOperand: pc_code
+        };
+        Write("Filters</br>");
+        // Determine the category ID (the same for the 4 Filters)
+        var filter = env+"_"+countryFoldersList[i];
+        Write("</br>filter : "+filter);
+
+        var folderFilter = {
+            Property: "Name",
+            SimpleOperator: "equals",
+            Value: filter
+        };
+        var data = prox.retrieve("DataFolder", ["ID"], folderFilter);
+
+        if (data.Results[0] != null) { categoryID = data.Results[0].ID; }
+        Write("</br>Folder Category Filter ID :"+categoryID);
+
+        // Get or Create the 2 folders (With commercial pressure and Unlocked) for each country
+        var bothFolders = manageFolder(countryFoldersDEList[i]);
+        var loyaltyFolder = bothFolders.folder;
+        var loyaltyUnlockedFolder = bothFolders.folderUnlocked;
+        Write("</br>Both Folders : "+Stringify(bothFolders));
+
+        // FCO Name and key of Filters
+        var dataFilterName = env+"_Visitor_"+countryList[i]+"_Full_Com_Optin";
+        var filterCreated = false;
+
+        // filterDefinition exists ? Nothing : Create
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: dataFilterName
+        });
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        if (checkFilterExistsObjectID == undefined) {
+            // FCO Filters Definition
+            filterDefinition = {
+                "Name": dataFilterName
+                , "CustomerKey" : dataFilterName
+                , "DataSource" : { "__Type__": "DataExtension", "CustomerKey" : dataSource }
+                , "DataFilter" : countryFilterFCO
+                , "CategoryID" : categoryID
+            };
+            // Now create FCO FilterDefinitions for each country
+            var result = prox.createItem("FilterDefinition", filterDefinition);
+            filterCreated = true;
+            Write("</br>Filter FCO Created successfully, Status => "+Stringify(result.Status));
+        }
+
+        // Reset activities for each country
+        activities = [];
+
+        // FCO FilterActivity Creation
+        var filterActivityName = env+"_VisitorFA_"+countryList[i]+"_Full_Com_Optin";
+        var targetDEName = prefixeDE+"Visitor_"+countryList[i]+"_Full_Commercial_Optin";
+        // Build Target DE
+        DEObjectID = initTargetDE(targetDEName, targetDEName, loyaltyFolder);
+        var activityID = createDataFilterActivity(DEObjectID, dataFilterName, filterActivityName, filterActivityName, filterCreated);
+        Write("</br>Main Try > FLOU activityID : "+activityID);
+
+        currentActivity = createActivity(activityID, filterActivityName, filterActivityName);
+        activities.push(currentActivity);
+
+        // FCOU Name and key of Filters
+        dataFilterName = env+"_Visitor_"+countryList[i]+"_Full_Com_Optin_U";
+        filterCreated = false;
+
+        // filterDefinition exists ? Nothing : Create
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: dataFilterName
+        });
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        if (checkFilterExistsObjectID == undefined) {
+            // FCOU Filters Definition
+            filterDefinition = {
+                "Name": dataFilterName
+                , "CustomerKey" : dataFilterName
+                , "DataSource" : { "__Type__": "DataExtension", "CustomerKey" : dataSource }
+                , "DataFilter" : countryFilterFCOU
+                , "CategoryID" : categoryID
+            };
+            // Now create FCOU FilterDefinitions for each country
+            var result = prox.createItem("FilterDefinition", filterDefinition);
+            filterCreated = true;
+            Write("</br>Filter FCOU Created successfully, Status => "+Stringify(result.Status));
+        }
+
+        // FCOU FilterActivity Creation
+        var filterActivityName = env+"_VisitorFA_"+countryList[i]+"_Full_Com_Optin_U";
+        var targetDEName = prefixeDE+"Visitor_"+countryList[i]+"_Full_Commercial_Optin_Unlocked";
+        // Build Target DE
+        DEObjectID = initTargetDE(targetDEName, targetDEName, loyaltyUnlockedFolder);
+        var activityID = createDataFilterActivity(DEObjectID, dataFilterName, filterActivityName, filterActivityName, filterCreated);
+        Write("</br>Main Try > FLOU activityID : "+activityID);
+
+        currentActivity = createActivity(activityID, filterActivityName, filterActivityName);
+        activities.push(currentActivity);
+
+        // FLO Name and key of Filters
+        dataFilterName = env+"_Visitor_"+countryList[i]+"_Full_Loy_Optin";
+        filterCreated = false;
+
+        // filterDefinition exists ? Nothing : Create
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: dataFilterName
+        });
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        if (checkFilterExistsObjectID == undefined) {
+            // FLO Filters Definition
+            filterDefinition = {
+                "Name": dataFilterName
+                , "CustomerKey" : dataFilterName
+                , "DataSource" : { "__Type__": "DataExtension", "CustomerKey" : dataSource }
+                , "DataFilter" : countryFilterFLO
+                , "CategoryID" : categoryID
+            };
+            // Now create FLO FilterDefinitions for each country
+            var result = prox.createItem("FilterDefinition", filterDefinition);
+            filterCreated = true;
+            Write("</br>Filter FLO Created successfully, Status => "+Stringify(result.Status));
+        }
+
+        // FLO FilterActivity Creation
+        var filterActivityName = env+"_VisitorFA_"+countryList[i]+"_Full_Loy_Optin";
+        var targetDEName = prefixeDE+"Visitor_"+countryList[i]+"_Full_Loyalty_Optin";
+        // Build Target DE
+        DEObjectID = initTargetDE(targetDEName, targetDEName, loyaltyFolder);
+        var activityID = createDataFilterActivity(DEObjectID, dataFilterName, filterActivityName, filterActivityName, filterCreated);
+        Write("</br>Main Try > FLOU activityID : "+activityID);
+
+        currentActivity = createActivity(activityID, filterActivityName, filterActivityName);
+        activities.push(currentActivity);
+
+        // FLOU Name and key of Filters
+        dataFilterName = env+"_Visitor_"+countryList[i]+"_Full_Loy_Optin_U";
+        filterCreated = false;
+
+        // filterDefinition exists ? Nothing : Create
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: dataFilterName
+        });
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        if (checkFilterExistsObjectID == undefined) {
+            // FLOU Filters Definition
+            filterDefinition = {
+                "Name": dataFilterName
+                , "CustomerKey" : dataFilterName
+                , "DataSource" : { "__Type__": "DataExtension", "CustomerKey" : dataSource }
+                , "DataFilter" : countryFilterFLOU
+                , "CategoryID" : categoryID
+            };
+            // Now create FLOU FilterDefinitions for each country
+            var result = prox.createItem("FilterDefinition", filterDefinition);
+            filterCreated = true;
+            Write("</br>Filter FLOU Created successfully, Status => "+Stringify(result.Status));
+        }
+
+        // FLOU FilterActivity Creation
+        var filterActivityName = env+"_VisitorFA_"+countryList[i]+"_Full_Loy_Optin_U";
+        var targetDEName = prefixeDE+"Visitor_"+countryList[i]+"_Full_Loyalty_Optin_Unlocked";
+        // Build Target DE
+        DEObjectID = initTargetDE(targetDEName, targetDEName, loyaltyUnlockedFolder);
+        var activityID = createDataFilterActivity(DEObjectID, dataFilterName, filterActivityName, filterActivityName, filterCreated);
+        Write("</br>Main Try > FLOU activityID : "+activityID);
+        currentActivity = createActivity(activityID, filterActivityName, filterActivityName);
+        activities.push(currentActivity);
+
+        //Write("</br>After 4 segments > activities => "+Stringify(activities));
+
+        // Final automation tasks preparation
+        automationTasks.push({
+            Name: env+"_AutomationTasks_"+countryList[i],
+            Activities: activities
+        });
+    }
+    // And final Automation start
+    startAutomation(automationTasks);
+} catch(error) {
+    Write("<br/><br/>catch ERROR => "+Stringify(error));
+}
+
+// Dedicated to the Advertising filters
+function createFilter(filterName, filterCustomerKey, filterType, center, countryName) {
+    Write("</br></br>createFilter");
+    
+    var centerFilter = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [center] };
+
+    // Switch case filterType = Loyalty_members or Prospects
+    var dataFilter = {};
+    if (filterType == "Loyalty_members") {
+        dataFilter = {"__Type__": "ComplexFilterPart"
+                        , LeftOperand: accountTypeFull
+                        , LogicalOperator: "AND"
+                        , RightOperand: centerFilter
+        };
+    }
+    if (filterType == "Prospects") {
+        dataFilter = {"__Type__": "ComplexFilterPart"
+                        , LeftOperand: accountTypePartial
+                        , LogicalOperator: "AND"
+                        , RightOperand: centerFilter
+        };
+    }
+
+    var filter = {
+        Property: "Name",
+        SimpleOperator: "equals",
+        Value: countryName
+    }
+    var folder = prox.retrieve("DataFolder", ["ID"], filter);
+    var filterCategoryID = folder.Results[0].ID;
+
+    Write("</br>createFilter > filterCategoryID : "+Stringify(filterCategoryID));
+
+    // filterDefinition exists ? Nothing : Create
+    var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+        Property: "CustomerKey",
+        SimpleOperator: "equals",
+        Value: filterCustomerKey
+    });
+    if (checkFilterExists.Results[0].ObjectID == undefined) {
+        Write("</br>createFilter > Filter to create");
+        filterDefinition = {
+            "Name": filterName
+            , "CustomerKey" : filterCustomerKey
+            , "DataSource" : { "__Type__": "DataExtension", "CustomerKey" : dataSource }
+            , "DataFilter" : dataFilter
+            , "CategoryID" : filterCategoryID
+        };
+        Write("</br>createFilter > filterDefinition : "+Stringify(filterDefinition));
+        // Create the FilterDefinition
+        var result = prox.createItem("FilterDefinition", filterDefinition);
+        Write("</br>Filter created (Name = "+filterName+") and result : "+Stringify(result));
+        return true;
+    } else {
+        Write("</br>createFilter > Filter already exists");
+        return false;
+    }
+}
+
+function initTargetDE(targetDE, targetDEName, targetFolder) {
+    Write("</br>initTargetDE > targetDE = "+targetDE);
+    var checkDEExists = deProx.retrieve("DataExtension", ["ObjectID","Name"], {
+        Property: "CustomerKey",
+        SimpleOperator: "equals",
+        Value: targetDE
+    });
+
+    var checkDEExistsObjectID = checkDEExists.Results[0].ObjectID;
+
+    Write("</br>initTargetDE > checkDEExistsObjectID : "+checkDEExistsObjectID);
+
+    if (checkDEExistsObjectID != undefined) {
+        Write("</br>initTargetDE > DE (external key = "+targetDE+") already exists / ObjectID : "+checkDEExistsObjectID);
+        return checkDEExistsObjectID;
+    } else {
+        var fields = [
+            {
+                "Name": "visitor_id",
+                "FieldType": "Text",
+                "MaxLength": 36,
+                "IsPrimaryKey": true,
+                "IsRequired" : true
+            },
+            {
+                "Name": "pc_code",
+                "FieldType": "Text",
+                "MaxLength": 20,
+                "IsPrimaryKey": true,
+                "IsRequired" : true
+            }
+        ];
+        var config = {
+            "CustomerKey": targetDE,
+            "Name": targetDEName,
+            "Description": "DE Created and Updated by script",
+            "CategoryID": targetFolder,
+            "Fields": fields,
+            "SendableDataExtensionField": {
+                "Name" : "visitor_id",
+                "FieldType" : "Text"
+            },
+            "SendableSubscriberField": {
+                "Name": "Subscriber Key"
+            },
+            "IsSendable": true,
+            "IsTestable": true
+        };
+        //Write("</br>initTargetDE > config : "+Stringify(config));
+        var result = deProx.createItem("DataExtension", config);
+        //Write("</br>initTargetDE > create DE result : "+Stringify(result));
+        return result.Results[0].NewObjectID;
+    }
+}
+
+function createDataFilterActivity(targetDataExtensionID, filterCustomerKey, filterActivityName, filterActivityKey, filterCreated) {
+
+    Write("</br>function createDataFilterActivity");
+    // FilterDefinition Object ID retrieve by its external key
+    var filterDefinition = prox.retrieve("filterDefinition", ["ObjectID"], {
+        Property: "CustomerKey",
+        SimpleOperator: "equals",
+        Value: filterCustomerKey
+    });
+    var FilterDefinitionID = filterDefinition.Results[0].ObjectID;
+    Write("</br>createDataFilterActivity > FilterDefinitionID : "+FilterDefinitionID);
+
+    // FilterActivity creation
+    var filterActivity = {
+        Name: filterActivityName,
+        CustomerKey: filterActivityKey,
+        SourceTypeID: 2, // DataExtension
+        DestinationTypeID: 2, // DataExtension
+        FilterDefinitionID: FilterDefinitionID,
+        SourceObjectID: DESourceObjectID,
+        DestinationObjectID: targetDataExtensionID
+    }
+    Write("</br>createDataFilterActivity > FilterActivity : "+Stringify(filterActivity));
+    // Check if the FilterActivity already exists
+    var checkFilterActivityExists = prox.retrieve("FilterActivity", ["ObjectID"], {
+        Property: "CustomerKey",
+        SimpleOperator: "equals",
+        Value: filterActivityKey
+    });
+
+    var checkFilterActivityExistsObjectID = checkFilterActivityExists.Results[0].ObjectID;
+    var faObjectID = checkFilterActivityExistsObjectID;
+
+    Write("</br>createDataFilterActivity > checkFilterActivityExistsObjectID : "+checkFilterActivityExistsObjectID);
+    if (checkFilterActivityExistsObjectID == undefined) {
+        result = prox.createItem("FilterActivity", filterActivity);
+        sleep(100);
+        if (result.Status == "OK") {
+            Write("</br>createDataFilterActivity > FilterActivity successfully created");
+            faObjectID = result.Results[0].NewObjectID;
+        } else {
+            Write("</br>createDataFilterActivity > FilterActivity Create ERROR => "+Stringify(result));
+        }
+    } else {
+        if (filterCreated) { // FA already exists but a new filter was created so it is needed to recreate FA (and the Automation then)
+            deleteDataFilterActivity(checkFilterActivityExistsObjectID);
+            sleep(100);
+            result = prox.createItem("FilterActivity", filterActivity);
+            sleep(100);
+            faObjectID = result.Results[0].NewObjectID;
+        }
+    }
+
+    Write("</br>createDataFilterActivity > FilterActivity result : "+Stringify(result));
+    return faObjectID;
+}
+
+function sleep(milliseconds) {
+    // sleep(1000); //Wait for 1 second
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+        if ((new Date().getTime() - start) > milliseconds){
+            break;
+        }
+    }
+}
+
+function deleteDataFilterActivity(ObjectID) {
+    // Delete FilterActivity via Rest API Call 
+    Write("</br>function deleteDataFilterActivity");
+    //Authenticate to get access token
+    var authEndpoint = 'https://mch0c8s-29c44sl3scfs5zqfzrm4.auth.marketingcloudapis.com';
+    var url = authEndpoint + '/v2/token';
+    var contentType = 'application/json';
+
+    var accessTokenRequest = HTTP.Post(url, contentType, Stringify(payload));
+    if (accessTokenRequest.StatusCode == 200) {
+        var tokenResponse = Platform.Function.ParseJSON(accessTokenRequest.Response[0]);
+        var accessToken = tokenResponse.access_token;
+    };
+
+    if (accessToken != null) {
+        var url = "https://mch0c8s-29c44sl3scfs5zqfzrm4.rest.marketingcloudapis.com/automation/v1/filters/" + ObjectID;
+        var auth = 'Bearer ' + accessToken;
+        var req = new Script.Util.HttpRequest(url);
+        req.emptyContentHandling = 0;
+        req.retries = 2;
+        req.continueOnError = true;
+        req.contentType = "application/json";
+        req.setHeader("Authorization", auth);
+        req.method = "DELETE"; 
+        req.postData = '';
+        try {
+            var resp = req.send();
+            Write("</br>deleteDataFilterActivity > response : "+resp);
+        } catch (err) {
+            Write("</br>deleteDataFilterActivity > Error : "+err);
+        }
+    }
+}
+
+function manageFolder(country) {
+    var LoyaltyFolder = 0;
+    var LoyaltyUnlockedFolder = 0;
+    var filter = prefixeDE+country;
+    Write("</br>function manageFolder > folder name : "+filter);
+
+    var DENameFilter = {
+        Property: "Name",
+        SimpleOperator: "equals",
+        Value: filter
+    };
+    var FolderTypeFilter = {
+        Property: "ContentType",
+        SimpleOperator: "equals",
+        Value: "shared_dataextension"
+    }
+    var DEfilter = {
+        LeftOperand: DENameFilter,
+        LogicalOperator: "AND",
+        RightOperand: FolderTypeFilter
+    };
+    var data = deProx.retrieve("DataFolder", ["ID"], DEfilter);
+
+    Write("</br>data : "+Stringify(data));
+    if (data.Results[0] != null) {
+        var baseFolder = data.Results[0].ID;
+        Write("</br>manageFolder > baseFolder ID : "+baseFolder);
+
+        // Inside baseFolder, test if there is a "National" Folder or create it
+        var filter1 = {
+            Property: "ParentFolder.ID",
+            SimpleOperator: "equals",
+            Value: baseFolder
+        };
+        var filter2 = {
+            Property: "Name",
+            SimpleOperator: "equals",
+            Value: "National"
+        };
+        var goodFilter = {
+            LeftOperand: filter1,
+            LogicalOperator: "AND",
+            RightOperand: filter2
+        };
+        data = deProx.retrieve("DataFolder", ["ID"], goodFilter);
+        if (data.Results[0] != null) {
+            var NationalFolder = data.Results[0].ID;
+        } else {
+            var config = {
+                "CustomerKey" : GUID(),
+                "Name": "National",
+                "Description": "",
+                "ParentFolder": {
+                    ID: baseFolder,
+                    IDSpecified: true
+                },
+                "ContentType": "shared_dataextension",
+                "IsActive": "true",
+                "IsEditable": "true",
+                "AllowChildren": "true"
+            };
+            var createResult = deProx.createItem("DataFolder", config);
+            var NationalFolder = createResult.Results[0].NewID
+        }
+        Write("</br>manageFolder > National Folder ID : "+NationalFolder);
+
+        // Then inside "National" folder, create a "Loyalty members" Folder if does not exist yet
+        filter1 = {
+            Property: "ParentFolder.ID",
+            SimpleOperator: "equals",
+            Value: NationalFolder
+        };
+        filter2 = {
+            Property: "Name",
+            SimpleOperator: "equals",
+            Value: "Loyalty members"
+        };
+        goodFilter = {
+            LeftOperand: filter1,
+            LogicalOperator: "AND",
+            RightOperand: filter2
+        };
+        data = deProx.retrieve("DataFolder", ["ID"], goodFilter);
+        if (data.Results[0] != null) {
+            var LoyaltyFolder = data.Results[0].ID;
+        } else {
+            var config = {
+                "CustomerKey" : GUID(),
+                "Name": "Loyalty members",
+                "Description": "",
+                "ParentFolder": {
+                    ID: NationalFolder,
+                    IDSpecified: true
+                },
+                "ContentType": "shared_dataextension",
+                "IsActive": "true",
+                "IsEditable": "true",
+                "AllowChildren": "true"
+            };
+            var createResult = deProx.createItem("DataFolder", config);
+            var LoyaltyFolder = createResult.Results[0].NewID
+        }
+        Write("</br>manageFolder > Loyalty Folder ID : "+LoyaltyFolder);
+
+        // Then inside "National" folder, create a "Loyalty members Unlocked" Folder if does not exist yet
+        filter1 = {
+            Property: "ParentFolder.ID",
+            SimpleOperator: "equals",
+            Value: NationalFolder
+        };
+        filter2 = {
+            Property: "Name",
+            SimpleOperator: "equals",
+            Value: "Loyalty members Unlocked"
+        };
+        goodFilter = {
+            LeftOperand: filter1,
+            LogicalOperator: "AND",
+            RightOperand: filter2
+        };
+        data = deProx.retrieve("DataFolder", ["ID"], goodFilter);
+        if (data.Results[0] != null) {
+            var LoyaltyUnlockedFolder = data.Results[0].ID;
+        } else {
+            var config = {
+                "CustomerKey" : GUID(),
+                "Name": "Loyalty members Unlocked",
+                "Description": "",
+                "ParentFolder": {
+                    ID: NationalFolder,
+                    IDSpecified: true
+                },
+                "ContentType": "shared_dataextension",
+                "IsActive": "true",
+                "IsEditable": "true",
+                "AllowChildren": "true"
+            };
+            var createResult = deProx.createItem("DataFolder", config);
+            var LoyaltyUnlockedFolder = createResult.Results[0].NewID
+        }
+        Write("</br>manageFolder > Loyalty Unlocked Folder ID : "+LoyaltyUnlockedFolder);
+    }
+
+    return {"folder": LoyaltyFolder, "folderUnlocked": LoyaltyUnlockedFolder};
+}
+
+function createActivity(objectID, nameActivity, customerKey) {
+    var jsonActivity = {
+        ObjectID: objectID,
+        Name: nameActivity,
+        ActivityObject: {
+            "__Type__": "FilterActivity",
+            ObjectID: objectID,
+            Name: nameActivity,
+            CustomerKey: customerKey
+        }
+    };
+    return jsonActivity;
+}
+
+function startAutomation(automationTasks) {
+    //Write("</br>startAutomation > automationTasks : "+Stringify(automationTasks));
+
+    // Check if the Refresh Segment Automation already exists
+    var automation = prox.retrieve("Automation", ["CustomerKey", "ProgramID"], {
+        Property: "CustomerKey",
+        SimpleOperator: "equals",
+        Value: automationCustomerKey
+    });
+    var automationID = automation.Results[0].ObjectID
+
+    if (automationID != undefined) {
+        Write("</br></br>startAutomation > Automation already created > automationID : "+automationID);
+    }
+    else {
+        // Build Automation Object
+        var automation = {
+            Name: automationCustomerKey,
+            CustomerKey: automationCustomerKey,
+            AutomationTasks: automationTasks,
+            'AutomationType': 'Scheduled',
+            CategoryID : automationCategoryID
+        };
+        // Create Automation
+        var res = prox.createItem('Automation', automation);
+        //Write("</br></br>startAutomation > res Automation created : "+Stringify(res));
+        automationID = res.Results[0].NewObjectID;
+        Write("</br>startAutomation > createdAutomationID : "+automationID);
+    }
+
+    // Start Automation
+    var props = {
+        ObjectID: automationID
+    };
+    var action = "start";
+    var res = prox.performItem("Automation", props, action, {});
+    Write("</br></br>startAutomation > "+automationCustomerKey+" / res startAutomation : "+Stringify(res));
+
+}
+
+</script>

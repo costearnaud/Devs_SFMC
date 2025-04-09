@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<script runat="server">
+  
+    Platform.Load("core", "1.1.1");
+      Variable.SetValue("@communityName", Platform.Request.GetFormField("community_name"));
+
+    try {
+
+</script>
+
+<div style="display:none" aria-hidden="true">
+    %%[
+        SET @vPrivateId = RequestParameter("vPrivateId")
+        SET @pcCode = RequestParameter("pcCode")
+        SET @acquisitionCountry = RequestParameter("acquisitionCountry")
+              
+              If @acquisitionCountry == "GB" then
+              SET @acquisitionCountry = "UK"
+              ENDIF
+        
+        /*SET @communityName = Lookup("community_quiz","community_name","visitor_private_id", @vPrivateId)*/
+        
+        SET @centerLogo = Lookup("ENT.PROD_center_details", "logo_centre", "pc_code", @pcCode)
+
+        SET @upsertCount = upsertData("community_quiz", 1, "visitor_private_id", @vPrivateId, "community_name", @communityName, "pc_code", @pcCode, "country_code", @acquisitionCountry, "export_date", Now())
+
+    ]%%
+    
+</div>
+
+<script runat="server">
+
+    } catch(err) {
+        Write("We are sorry, an error occured <br/>" + Stringify(err.message) + Stringify(err.description));
+    }
+</script>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex">
+
+  <title>Fallback Confirmation</title>
+
+  <style id="jsbin-css">
+    body {
+      font-family: "Open Sans", Helvetica, Arial, sans-serif;
+      color: #555;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    * {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    *:before,
+    *:after {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    .clearfix {
+      clear: both;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    a {
+      color: tomato;
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: #2196f3;
+    }
+
+    pre {
+      display: block;
+      padding: 9.5px;
+      margin: 0 0 10px;
+      font-size: 13px;
+      line-height: 1.42857143;
+      color: #333;
+      word-break: break-all;
+      word-wrap: break-word;
+      background-color: #F5F5F5;
+      border: 1px solid #CCC;
+      border-radius: 4px;
+    }
+
+    .header {
+      padding: 20px 0;
+      position: relative;
+      margin-bottom: 10px;
+
+    }
+
+    .header:after {
+      content: "";
+      display: block;
+      height: 1px;
+      background: #eee;
+      position: absolute;
+      left: 30%;
+      right: 30%;
+    }
+
+    .header h2 {
+      font-size: 3em;
+      font-weight: 300;
+      margin-bottom: 0.2em;
+    }
+
+    .header p {
+      font-size: 14px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <header class="header text-center">
+    <img src="%%=v(@centerLogo)=%%" alt="Unibail Rodamco Westfield" style="width:100%; max-width:400px">
+  </header>
+
+  <section>
+
+    <div class="success-box">
+      <div class="clearfix"></div>
+      <div class="text-message">
+        <p>  %%[ 
+                   IF @acquisitionCountry == "AT" then ]%%
+                    Gute Nachrichten!<br>Ihre Anfrage wurde berücksichtigt.
+
+                %%[ elseif @acquisitionCountry == "CZ" then ]%%
+                    Dobré zprávy!<br>Váš podnět jsme zaznamenali.
+
+                %%[ elseif @acquisitionCountry == "DE" then ]%%     
+                    Danke!<br>Wir freuen uns, dass du dabei bist, und freuen uns darauf, fantastische Erlebnisse mit dir zu teilen.
+
+                %%[ elseif @acquisitionCountry == "ES" then ]%%
+                    ¡Buenas noticias!<br>Tu solicitud se ha registrado correctamente.
+
+                %%[ elseif @acquisitionCountry == "FR" then ]%%  
+                    Bonne nouvelle !<br>Votre demande à bien été prise en compte.
+                   
+                %%[ elseif @acquisitionCountry == "NL" then ]%%     
+                    Goed nieuws!<br>We hebben je verzoek in behandeling genomen.
+                   
+                %%[ elseif @acquisitionCountry == "SE" then ]%%
+                    Gute Nachrichten!<br>Ihre Anfrage wurde berücksichtigt.
+                
+                %%[ elseif @acquisitionCountry == "SK" then ]%%
+                    Dobré správy.<br>Váš podnet sme zaznamenali.
+                 
+                %%[ elseif @acquisitionCountry == "DK" then ]%%
+                    Godt så !<br>Din anmodning er modtaget og behandles.
+                    
+                %%[ elseif @acquisitionCountry == "PL" then ]%%
+                    Dobra wiadomość!<br>Twoja prośba została uwzględniona.
+                
+               %%[ elseif @acquisitionCountry == "UK" then ]%%
+                  Good news!<br>Your request has been submitted
+                
+                %%[ else        
+                    endif  
+]%%
+     </p>
+      </div>
+    </div>
+  </section>
+
+</body>
+
+</html>

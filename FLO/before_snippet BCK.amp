@@ -1,0 +1,52 @@
+%%[
+VAR @deName, @leadId, @firstName, @lastName, @email, @company, @state, @country, @phone, @industry, @marketSegment, @missingFields, @dynamicParams, @langUrl
+
+SET @deName = "TEST B2B database - All leads and contacts"
+
+SET @leadId = AttributeValue("LeadID") /* From DE used to send email */
+SET @firstName = Lookup(@deName, "FirstName", "LeadID", @leadId)
+SET @lastName = Lookup(@deName, "LastName", "LeadID", @leadId)
+SET @email = Lookup(@deName, "Email", "LeadID", @leadId)
+SET @company = Lookup(@deName, "Company", "LeadID", @leadId)
+SET @state = Lookup(@deName, "State", "LeadID", @leadId)
+SET @country = Lookup(@deName, "Country", "LeadID", @leadId)
+SET @phone = Lookup(@deName, "Phone", "LeadID", @leadId)
+SET @language = Lookup(@deName, "Language__c", "LeadID", @leadId)
+SET @industry = Lookup(@deName, "Industry", "LeadID", @leadId)
+SET @marketSegment = Lookup(@deName, "Market_segments__c", "LeadID", @leadId)
+
+SET @optout = Lookup(@deName, "OptOut", "LeadID", @leadId)
+IF EMPTY(@optout) THEN
+  SET @optout = False
+ENDIF
+
+SET @langUrl = ""
+SET @CTA_text_fallback = "Complete your profile"
+IF @language=="FR" THEN
+ SET @CTA_text_fallback = "Complétez votre profil"
+ SET @langUrl="fr"
+ENDIF
+SET @emailMirrorLink = view_email_url
+SET @mirror_link_text = "View email in browser"
+
+/* Set redirect URL based on country and language */
+  SET @redirectURL = "https://flo.com"
+  
+  IF @country == "United States" THEN
+    SET @redirectURL = "https://www.flo.com/profile-update/"
+  ELSEIF @country == "Canada" THEN
+    IF @language == "FR" THEN
+      SET @redirectURL = "https://www.flo.com/fr-ca/mise-a-jour-profil/"
+    ELSE 
+      SET @redirectURL = "https://www.flo.com/en-ca/profile-update/"
+    ENDIF
+  ENDIF
+  
+  SET @fullScript = CONCAT("<","script>window.location.href = '", @redirectURL, "';</script",">");
+
+]%%
+
+<div class="other-content" style="margin:0px 20px;">
+  <p><span style="color: #000000; font-size: 12px; font-weight: 400;"><a href="%%=RedirectTo(@emailMirrorLink)=%%" style="color:#CCCCCC;text-decoration:underline">%%=v(@mirror_link_text)=%%</a></span></p>
+  
+</div>

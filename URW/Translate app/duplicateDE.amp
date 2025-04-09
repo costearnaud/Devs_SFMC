@@ -1,0 +1,105 @@
+<script runat="server">
+    Platform.Load("core", "1.1");
+
+    var sourceFolder = '04. Blocks Translation'
+    var targetFolder = 'Draft_data_translation'
+
+    // Retrieve Data Extensions within a specific folder
+
+    // **1. Define the 2 Folder IDs
+    var reqSource = Folder.Retrieve({Property:'Name',SimpleOperator:'equals',Value:sourceFolder});
+    var sourceFolderID = reqSource[0].ID;
+    var reqTarget = Folder.Retrieve({Property:'Name',SimpleOperator:'equals',Value:targetFolder});
+    var targetFolderID = reqTarget[0].ID;
+
+    // **2. Create the Retrieve Request:**
+    var objectType = "DataExtension";
+    var props = ["Name"];
+    var filter = {
+        Property: "CategoryID",
+        SimpleOperator: "equals",
+        Value: sourceFolderID
+    };
+
+    var prox = new Script.Util.WSProxy();
+    var deNames = [];
+
+    // **3. Perform the Retrieve Operation:**
+    try {
+        var results = prox.retrieve(objectType, props, filter);
+        //Write("Retrieve done, results : "+Stringify(results));
+        // **4. Check for Success and Process Results:**
+        if (results.Status == "OK") {
+            var dataExtensions = results.Results;
+            if (dataExtensions && dataExtensions.length > 0) {
+                // **5. Display or Use the Data Extension Names:**
+                for (var i = 0; i < dataExtensions.length; i++) {
+                    if (dataExtensions[i].Name.indexOf('data_trad') === 0) {
+                        deNames.push(dataExtensions[i].Name);
+                    }
+                }
+                Write("<br/>deNames post push : "+deNames);
+            } else {
+                Write("<br/>No Data Extensions found in folder " + folderID + ".");
+            }
+        } else {
+            Write("Error retrieving Data Extensions: " + results.StatusMessage);
+        }
+        Write("<br/>fin de boucle, deNames length : "+deNames.length);
+    } catch (e) {
+        Write("<br/>An error occurred during Retrieve Operation: " + e.message);
+    }
+
+    // loop on deNames to clone each DE
+    Write("<br/>Post try deNames : "+deNames);
+    for (var i=0; i<deNames.length; i++) {
+        Write("de cloned : "+deNames[i]);
+        var resp = cloneDataExtension(deNames[i]);
+        Write(resp);
+    }
+
+    function cloneDataExtension(extName) {
+        Write("<br/>cloneDataExtension > extName: "+extName);
+
+        var prox = new Script.Util.WSProxy();
+
+        var req2 = DataExtension.Retrieve({Property:"Name",SimpleOperator:"equals",Value:extName});
+        var CustomerKey = req2[0].CustomerKey;
+
+        var DE = DataExtension.Init(CustomerKey);
+        var fields = DE.Fields.Retrieve();
+        
+        var filter = {
+            LeftOperand: { Property:fields[0]['Name'],SimpleOperator:"isNotNull" },
+            LogicalOperator: "OR",
+            RightOperand: { Property:fields[0]['Name'],SimpleOperator:"isNull" }
+        }
+
+        var records = DE.Rows.Retrieve(filter);
+
+        for(var i = 0; i < fields.length; i++) {
+            if(fields[i]['IsPrimaryKey'] == true ) fields[i]['IsRequired'] = true;
+        }
+
+        var ClonedDE = {
+            'CustomerKey' : extName + '_draft',
+            'Name' : extName + '_draft',
+            'CategoryID': targetFolderID,
+            'Fields' : fields
+        }
+
+        var res = prox.createItem("DataExtension", ClonedDE);
+        Write("createItem done" + extName + '_draft');
+        var message = res.Results[0].StatusCode + ": " + res.Results[0].StatusMessage;
+
+        try {
+            var DE2 = DataExtension.Init(extName + '_draft');
+            var res2 = DE2.Rows.Add(records);
+            message += "<br/>Records added: " + res2;
+        } catch(err) {
+            message += "<br/>No records added";
+        }
+  
+        return message;
+    }
+</script>

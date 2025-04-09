@@ -1,0 +1,328 @@
+%%[
+  Var @now, @later
+  Set @now = Now()
+  Set @later = DateAdd(@now, '1','D')
+]%%
+<script runat="server">
+
+    /* -------------------------------------------------------------------------
+
+    Authenticates each visitor to limit access only to SFMC logged-in users.
+
+    1. Global Variables
+    2. Helper Functions
+        2.1. Debugging
+        2.2. Error handling
+    3. Authentication Flow
+        3.1. Authorisation
+        3.2. Authentication with REST Token
+            3.2.1. Build token request payload
+            3.2.2. Request the token
+            3.2.3. Destructure the response
+            3.2.4 Get User Details
+            3.2.5. Upsert Logging Data Extension
+            3.2.6. Redirect to the frontend of the App with state
+            3.2.7. Handle authentication error
+        3.3. Authorisation Error
+    4. Backend Flow
+        4.1. Get Post Data
+            4.1.1. Get the payload from POST call
+            4.1.2. Parse Stringified JSON back to Object
+        4.2. Authenticate the POST call
+            4.2.1 Get session code from POST payload
+            4.2.2. Check whether there is a matching token for the session
+            4.2.3. If no valid token, return error
+        4.3. Backend Logic
+        4.4. Backend Error
+
+    -------------------------------------------------------------------------- */
+
+    Platform.Load('core', '1.1.5');
+
+    /* ----------------------------------------------------------------------- */
+    /* ---------------------- 1. GLOBAL VARIABLES ---------------------------- */
+    /* ----------------------------------------------------------------------- */
+
+    var method = Platform.Request.Method();
+    var appName = 'Translate';
+    var appURL = 'https://cloud.email.westfield.com/translate_frontend';
+    var backendURL = 'https://cloud.email.westfield.com/translate_backend';
+
+    var clientID = 'wpi5i02e3md6pi75b6kryrdx';
+    var clientSecret = 'eqKHGMlncxIMixs3RvMrX4Dw';
+    var clientBase = 'mch0c8s-29c44sl3scfs5zqfzrm4';
+    var authDE = 'Translate_AuthLog';
+
+    var state = Platform.Request.GetQueryStringParameter('state');
+
+    var tradDE = 'ent.data_trad_header';
+    var emailCompoDE = 'ent.data_email_composition';
+    var centerDE = 'ent.PROD_center_details';
+
+    var errorCode = 10;
+
+    /* ----------------------------------------------------------------------- */
+    /* ---------------------- 2. HELPER FUNCTIONS ---------------------------- */
+    /* ----------------------------------------------------------------------- */
+
+    if (method == 'GET') {
+
+        /* ------------------------------------------------------------------- */
+        /* -------------------- 3. AUTHENTICATION FLOW ----------------------- */
+        /* ------------------------------------------------------------------- */
+
+        /* ---------------------- 3.1. Check state (cookie in frontend) ------ */
+
+        if (!state) {
+            state = GUID();
+            Platform.Response.Redirect('https://' + clientBase + '.auth.marketingcloudapis.com/v2/authorize?response_type=code&client_id=' + clientID + '&redirect_uri=' + backendURL + '&state=' + state);
+
+            /* -------------------- 3.2. Authentication ---------------------- */
+
+        } else {
+            /* 3.2.1. Build token request payload */
+            var code = Platform.Request.GetQueryStringParameter('code');
+            var payload = {
+                grant_type: 'authorization_code',
+                code: code,
+                client_id: clientID,
+                client_secret: clientSecret,
+                redirect_uri: backendURL
+            };
+            /* 3.2.2. Request the token */
+            var response = HTTP.Post('https://' + clientBase + '.auth.marketingcloudapis.com/v2/token', 'application/json', Stringify(payload));
+            /* 3.2.3. Destructure the response */
+            if (response.StatusCode == 200) {
+                var parsedResponse = Platform.Function.ParseJSON(response.Response[0]);
+                var accessToken = parsedResponse.access_token;
+                var tokenExpire = Platform.Function.SystemDateToLocalDate(Platform.Function.Now());
+                tokenExpire.setMinutes(tokenExpire.getMinutes() + 1440);
+
+                /* 3.2.4. Get User Details */
+                var response = HTTP.Get('https://' + clientBase + '.auth.marketingcloudapis.com/v2/userinfo', ['Authorization'], ['Bearer ' + accessToken]);
+                var userName = Platform.Function.ParseJSON(response.Content).user.name;
+                var userEmail = Platform.Function.ParseJSON(response.Content).user.email;
+
+                /* 3.2.5. Upsert Authentication Logging Data Extension */
+                Platform.Function.UpsertData(authDE, ['session'], [state],
+                    ['appName', 'token', 'tokenExpire', 'userName', 'userEmail'],
+                    [appName, accessToken, tokenExpire, userName, userEmail]
+                );
+
+                /* 3.2.6. Set Cookie session value and redirect to the frontend of the App with state */
+                var expires = Variable.GetValue("@later");
+                Platform.Response.SetCookie("translateSession", state, expires, true);
+                Platform.Response.Redirect(appURL + '?s=' + state);
+
+                /* 3.2.7. Handle authentication error */
+            } else {
+                Write({ message: 'Authentication Failed', description: 'Status: ' + response.StatusCode })
+            };
+        }
+
+    } else if (method == 'POST') {
+
+        /* ------------------------------------------------------------------- */
+        /* ----------------------- 4. REQUEST POST MANAGEMENT ---------------- */
+        /* ------------------------------------------------------------------- */
+
+        try {
+            errorCode = 20;
+            // Get the payload from POST call
+            var postedData = Platform.Request.GetPostData();
+
+            // 4.1.2. Parse Stringified JSON back to Object
+            var parsedData = Platform.Function.ParseJSON(postedData);
+            var session = parsedData.session;
+            var inputDE = 'ent.'+parsedData.inputDE;
+            var inputDEDraft = inputDE + '_draft';
+            var country = parsedData.country;
+            var response = { message: 'empty', description: parsedData, rows: [] };
+
+            errorCode = 30;
+
+            // 4.2.1. Check whether there is a matching token for the session
+            var token = Platform.Function.Lookup(authDE, 'token', ['appName', 'session'], [appName, session]);
+            errorCode = 40;
+            var tokenExpire = Platform.Function.Lookup(authDE, 'tokenExpire', ['appName', 'token'], [appName, token]);
+
+            errorCode = 50;
+
+            // 4.2.3. If no valid token, return error
+            if (!tokenExpire || Platform.Function.SystemDateToLocalDate(Platform.Function.Now()) > tokenExpire) {
+                response = { message: 'Session Timeout', description: 'The token is expired. Please refresh the session to use the application.' }
+                Write(Stringify(response));
+            } else {
+
+                // --------------------- 4.3. Backend Logic ----------------------
+                switch (parsedData.action) {
+                    case 'getCountries':
+                        var email = parsedData.email;
+                        var countries = Platform.Function.LookupRows(
+                            emailCompoDE,
+                            "email_code",
+                            email
+                        );
+                        response = { message: 'Hello getCountries', rows: countries };
+                        break;
+                    case 'getSC':
+                        var country = parsedData.country;
+                        var data = Platform.Function.LookupRows(
+                            centerDE,
+                            ["is_active", "country"],
+                            [true, country]
+                        );
+                        // Filter to keep only these columns : pc_code, rebranded, name, country
+                        var centers = [];
+                        for (var i = 0; i < data.length; i++) {
+                            var obj = data[i];
+                            var filteredObj = {
+                                pc_code: obj.pc_code,
+                                rebranded: obj.rebranded,
+                                name: obj.name,
+                                country: obj.country
+                            };
+                            centers.push(filteredObj);
+                        }
+                        response = { message: 'Hello getSC', rows: centers };
+                        break;
+                    case 'getCountryType':
+                        var country = parsedData.country;
+                        var countryType = Platform.Function.LookupRows(
+                            emailCompoDE,
+                            "country",
+                            country
+                        );
+                        response = { message: 'Hello getCountryType', rows: countryType };
+                        break;
+                    case 'getReference':
+                        var emailCompo = Platform.Function.LookupRows(
+                            emailCompoDE,
+                            "filter",
+                            "A"
+                        );
+                        response = { message: 'Hello getReference', rows: emailCompo };
+                        break;
+                    case 'getBlocks':
+                        var email = parsedData.email;
+                        var country = parsedData.country;
+                        var blocks = Platform.Function.LookupRows(
+                            emailCompoDE,
+                            ["email_code", "country"],
+                            [email, country]
+                        );
+                        response = { message: 'Hello getBlocks', rows: blocks };
+                        break;
+                    case 'openBlock':
+                        var email = parsedData.email;
+                        var country = parsedData.country;
+                        var deTrad = 'ent.'+parsedData.block.block_name+'_draft';
+                        var center = parsedData.center;
+                        var type = parsedData.type;
+                        var block = {};
+                        var blockRows = Platform.Function.LookupRows(
+                            deTrad,
+                            ["mail", "country", "pc_code", "type"],
+                            [email, country, center, type]
+                        );
+                        if(blockRows.length == 1) {
+                            block = blockRows[0];
+                        } else {
+                            blockRows = Platform.Function.LookupRows(
+                                deTrad,
+                                ["mail", "country", "pc_code", "type"],
+                                ['all', country, center, type]
+                            );
+                            if(blockRows.length == 1) {
+                                block = blockRows[0];
+                            } else {
+                                blockRows = Platform.Function.LookupRows(
+                                    deTrad,
+                                    ["mail", "country", "pc_code", "type"],
+                                    [email, country, 'all', type]
+                                );
+                                if(blockRows.length == 1) {
+                                    block = blockRows[0];
+                                } else {
+                                    blockRows = Platform.Function.LookupRows(
+                                        deTrad,
+                                        ["mail", "country", "pc_code", "type"],
+                                        ['all', country, 'all', type]
+                                    );
+                                    block = blockRows[0];
+                                }
+                            }
+                        }
+                        block['snippetHTML'] = parsedData.block.snippetHTML;
+                        response = { message: 'Hello openBlock', row: block };
+                        break;
+                    case 'tradHeader':
+                        var tradHeader = Platform.Function.LookupRows(
+                            tradDE,
+                            "Country",
+                            "FR"
+                        );
+                        response = { message: 'Hello tradHeader', rows: tradHeader, fields: tradHeader };
+                        break;
+                    case 'getTrad':
+                        var trad = Platform.Function.LookupRows(
+                            inputDE,
+                            "Country",
+                            country
+                        );
+                        var tradDraft = Platform.Function.LookupRows(
+                            inputDEDraft,
+                            "Country",
+                            country
+                        );
+                        response = { message: 'Hello getTrad', rows: trad, fields: tradDraft };
+                        break;
+                    case 'saveTradDraft':
+                        var block = parsedData.block;
+                        var keys_columns = parsedData.keys_columns;
+                        var keys_values = parsedData.keys_values;
+                        var data_columns = parsedData.data_columns;
+                        var data_values = parsedData.data_values;
+                        var targetDE = 'ent.'+block+'_draft';
+                        var result = Platform.Function.UpdateData(targetDE,
+                                              keys_columns,
+                                              keys_values,
+                                              data_columns,
+                                              data_values);
+                        response = { message: 'Hello saveTradDraft', callback: result };
+                        break;
+                    case 'resetTrad':
+                        var block = parsedData.block;
+                        var keys_columns = parsedData.keys_columns;
+                        var keys_values = parsedData.keys_values;
+                        var data_columns = parsedData.data_columns;
+                        var sourceDE = 'ent.'+block;
+                        var targetDE = 'ent.'+block+'_draft';
+                        var data_values = [];
+                        var sourceDERows = Platform.Function.LookupRows(
+                            sourceDE,
+                            keys_columns,
+                            keys_values);
+                        var source = sourceDERows[0];
+                        for (var i = 0; i < data_columns.length; i++) {
+                            data_values[i] = source[data_columns[i]];
+                        }
+                        var result = Platform.Function.UpdateData(targetDE,
+                                              keys_columns,
+                                              keys_values,
+                                              data_columns,
+                                              data_values);
+                        response = { message: 'Hello resetTrad', callback: result };
+                        break;
+                };
+            }
+
+            Write(Stringify(response));
+
+            // --------------------- 4.4. Backend Error ----------------------
+        } catch (error) {
+            var response = { message: error.message, description: error.description, errorCode:errorCode };
+            Write(Stringify(response));
+        };
+    }
+</script>

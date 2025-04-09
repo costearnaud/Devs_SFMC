@@ -1,0 +1,64 @@
+%%[
+
+    SET @encryptedUpgradeQS = RequestParameter("encryptedQS")
+    SET @upgradeQS = DecryptSymmetric(Base64Decode(@encryptedUpgradeQS,'UTF-8', 1), "aes", "LP_INT_PWD", @null, "LP_INT_SALT", @null, "LP_INT_IV", @null)
+
+]%%
+
+<script runat="server">
+   
+    Platform.Load('core', '1');
+    
+    try {
+
+        var qsFieldsText =  Variable.GetValue("@upgradeQS");
+        var qsFieldsJson = Platform.Function.ParseJSON(qsFieldsText);
+        var pcCode = qsFieldsJson.postData.data.pc_code
+        var postData = Stringify(qsFieldsJson.postData);
+        var unsubBaseUrl = qsFieldsJson.unsubBaseUrl;
+        var connectJwtUrl = qsFieldsJson.connectJwtUrl;
+        var connectHostName = qsFieldsJson.connectHostName;
+        var centerStateParameter = qsFieldsJson.centerStateParameter;
+        //var client_secret = qsFieldsJson.client_secret;
+        var client_idconnect = qsFieldsJson.client_idconnect;
+
+        Variable.SetValue("@postData", postData);
+        Variable.SetValue("@pcCode", pcCode);
+        Variable.SetValue("@unsubBaseUrl", unsubBaseUrl);
+        Variable.SetValue("@connectJwtUrl", connectJwtUrl);
+        Variable.SetValue("@connectHostName", connectHostName);
+        Variable.SetValue("@centerStateParameter", centerStateParameter);
+        var langArray = centerStateParameter.split("_");
+        var lang = langArray[1];
+        Variable.SetValue("@lang", lang);
+        //Variable.SetValue("@client_secret", client_secret);
+        Variable.SetValue("@clientIdConnect", client_idconnect);
+
+        var req = new Script.Util.HttpRequest(connectJwtUrl);
+        req.emptyContentHandling = 0;
+        req.retries = 2;
+        req.continueOnError = true;
+        req.contentType = "application/json"
+        //req.setHeader("Authorization", auth);
+
+        req.method = "POST"; // You can change the method here
+        req.postData = postData;
+
+        var resp = req.send();
+        var resultStr = String(resp.content);
+        var resultJSON = Platform.Function.ParseJSON(String(resp.content));
+        var upgradeJWT = String(resultJSON.access_token)
+        Variable.SetValue("@upgradeJWT",upgradeJWT);
+
+    } catch (error) {
+        Write(Platform.Function.Stringify(error));
+    }
+   
+</script>
+
+%%[
+
+    SET @upgradeAccountLink = URLEncode(Concat(@connectHostName, "register?client_id=", @clientIdConnect, "&redirect_uri=", @unsubBaseUrl, "api/sitecore/visitorapi/connectauthenticationcallback&response_type=code&center=", @pcCode, "&q=", @upgradeJwt, "&scope=profile", "&state=", @centerStateParameter, "&lang=", @lang))
+    Redirect(@upgradeAccountLink)
+    
+]%%

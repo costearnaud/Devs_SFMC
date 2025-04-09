@@ -1,0 +1,95 @@
+%%[
+
+    SET @data_trad = 'ent.data_trad_intro4'
+    ContentBlockByKey("varGenericAllBlocks")
+    SET @intro4_textColor = @genericBgColorBlack
+    SET @intro4_TitleColor = @genericBgColorWhite
+
+    SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code',@DisplayPcCode,'type',@DisplayCenterRebranded,'mail',@DisplayMail)
+    IF RowCount(@DataTrad) > 0 THEN
+        SET @DataTradRow = Row(@DataTrad,1)
+        SET @title_intro4 = Field(@DataTradRow,'title_intro4')
+        SET @body_intro4 = Field(@DataTradRow,'body_intro4')
+        SET @image_intro4 = Field(@DataTradRow,'image_intro4')
+    ELSE
+        SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail',@DisplayMail)
+        IF RowCount(@DataTrad) > 0 THEN
+            SET @DataTradRow = Row(@DataTrad,1)
+            SET @title_intro4 = Field(@DataTradRow,'title_intro4')
+            SET @body_intro4 = Field(@DataTradRow,'body_intro4')
+            SET @image_intro4 = Field(@DataTradRow,'image_intro4')
+        ELSE
+            SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail','all')
+            IF RowCount(@DataTrad) > 0 THEN
+                SET @DataTradRow = Row(@DataTrad,1)
+                SET @title_intro4 = Field(@DataTradRow,'title_intro4')
+            SET @body_intro4 = Field(@DataTradRow,'body_intro4')
+            SET @image_intro4 = Field(@DataTradRow,'image_intro4')
+            ENDIF
+        ENDIF
+    ENDIF
+
+]%%
+<div id="block">
+<table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="margin:auto"
+    class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+    <tr>
+        <td style="height:482px;background-repeat:no-repeat;vertical-align:top"
+            class="bg_0d627675-e456-4602-975e-b0d0bab0411f t_h0px t_bgp0100p t_bgsz100pauto m_h0px m_bgp0100p m_bgszcover"
+            background="%%=treatascontent(@image_intro4)=%%" height="482">
+            <table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="width:640px"
+                class="d_center t_w100p m_w100p">
+                <tr>
+                    <td style="padding-top:230px;vertical-align:top"
+                        class="t_pt26p t_pr0 t_pb7p t_pl0 m_pt36p m_pr0 m_pb6p m_pl0">
+                        <table cellpadding="0" cellspacing="0" border="0" width="640" align="left"
+                            class="d_left t_w100p m_w100p">
+                            <tr>
+                                <td>
+                                    <table cellpadding="0" cellspacing="0" border="0" width="576" align="center"
+                                        style="margin:auto"
+                                        class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w90p"
+                                        role="presentation">
+                                        <tr>
+                                            <td>
+                                                <table cellpadding="0" cellspacing="0" border="0" width="576"
+                                                    align="center" style="margin:auto"
+                                                    class="d_center t_flnone t_mauto t_w100p m_flleft m_w100p"
+                                                    role="presentation">
+                                                    <tr>
+                                                        <td style="font-family:Helvetica,Arial,sans-serif;color:%%=treatascontent(@intro4_titleColor)=%%;text-align:left;font-size:66px;
+padding-bottom:24px;vertical-align:middle;line-height:68px;font-weight:700"
+                                                            class="t_fz52px t_lh54px m_fz30px m_lh32px">
+                                                            %%=treatascontent(@title_intro4)=%% </td>
+                                                    </tr>
+                                                </table>
+                                                <table cellpadding="0" cellspacing="0" border="0" width="576"
+                                                    align="center" style="margin:auto;clear:both"
+                                                    class="d_center t_w100p m_w100p" aria-hidden="true">
+                                                    <tr>
+                                                        <td height="68"
+                                                            style="height:68px;font-size:68px;line-height:68px"> &nbsp;
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+<table cellpadding="0" cellspacing="0" border="0" width="544" align="center" style="margin:auto"
+    class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w95p" role="presentation">
+    <tr>
+        <td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;font-size:25px;padding-top:32px;
+padding-bottom:32px;vertical-align:middle;line-height:27px"
+            class="t_fz22px t_lh24px m_fz18px m_pt24px m_pb24px m_lh20px"> %%=treatascontent(@body_intro4)=%% </td>
+    </tr>
+</table>
+</div>

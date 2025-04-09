@@ -1,0 +1,943 @@
+<script runat="server">
+        Platform.Load('Core','1.1.1');
+        var session = Platform.Request.GetCookieValue('BytelSession');
+        Variable.SetValue('@sessionFromSSJS', session);
+</script>
+        %%[SET @authDE = 'Ent.authDE' SET @session = @sessionFromSSJS SET @BU = Lookup(@authDE, 'BU', 'session', @session)]%%
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@2.51.6/dist/full.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2/dist/tailwind.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script type="module" src="https://www.xxxxxxx.fr/appvue3"></script>
+    <title>SFMC - Super Vision
+     
+     
+      <script src="https://cdn.datatables.net/buttons/1.0.3/js/dataTables.buttons.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.0.3/css/buttons.dataTables.min.css">
+
+<script src="https://cdn.datatables.net/buttons/1.0.3/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.0.3/js/buttons.colVis.min.js"></script>
+     
+     
+     
+    </title>
+  </head>
+  <body>
+    %%=ContentBlockbyId("43356")=%%%%=ContentBlockbyId("43358")=%%
+    <div id="app" class="font-sans">
+      <div class="flex justify-between bg-white px-8 py-6 sticky top-0 z-10">
+        <!-- v4.0 -->
+        <ul class="flex">
+                %%[ IF @BU=='admin' THEN ]%%
+
+          <li :class="[activeAdmin? active : notactive]" class="mr-3 inline-block border rounded py-1 px-3" @click="getStatus(7211327, 'lazy')">
+            <div class="text-xl">Admin
+            </div>
+            <div class="text-sm italic">MID: 7211327
+            </div>
+          </li>
+          %%[ENDIF]%%
+          <li :class="[activeMkt? active : notactive]" class="mr-3 inline-block border rounded py-1 px-3" @click="getStatus(7213695, 'lazy')">
+            <div class="text-xl">Marketing
+            </div>
+            <div class="text-sm italic">MID: 7213695
+            </div>
+          </li>
+                %%[ IF @BU=='admin' THEN ]%%
+          <li :class="[activePrsp? active : notactive]" class="mr-3 inline-block border rounded py-1 px-3" @click="getStatus(7226728, 'lazy')">
+            <div class="text-xl">Prospect
+            </div>
+            <div class="text-sm italic">MID: 7226728
+            </div>
+          </li>
+                   
+          <li :class="[activeAPIInt? active : notactive]" class="mr-3 inline-block border rounded py-1 px-3" @click="getStatus(7310020, 'lazy')">
+            <div class="text-xl">API Interne
+            </div>
+            <div class="text-sm italic">MID: 7310020
+            </div>
+          </li>
+          <li :class="[activeAPIExt? active : notactive]" class="mr-3 inline-block border rounded py-1 px-3" @click="getStatus(7310019, 'lazy')">
+            <div class="text-xl">API Externe
+            </div>
+            <div class="text-sm italic">MID: 7310019
+            </div>
+          </li>
+          %%[ENDIF]%%
+        </ul>
+        <div class="flex mb-8">
+                              <button id="CreateNew" name="CreateNew" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-14 rounded" onClick="return popupwindow('%%=RedirectTo(CloudPagesURL(2248,'BU',@BU))=%%')">
++
+            </button>
+        </div>
+        <div class="flex mb-2"  >
+ 
+      %%[ IF @BU=='admin' THEN ]%%
+
+          <div v-if="activeAdmin">
+            <button :disabled="!loadedAdmin" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-14 rounded" @click="getStatus(7211327, 'refresh')">
+              <div v-html="refreshTextAdmin">
+              </div>
+            </button>
+            <p :class="fondMessageAdmin" >{{ messageAdmin }}
+            </p>
+          </div>
+%%[ENDIF]%%
+          <div v-if="activeMkt">
+            <button :disabled="!loadedMkt" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-14 rounded" @click="getStatus(7213695, 'refresh')">
+              <div v-html="refreshTextMkt">
+              </div>
+            </button>
+            <p :class="fondMessageMkt" >{{ messageMkt }}
+            </p>
+          </div>
+      %%[ IF @BU=='admin' THEN ]%%
+
+          <div v-if="activePrsp">
+            <button :disabled="!loadedPrsp" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-14 rounded" @click="getStatus(7226728, 'refresh')">
+              <div v-html="refreshTextPrsp">
+              </div>
+            </button>
+            <p :class="fondMessagePrsp" >{{ messagePrsp }}
+            </p>
+          </div>
+          <div v-if="activeAPIInt">
+            <button :disabled="!loadedAPIInt" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-14 rounded" @click="getStatus(7310020, 'refresh')">
+              <div v-html="refreshTextAPIInt">
+              </div>
+            </button>
+            <p :class="fondMessageAPIInt" >{{ messageAPIInt }}
+            </p>
+          </div>
+          <div v-if="activeAPIExt">
+            <button :disabled="!loadedAPIExt" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-14 rounded" @click="getStatus(7310019, 'refresh')">
+              <div v-html="refreshTextAPIExt">
+              </div>
+            </button>
+            <p :class="fondMessageAPIExt" >{{ messageAPIExt }}
+            </p>
+          </div>
+
+          <div class="ml-4">
+            <button :disabled="!loadedAll" :class="refreshALLClass" @click="getAllBUsStatus()">
+              <div v-html="refreshALLText">
+              </div>
+            </button>
+            <p :class="fondMessageAll" >{{ messageAll }}
+            </p>
+          </div>
+%%[ENDIF]%%
+        </div>
+      </div>
+            %%[ IF @BU=='admin' THEN ]%%
+
+      <div class="px-8" style="justify-content: center;
+                               display: flex;
+                               margin-bottom: 20px;"  v-if="activeAdmin">
+        <ul class="flex">
+          <li :class="[activeP1? activeCriticite : notactiveCriticite]" class="mr-3 inline-block border rounded py-1 px-2" @click="getStatus(7211327, 'lazy')">
+            <div class="text-xl">P1
+            </div>
+          </li>
+          <li :class="[activeP2? activeCriticite : notactiveCriticite]" class="mr-3 inline-block border rounded py-1 px-2" @click="getStatus(7211327, 'lazy','P2')">
+            <div class="text-xl">P2
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="px-8" v-if="activeAdmin && activeP1">
+        <table class="w-5/5 text-left text-gray-500 dark:text-gray-400" style=" width: 100%; ">
+          <thead class="text-base uppercase text-gray-200 bg-gray-800 dark:bg-gray-100 dark:text-gray-800 sticky z-20" style=" top: 120px; ">
+            <tr class="border-b">
+              <th scope="col" class="px-6 py-3 border-r-2 border-white" rowspan="2" style="
+                                                                                           ">Automation
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2  border-white" colspan="2" style="
+                                                                                            text-align: center;
+                                                                                            border-bottom-color: rgba(31,41,55,var(--tw-bg-opacity));
+                                                                                            ">Courant
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-1
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-2
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-3
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2 border-white" colspan="2" style="
+                                                                                           text-align: center;
+                                                                                           ">N-4
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2 border-white" colspan="2" style="
+                                                                                           text-align: center;
+                                                                                           ">N-5
+              </th>
+              <th scope="col" class="px-6 py-3 border-r-2 border-white" rowspan="2">Dernière activité en erreur
+              </th>
+            </tr>
+            <tr style="font-size: 12px;text-align: center;">
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>  
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>  
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+            </tr>
+          </thead>
+          <tbody class="text-xs">
+            <tr v-for="(automation, index) in resP1" :key="index" :class="[automation.name === 'Import Donnees Socle'? checkImportDonneesSocle : '']" class="border-b dark:bg-gray-800 dark:border-gray-700 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700" >
+              <td scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white border-r-2 border-gray-200">  
+                <a v-if="automation.lien" :href="automation.lien" target="_blank"> {{ automation.name }} </a>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationLastRun.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationLastRun.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationLastRun.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N1.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N1.status)">
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N1.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N2.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N2.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N2.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N3.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N3.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N3.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N4.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N4.status)">
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N4.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N5.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N5.status)">
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N5.dateFin }}
+              </td>
+              <td class="px-6 py-4">{{ automation.statusInstance.activityInError }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+       <div class="px-8" v-if="activeAdmin && activeP2">
+        <table class="w-5/5 text-left text-gray-500 dark:text-gray-400" style=" width: 100%; ">
+          <thead class="text-base uppercase text-gray-200 bg-gray-800 dark:bg-gray-100 dark:text-gray-800 sticky z-20" style=" top: 120px; ">
+            <tr class="border-b">
+              <th scope="col" class="px-6 py-3 border-r-2 border-white" rowspan="2" style="
+                                                                                           ">Automation
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2  border-white" colspan="2" style="
+                                                                                            text-align: center;
+                                                                                            border-bottom-color: rgba(31,41,55,var(--tw-bg-opacity));
+                                                                                            ">Courant
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-1
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-2
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-3
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2 border-white" colspan="2" style="
+                                                                                           text-align: center;
+                                                                                           ">N-4
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2 border-white" colspan="2" style="
+                                                                                           text-align: center;
+                                                                                           ">N-5
+              </th>
+              <th scope="col" class="px-6 py-3 border-r-2 border-white" rowspan="2">Dernière activité en erreur
+              </th>
+            </tr>
+            <tr style="font-size: 12px;text-align: center;">
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>  
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>  
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+            </tr>
+          </thead>
+          <tbody class="text-xs">
+            <tr v-for="(automation, index) in resP2" :key="index" class="border-b dark:bg-gray-800 dark:border-gray-700 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700">
+              <td scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white border-r-2 border-gray-200">  
+                <a v-if="automation.lien" :href="automation.lien" target="_blank"> {{ automation.name }}
+                </a>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationLastRun.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationLastRun.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationLastRun.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N1.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N1.status)">
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N1.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N2.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N2.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N2.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N3.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N3.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N3.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N4.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N4.status)">
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N4.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N5.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N5.status)">
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N5.dateFin }}
+              </td>
+              <td class="px-6 py-4">{{ automation.statusInstance.activityInError }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      %%[ENDIF]%%
+      <div class="px-8 py-6" v-if="activeMkt">
+        <table class="w-5/5 text-left text-gray-500 dark:text-gray-400" style=" width: 100%; ">
+          <thead class="text-base uppercase text-gray-200 bg-gray-800 dark:bg-gray-100 dark:text-gray-800 sticky z-20" style=" top: 120px; ">
+            <tr class="border-b">
+              <th scope="col" class="px-6 py-3 border-r-2 border-white" rowspan="2" style="
+                                                                                           ">Automation
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2  border-white" colspan="2" style="
+                                                                                            text-align: center;
+                                                                                            border-bottom-color: rgba(31,41,55,var(--tw-bg-opacity));
+                                                                                            ">Courant
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-1
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-2
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-3
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2 border-white" colspan="2" style="
+                                                                                           text-align: center;
+                                                                                           ">N-4
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2 border-white" colspan="2" style="
+                                                                                           text-align: center;
+                                                                                           ">N-5
+              </th>
+              <th scope="col" class="px-6 py-3 border-r-2 border-white" rowspan="2">Dernière activité en erreur
+              </th>
+            </tr>
+            <tr style="font-size: 12px;text-align: center;">
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>  
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>  
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+            </tr>
+          </thead>
+          <tbody class="text-xs">
+            <tr v-for="(automation, index) in resMkt" :key="index" class="border-b dark:bg-gray-800 dark:border-gray-700 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700">
+              <td scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white border-r-2 border-gray-200">
+                <a v-if="automation.lien" :href="automation.lien" target="_blank"> {{ automation.name }} </a>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationLastRun.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationLastRun.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationLastRun.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N1.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N1.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N1.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N2.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N2.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N2.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N3.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N3.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N3.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N4.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N4.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N4.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N5.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N5.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N5.dateFin }}
+              </td>
+              <td class="px-6 py-4">{{ automation.statusInstance.activityInError }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+            %%[ IF @BU=='admin' THEN ]%%
+      <div class="px-8 py-6" v-if="activePrsp">
+         <table class="w-5/5 text-left text-gray-500 dark:text-gray-400" style=" width: 100%; ">
+          <thead class="text-base uppercase text-gray-200 bg-gray-800 dark:bg-gray-100 dark:text-gray-800 sticky z-20" style=" top: 120px; ">
+            <tr class="border-b">
+              <th scope="col" class="px-6 py-3 border-r-2 border-white" rowspan="2" style="
+                                                                                           ">Automation
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2  border-white" colspan="2" style="
+                                                                                            text-align: center;
+                                                                                            border-bottom-color: rgba(31,41,55,var(--tw-bg-opacity));
+                                                                                            ">Courant
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-1
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-2
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-3
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2 border-white" colspan="2" style="
+                                                                                           text-align: center;
+                                                                                           ">N-4
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2 border-white" colspan="2" style="
+                                                                                           text-align: center;
+                                                                                           ">N-5
+              </th>
+              <th scope="col" class="px-6 py-3 border-r-2 border-white" rowspan="2">Dernière activité en erreur
+              </th>
+            </tr>
+            <tr style="font-size: 12px;text-align: center;">
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>  
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>  
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+            </tr>
+          </thead>
+          <tbody class="text-xs">
+            <tr v-for="(automation, index) in resPrsp" :key="index" class="border-b dark:bg-gray-800 dark:border-gray-700 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700">
+              <td scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white border-r-2 border-gray-200">
+                <a v-if="automation.lien" :href="automation.lien" target="_blank"> {{ automation.name }} </a>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationLastRun.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationLastRun.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationLastRun.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N1.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N1.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N1.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N2.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N2.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N2.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N3.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N3.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N3.dateFin }}
+              </td>
+              <td class="px-2 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N4.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N4.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N4.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N5.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N5.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N5.dateFin }}
+              </td>
+              <td class="px-6 py-4">{{ automation.statusInstance.activityInError }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="px-8 py-6" v-if="activeAPIInt">
+        <table class="w-5/5 text-left text-gray-500 dark:text-gray-400" style=" width: 100%; ">
+          <thead class="text-base uppercase text-gray-200 bg-gray-800 dark:bg-gray-100 dark:text-gray-800 sticky z-20" style=" top: 120px; ">
+            <tr class="border-b">
+              <th scope="col" class="px-6 py-3 border-r-2 border-white" rowspan="2" style="
+                                                                                           ">Automation
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2  border-white" colspan="2" style="
+                                                                                            text-align: center;
+                                                                                            border-bottom-color: rgba(31,41,55,var(--tw-bg-opacity));
+                                                                                            ">Courant
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-1
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-2
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-3
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2 border-white" colspan="2" style="
+                                                                                           text-align: center;
+                                                                                           ">N-4
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2 border-white" colspan="2" style="
+                                                                                           text-align: center;
+                                                                                           ">N-5
+              </th>
+              <th scope="col" class="px-6 py-3 border-r-2 border-white" rowspan="2">Dernière activité en erreur
+              </th>
+            </tr>
+            <tr style="font-size: 12px;text-align: center;">
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>  
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>  
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+            </tr>
+          </thead>
+          <tbody class="text-xs">
+            <tr v-for="(automation, index) in resAPIInt" :key="index" class="border-b dark:bg-gray-800 dark:border-gray-700 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700">
+              <td scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white border-r-2 border-gray-200">
+                <a v-if="automation.lien" :href="automation.lien" target="_blank"> {{ automation.name }} </a>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationLastRun.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationLastRun.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationLastRun.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N1.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N1.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N1.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N2.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N2.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N2.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N3.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N3.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N3.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N4.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N4.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N4.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N5.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N5.status)">
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N5.dateFin }}
+              </td>
+              <td class="px-6 py-4">{{ automation.statusInstance.activityInError }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="px-8 py-6" v-if="activeAPIExt">
+         <table class="w-5/5 text-left text-gray-500 dark:text-gray-400" style=" width: 100%; ">
+          <thead class="text-base uppercase text-gray-200 bg-gray-800 dark:bg-gray-100 dark:text-gray-800 sticky z-20" style=" top: 120px; ">
+            <tr class="border-b">
+              <th scope="col" class="px-6 py-3 border-r-2 border-white" rowspan="2" style="
+                                                                                           ">Automation
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2  border-white" colspan="2" style="
+                                                                                            text-align: center;
+                                                                                            border-bottom-color: rgba(31,41,55,var(--tw-bg-opacity));
+                                                                                            ">Courant
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-1
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-2
+              </th>
+              <th scope="col" class="py-3 border-r-2 border-white" colspan="2" style="
+                                                                                      text-align: center;
+                                                                                      ">N-3
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2 border-white" colspan="2" style="
+                                                                                           text-align: center;
+                                                                                           ">N-4
+              </th>
+              <th scope="col" class="px-2 py-3 border-r-2 border-white" colspan="2" style="
+                                                                                           text-align: center;
+                                                                                           ">N-5
+              </th>
+              <th scope="col" class="px-6 py-3 border-r-2 border-white" rowspan="2">Dernière activité en erreur
+              </th>
+            </tr>
+            <tr style="font-size: 12px;text-align: center;">
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>  
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>  
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Status
+              </th>
+              <th class="border-r-2 border-white" style="border-top-width: 2px;">Date
+              </th>
+            </tr>
+          </thead>
+          <tbody class="text-xs">
+            <tr v-for="(automation, index) in resAPIExt" :key="index" class="border-b dark:bg-gray-800 dark:border-gray-700 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700">
+              <td scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white border-r-2 border-gray-200">
+                <a v-if="automation.lien" :href="automation.lien" target="_blank"> {{ automation.name }} </a>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationLastRun.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationLastRun.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationLastRun.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N1.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N1.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N1.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N2.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N2.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N2.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N3.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N3.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N3.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N4.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N4.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N4.dateFin }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-center tooltip" :data-tip="automation.statusInstance.AutomationPreviousRuns.N5.status">
+                  <div v-html="iconFrom(automation.statusInstance.AutomationPreviousRuns.N5.status)">
+                  </div>
+                </div>
+              </td>
+              <td class=" py-4 border-r-2 border-gray-200">{{ automation.statusInstance.AutomationPreviousRuns.N5.dateFin }}
+              </td>
+              <td class="px-6 py-4">{{ automation.statusInstance.activityInError }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      %%[ENDIF]%%
+    </div>
+   
+ <script type="text/javascript">
+$(document).ready(function() {
+$('#myTable').dataTable(
+  {
+   //colReorder: {fixedColumnsLeft: 1},
+   dom: 'lBfrtp',
+   //stateSave: true,
+   buttons: [{text:'Rafraichir', action:function (){location.reload();}},{extend: 'colvis',  columns: [1,2,3,4,5,6]}, 'excelHtml5'],
+   "pagingType": "full_numbers",
+   "info":false,
+   "scrollX": true,
+   "order": [[ 19, 'desc' ]],
+   language:
+   {
+    processing:     "Traitement en cours...",
+    search:         "Rechercher&nbsp;:",
+    lengthMenu:     "Afficher _MENU_ &eacute;l&eacute;ments",
+    info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+    infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+    infoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+    infoPostFix:    "",
+    loadingRecords: "Chargement en cours...",
+    zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+    emptyTable:     "Aucune donnée disponible dans le tableau",
+    paginate:
+    {
+     first:      "Premier",
+     previous:   "Pr&eacute;c&eacute;dent",
+     next:       "Suivant",
+     last:       "Dernier"
+    },
+    aria:
+    {
+     sortAscending:  ": activer pour trier la colonne par ordre croissant",
+     sortDescending: ": activer pour trier la colonne par ordre décroissant"
+    },
+    buttons:
+    {
+     colvis: 'Colonnes'
+    }
+   }
+  });
+});
+      function popupwindow(url) {
+          var t = ((screen.height/2)-300);
+          var l = ((screen.width/2)-350);
+             var newWin = open(url, 'CreateNew','width=800,height=700,toolbar=0,menubar=0,location=0,status=0,scrollbars=0,statusbar=0,resizable=0,top='+t+',left='+l+'');
+         }
+           function popupwindow1(url) {
+          var t = ((screen.height/2)-300);
+          var l = ((screen.width/2)-350);
+             var newWin = open(url, 'CreateNew','width=500,height=250,toolbar=0,menubar=0,location=0,status=0,scrollbars=0,statusbar=0,resizable=0,top='+t+',left='+l+'');
+         }  
+         
+</script>
+  </body>
+</html>

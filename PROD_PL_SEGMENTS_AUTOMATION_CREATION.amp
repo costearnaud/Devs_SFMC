@@ -1,0 +1,227 @@
+<script runat="server">
+
+    Platform.Load("core", "1.1");
+
+    var sourceMID = 524006077;
+    var targetMID = 524006077;
+
+    var DE_SEGMENTS_DESCRIPTION_Name = "PROD_PL_SEGMENTS_DESCRIPTION";
+    var DE_SEGMENTS_DESCRIPTION_Key = "PROD_PL_SEGMENTS_DESCRIPTION";
+    
+    var DE_LOGS_SEGMENTS_DESCRIPTION_Name = "LOGS_PROD_PL_SEGMENTS_DESCRIPTION";
+    var DE_LOGS_SEGMENTS_DESCRIPTION_Key = "LOGS_PROD_PL_SEGMENTS_DESCRIPTION";
+
+    var activityName = "PROD_PL_SEGMENTS_AUTOMATION_CREATION";
+
+    var automationName = 'PROD_REFRESH_SEGMENTS_PL';
+    var automationCustomerKey = 'PROD_REFRESH_SEGMENTS_PL';
+
+
+    function createActivity(objectID, nameActivity, customerKey) {
+        var jsonActivity = {
+            ObjectID: objectID,
+            Name: nameActivity,
+            ActivityObject: {
+                "__Type__": "FilterActivity",
+                ObjectID: objectID,
+                Name: nameActivity,
+                CustomerKey: customerKey
+            }
+        };
+        return jsonActivity;
+    }
+
+    function createTask(taskName, askActivities) {
+
+        var jsonTask =    {
+            Name: taskName,
+            Activities: askActivities
+        };
+        return jsonTask;
+        
+    }
+
+    var shoppingCenterArray = [];
+    var pcCodeArray = [];
+    
+    var uniqueShoppingCenterArray = [];
+    var uniquePcCodeArray = [];
+
+    try {
+        
+        var ListOfFiltersDE = DataExtension.Init(DE_SEGMENTS_DESCRIPTION_Key);
+        var Rows = ListOfFiltersDE.Rows.Retrieve();
+
+        if (Rows.length > 0) {
+            for (var i in Rows) {
+
+                var scName_i = Rows[i]["ShoppingCenterName"];
+                var pcCode_i = Rows[i]["pcCode"];
+
+                shoppingCenterArray.push(scName_i);
+                pcCodeArray.push(pcCode_i);
+            }
+        }
+
+
+        if (shoppingCenterArray.length > 0) {
+            var count = 0;
+            var start = false;
+             
+            for (j = 0; j < shoppingCenterArray.length; j++) {
+                for (k = 0; k < uniqueShoppingCenterArray.length; k++) {
+                    if ( shoppingCenterArray[j] === uniqueShoppingCenterArray[k] ) {
+                        start = true;
+                    }
+                }
+                count++;
+                if (count == 1 && start == false) {
+                    uniqueShoppingCenterArray.push(shoppingCenterArray[j]);
+                }
+                start = false;
+                count = 0;
+            }
+        }
+
+
+        if (pcCodeArray.length > 0) {
+            var count = 0;
+            var start = false;
+             
+            for (j = 0; j < pcCodeArray.length; j++) {
+                for (k = 0; k < uniquePcCodeArray.length; k++) {
+                    if ( pcCodeArray[j] === uniquePcCodeArray[k] ) {
+                        start = true;
+                    }
+                }
+                count++;
+                if (count == 1 && start == false) {
+                    uniquePcCodeArray.push(pcCodeArray[j]);
+                }
+                start = false;
+                count = 0;
+            }
+        }
+
+
+        var autmationTasks = [];
+
+
+        for (var i=0; uniqueShoppingCenterArray.length>i; i++) {
+
+
+            var activities = [];
+
+
+            if (Rows.length > 0) {
+                for (var j in Rows) {
+    
+                    var country_j = Rows[j]["Country"];
+                    var countryCode_j = Rows[j]["CountryCode"];
+    
+                    var scName_j = Rows[j]["ShoppingCenterName"];
+                    var pcCode_j = Rows[j]["pcCode"];
+    
+                    var filterType_j = Rows[j]["FilterType"];
+                    var filterName_j = Rows[j]["FilterName"];
+                    var filterCustomerKey_j = Rows[j]["FilterCustomerKey"];
+                    var filterFolder_j = Rows[j]["FilterFolder"];
+                    var filterFolderCategoryId_j = Rows[j]["FilterCategoryId"];
+                    var filterDefinitionID_j = Rows[j]["FilterDefinitionID"];
+    
+                    var dataExtensionName_j = Rows[j]["DataExtensionName"];
+                    var dataExtensionCustomerKey_j = Rows[j]["DataExtensionCustomerKey"];
+                    var dataExtensionCategoryID_j = Rows[j]["DataExtensionCategoryID"];
+                    var dataExtensionID_j = Rows[j]["DataExtensionID"];
+    
+                    var sourceDataExtensionName_j = Rows[j]["SourceDataExtensionName"];
+                    var sourceDataExtensionCustomerKey_j = Rows[j]["SourceDataExtensionCustomerKey"];
+    
+                    var filterActivityName_j = Rows[j]["FilterActivityName"];
+                    var filterActivityCustomerKey_j = Rows[j]["FilterActivityCustomerKey"];
+                    var filterActivityObjectID_j = Rows[j]["FilterActivityID"];
+    
+    
+                    if (uniqueShoppingCenterArray[i] === scName_j) {
+
+                        if (filterActivityObjectID_j !== "Error" && filterActivityObjectID_j !== "") {
+                        
+                            var currentActivity = [];
+                            currentActivity = createActivity(filterActivityObjectID_j, filterActivityName_j, filterActivityCustomerKey_j);
+                            activities.push(currentActivity);
+                        }
+
+                    }
+    
+                }
+
+            }
+
+            autmationTasks.push({
+                Name: uniqueShoppingCenterArray[i], 
+                Activities: activities});
+        }
+
+        /* Check if Automation already exists */
+        var prox = new Script.Util.WSProxy();
+        prox.setClientId({ "ID": targetMID });
+
+        var checkAutomationExists = prox.retrieve("Automation", ["CustomerKey"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: automationCustomerKey
+        });
+
+        var checkAutomationExistsCustomerKey = checkAutomationExists.Results[0].CustomerKey;
+
+
+        if (Boolean(checkAutomationExistsCustomerKey)) {
+
+            Platform.Function.InsertData(DE_LOGS_SEGMENTS_DESCRIPTION_Name, ["DateTime", "ActivityName", "ErrorMessage"], [DateTime.SystemDateToLocalDate(Platform.Function.Now()), activityName + " : Automation Already Exists", Stringify(err)]);
+
+        } else {
+
+                                    
+            var proxCreate = new Script.Util.WSProxy();
+            proxCreate.setClientId({ "ID": targetMID });
+            
+            /* Build Query Object */
+            var automation = {
+                Name: automationName,
+                CustomerKey: automationCustomerKey,
+                Description: automationName,
+                AutomationTasks: autmationTasks,
+                'AutomationType': 'Scheduled'
+            };
+
+
+            /* Create via API */ 
+            var res = proxCreate.createItem('Automation', automation); 
+            var createdAutomationID = res.Results[0].NewObjectID;
+
+
+            if (createdAutomationID != null) {
+
+                var proxStart = new Script.Util.WSProxy();
+
+                //Switch context to different BU. Change the MID to suit.
+                proxStart.setClientId({ "ID": targetMID });
+            
+                var props = {
+                    ObjectID: createdAutomationID
+                };
+                var action = "start";
+                var opts = {};
+                var res = proxStart.performItem("Automation", props, action, opts);
+
+
+            }
+        
+        }
+    } catch (err) {
+        //Logging Errors
+        Platform.Function.InsertData(DE_LOGS_SEGMENTS_DESCRIPTION_Name, ["DateTime", "ActivityName", "ErrorMessage"], [DateTime.SystemDateToLocalDate(Platform.Function.Now()), activityName, Stringify(err)]);
+    }
+
+
+</script>

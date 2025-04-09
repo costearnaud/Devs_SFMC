@@ -1,0 +1,43 @@
+%%[
+
+IF EMPTY(@DisplayMail) THEN
+ SET @DisplayMail = 'all'
+ENDIF
+SET @DisplayAccountType = 'full'
+SET @URLlogo = 'https://www.westfield.com'
+SET @PRODcenterDetails = 'ent.PROD_center_details'
+
+/* Colors */
+
+SET @DataColors = LookupRows("ent.data_email_colors",'ID','0')
+    IF RowCount(@DataColors) > 0 THEN
+        SET @DataColorsRow = Row(@DataColors,1)
+        SET @genericBgColorRed = Field(@DataColorsRow,'genericBgColorRed')
+        SET @genericBgColorWhite = Field(@DataColorsRow,'genericBgColorWhite')
+        SET @genericBgColorBlue = Field(@DataColorsRow,'genericBgColorBlue')
+        SET @genericBgColorYellow = Field(@DataColorsRow,'genericBgColorYellow')
+        SET @genericBgColorBlack = Field(@DataColorsRow,'genericBgColorBlack')
+  ENDIF
+
+SET @DisplaycenterRows = LookupRows(@PRODcenterDetails,'pc_code', @DisplayPcCode)
+    IF RowCount(@DisplaycenterRows) > 0 THEN
+      SET @DisplaycenterRow = Row(@DisplaycenterRows,1)
+      SET @shoppingCenterlogo = Field(@DisplaycenterRow,'logo_centre')
+      SET @centerName = Field(@DisplaycenterRow,'name')
+      SET @centerType = Field(@DisplaycenterRow,'rebranded')
+    ENDIF
+
+IF @centerType == 'true' THEN
+ SET @DisplayCenterRebranded = 'branded'
+ELSE
+ SET @DisplayCenterRebranded = 'unbranded'
+ENDIF
+
+IF  @DisplayCenterRebranded == 'branded' THEN
+    SET @centerRebranded = True
+    ELSE
+    SET @centerRebranded = False
+ENDIF
+ContentBlockByKey('varColorSwitch')
+
+]%%

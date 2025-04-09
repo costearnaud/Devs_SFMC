@@ -1,0 +1,95 @@
+<script runat="server">
+Platform.Load("Core","1.1");
+
+// Environment DEV / UAT / PROD
+var prefixeDE = 'DEV_';
+
+var sourceMID = 524006045; // CORP BU Shared DE are created in the Master BU
+
+var mandatoryList = prefixeDE+'MANDATORY_LIST';
+
+var DESource = DataExtension.Init(mandatoryList);
+var data = DESource.Rows.Retrieve();
+var deleteOK = 1;
+
+// Parameters to prepare the DE deletion before data integration
+var api = new Script.Util.WSProxy();
+api.setClientId({"ID": sourceMID});
+var action = "ClearData";
+var options = {};
+
+// Write('Raw data in source DE : '+Stringify(data));
+// Write('</br>Nb of lines in source DE : '+data.length);
+
+Write('</br>Nb of lines in source DE : '+data.length);
+
+Array.prototype.getUnique = function(){
+    var u = {}, a = [];
+    for (var i = 0, l = this.length; i < l; ++i) {
+        if (u.hasOwnProperty(this[i])) {
+            continue;
+        }
+        a.push(this[i]);
+        u[this[i]] = 1;
+    }
+return a;
+}
+
+// Delete all Target DE data first
+try {
+    // Build DE List
+    var DEList = [];
+    for (var i=0; i<data.length; i++) {
+        DEList[i] = data[i].targetDE;
+    }
+    //Write ('</br></br>DE List : ' + DEList.getUnique());
+
+    var DEListUnique = DEList.getUnique();
+    Write ('</br></br>Nb of DE to manage : ' + DEListUnique.length());
+
+    // Delete data from each DE from DE List
+    for (var i=0; i<DEListUnique.length; i++) {
+        var properties = {
+            CustomerKey: DEListUnique[i]
+        };
+        //Write('</br>DEListUnique['+i+'] : ' + DEListUnique[i]);
+        var result = api.performItem("DataExtension", properties, action, options);
+        //Write('</br>Deletion result : '+Stringify(result));
+        if (result.Status == 'OK') {
+            Write('</br>DE deleted : ' + result.Results[0].Object.CustomerKey);
+        }
+        if (result.Status == 'Error') { 
+            Write('</br>DE not deleted : ' + DEListUnique[i]);
+            deleteOK = 0
+        }
+    }
+ 
+    if (deleteOK == 1) {
+        try {
+            for (var i=0; i<data.length; i++) {
+              var target = DataExtension.Init(data[i].targetDE);
+              //Write('</br>Target DE CustomerKey : '+data[i].targetDE);
+              var properties = {
+                CustomerKey: data[i].targetDE
+              };
+          
+              // Then add rows
+              var result = target.Rows.Add({
+                account_type:data[i].account_type, email_verified:data[i].email_verified, email_invalid:data[i].email_invalid, phone_verified:data[i].phone_verified, phone_invalid:data[i].phone_invalid,
+                email:data[i].email, optin_push:data[i].optin_push, optin_geoloc:data[i].optin_geoloc, optin_sms:data[i].optin_sms, optin_loyalty:data[i].optin_loyalty, optin_commercial:data[i].optin_commercial,
+                optin_wallet:data[i].optin_wallet, visitor_id:data[i].visitor_id, first_name:data[i].first_name, last_name:data[i].last_name, is_inactive:data[i].is_inactive, count_email_4d:data[i].count_email_4d,
+                count_email_7d:data[i].count_email_7d, is_tlp:data[i].is_tlp, pc_code:data[i].pc_code, visitor_private_id:data[i].visitor_private_id, is_favorite:data[i].is_favorite
+              });
+              
+              //Write('</br>Add result : '+Stringify(result));
+            }
+        } catch(err) {
+        Write('</br>try Add Rows Catch error : '+err);
+        }
+    }
+    
+} catch(err) {
+    Write('</br>try Delete Catch error : '+err);
+}
+
+</script>

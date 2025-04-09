@@ -1,0 +1,101 @@
+<script runat="server">
+    
+
+    Platform.Load('core', '1.1');
+
+
+    try {
+
+        // Deletion Data Extension CustomerKey 
+
+        var contactDeletionDEKey = 'Contact_To_Be_Deleted';
+
+        // Reading API Creds from Contact_Deletion_REST_Credentials Data Extension
+        // API Creds where encrypted using EncryptSymmetric(@apiCreds, 'aes', 'CORP_INT_PWD', @null, 'CORP_INT_SALT', @null, 'CORP_INT_IV', @null)
+
+        var ampScriptCode = '';
+
+        ampScriptCode += '\%\%[ SET @MID = "524006045"';
+        ampScriptCode += 'SET @apiCreds = LOOKUP("Contact_Deletion_REST_Credentials", "apiCreds", "MID", @MID)';
+        ampScriptCode += 'SET @apiCreds = DecryptSymmetric(@apiCreds, "aes", "CORP_INT_PWD", @null, "CORP_INT_SALT", @null, "CORP_INT_IV", @null) ]\%\%';
+        
+        Platform.Function.TreatAsContent(ampScriptCode);
+        
+        var apiCreds = Variable.GetValue('@apiCreds');
+        var credentialObj = Platform.Function.ParseJSON(apiCreds);
+        
+
+        var clientId = credentialObj.clientId;
+        var clientSecret = credentialObj.clientSecret;
+
+        var targetMID = '524006045';
+
+        // Error Logs Data Extension and vars
+        var errorDE = 'Logs_Contact_Deletion';
+        var automationName = 'CONTACT_DELETION_SCRIPT';
+
+
+        /*************************************************************************/
+        /****************************** MAIN SCRIPT ******************************/
+
+        // Retrivieng Acces Token
+        url = 'https://mch0c8s-29c44sl3scfs5zqfzrm4.auth.marketingcloudapis.com/v2/token';
+        payload = {
+            grant_type: 'client_credentials',
+            client_id: clientId,
+            client_secret: clientSecret,
+            account_id: targetMID
+        };
+
+        var contentType = 'application/json';
+
+
+        var accessTokenRequest = HTTP.Post(url, contentType, Stringify(payload));
+        if (accessTokenRequest.StatusCode == 200) {
+            var tokenResponse = Platform.Function.ParseJSON(accessTokenRequest.Response[0]);
+            var accessToken = tokenResponse.access_token;
+        };
+
+
+        if (accessToken != null) {
+
+            // Delete Contacts using Sendable DE API Call
+            endpoint = 'https://mch0c8s-29c44sl3scfs5zqfzrm4.rest.marketingcloudapis.com/contacts/v1/contacts/actions/delete?type=listReference';
+            payload = {
+                deleteOperationType: 'ContactAndAttributes',
+                targetList: {
+                    listType: { listTypeID: 3 }, // type = 0 is Data Extension
+                    listKey: contactDeletionDEKey // [Contact_To_Be_Deleted]
+                },
+                deleteListWhenCompleted: false,
+                deleteListContentsWhenCompleted: true // Deleting records in [Contact_To_Be_Deleted] when deletion processes completed
+            };
+            var headerNames = ['Authorization'];
+            var headerValues = ['Bearer ' + accessToken];
+
+            try {
+
+                response = HTTP.Post(endpoint, contentType, Stringify(payload), headerNames, headerValues);
+                if (response.StatusCode !== 200) {
+                    // Storing Error in [Logs_Contact_Deletion]
+                    Platform.Function.InsertData(errorDE, ['DateTime', 'ActivityName', 'ErrorMessage', 'ErrorDescription'], [DateTime.SystemDateToLocalDate(Platform.Function.Now()), automationName, "Problem with Deleting Contacts API call", "Problem with Deleting Contacts API call"]);
+                }
+
+            } catch (error) {
+                // Storing Error in [Logs_Contact_Deletion]
+                Platform.Function.InsertData(errorDE, ['DateTime', 'ActivityName', 'ErrorMessage', 'ErrorDescription'], [DateTime.SystemDateToLocalDate(Platform.Function.Now()), automationName, error.message, error.description]);
+            }
+        
+        } else {
+            Platform.Function.InsertData(errorDE, ['DateTime', 'ActivityName', 'ErrorMessage', 'ErrorDescription'], [DateTime.SystemDateToLocalDate(Platform.Function.Now()), automationName, 'Problem getting Acces Token', 'Problem getting Acces Token']);
+        }
+
+
+    } catch (error) {
+        // Storing Error in [Logs_Contact_Deletion]
+        Platform.Function.InsertData('Logs_Contact_Deletion', ['DateTime', 'ActivityName', 'ErrorMessage', 'ErrorDescription'], [DateTime.SystemDateToLocalDate(Platform.Function.Now()), 'CONTACT_DELETION_SCRIPT', error.message, error.description]);
+    }
+
+
+
+</script>

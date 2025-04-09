@@ -1,0 +1,34 @@
+<html>
+<head>
+<script type="text/javascript" src="https://cloud.email.westfield.com/qrcodejs"></script>
+</head>
+<body>
+  <script runat="server">
+    Platform.Load('core', '1');
+    var data = Platform.Request.GetQueryStringParameter('booking');
+    Variable.SetValue("@data", data);
+  </script>
+
+<div id="qrcode" style="width:300px; height:300px;"></div>
+<span id="code"></span>
+<script type="text/javascript">
+  var qrcode = new QRCode(document.getElementById("qrcode"), {
+    width : 300,
+    height : 300
+  });
+
+  function makeCode () {
+    var elText = "%%=v(@data)=%%";
+    qrcode.makeCode(elText);
+  }
+
+  makeCode();
+
+  setTimeout(function(){
+    var imgsrc = document.getElementById("qrcodesrc").src;
+    document.getElementById("code").innerHTML = imgsrc;
+  }, 500);
+ 
+</script>
+</body>
+</html>

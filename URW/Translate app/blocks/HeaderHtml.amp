@@ -1,0 +1,135 @@
+%%[
+
+SET @data_header_trad = 'ent.data_trad_header'
+ContentBlockByKey("varGenericAllBlocks")
+
+SET @DataHeader = LookupRows(@data_header_trad,'country',@DisplayCountry,'pc_code',@DisplayPcCode,'type',@DisplayCenterRebranded,'mail',@DisplayMail)
+    IF RowCount(@DataHeader) > 0 THEN
+        SET @DataHeaderRow = Row(@DataHeader,1)
+        SET @title_visitor_barcode = Field(@DataHeaderRow,'title_visitor_barcode')
+        SET @title_offers = Field(@DataHeaderRow,'title_offers')
+        SET @title_club = Field(@DataHeaderRow,'title_club')
+        SET @title_stores = Field(@DataHeaderRow,'title_stores') 
+        SET @mirror_link_text = Field(@DataHeaderRow,'mirror_link_text')
+        SET @url_title_offers = Field(@DataHeaderRow,'url_title_offers')
+        SET @url_title_club = Field(@DataHeaderRow,'url_title_club')
+        SET @url_title_stores = Field(@DataHeaderRow,'url_title_stores')        
+    ELSE
+    SET @DataHeader = LookupRows(@data_header_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail',@DisplayMail)
+    IF RowCount(@DataHeader) > 0 THEN
+        SET @DataHeaderRow = Row(@DataHeader,1)
+        SET @title_visitor_barcode = Field(@DataHeaderRow,'title_visitor_barcode')
+        SET @title_offers = Field(@DataHeaderRow,'title_offers')
+        SET @title_club = Field(@DataHeaderRow,'title_club')
+        SET @title_stores = Field(@DataHeaderRow,'title_stores')
+        SET @mirror_link_text = Field(@DataHeaderRow,'mirror_link_text')
+        SET @url_title_offers = Field(@DataHeaderRow,'url_title_offers')
+        SET @url_title_club = Field(@DataHeaderRow,'url_title_club')
+        SET @url_title_stores = Field(@DataHeaderRow,'url_title_stores')
+     ELSE
+     SET @DataHeader = LookupRows(@data_header_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail','all')
+    IF RowCount(@DataHeader) > 0 THEN
+        SET @DataHeaderRow = Row(@DataHeader,1)
+        SET @title_visitor_barcode = Field(@DataHeaderRow,'title_visitor_barcode')
+        SET @title_offers = Field(@DataHeaderRow,'title_offers')
+        SET @title_club = Field(@DataHeaderRow,'title_club')
+        SET @title_stores = Field(@DataHeaderRow,'title_stores')
+        SET @mirror_link_text = Field(@DataHeaderRow,'mirror_link_text')
+        SET @url_title_offers = Field(@DataHeaderRow,'url_title_offers')
+        SET @url_title_club = Field(@DataHeaderRow,'url_title_club')
+        SET @url_title_stores = Field(@DataHeaderRow,'url_title_stores')
+     ENDIF
+    ENDIF
+ENDIF
+
+]%%
+
+<div id="block">
+
+<table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w95p" role="presentation">
+<tr><td style="font-family:Helvetica,Arial,sans-serif;color:#CCCCCC;text-align:center;font-size:18px;padding-top:16px;
+padding-bottom:16px;vertical-align:middle;line-height:20px;font-weight:700"
+class="t_fz16px t_lh18px m_fz14px m_pt12px m_pb36px m_lh16px">
+<a href="%%=RedirectTo(@emailMirrorLink)=%%" style="color:#CCCCCC;text-decoration:underline">%%=v(@mirror_link_text)=%%</a>
+</td></tr></table>
+
+<table cellpadding="0" cellspacing="0" border="0" width="576" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w100p" role="presentation">
+<tr><td>
+<table cellpadding="0" cellspacing="0" border="0" width="149" align="left" class="d_left t_w33p t_flleft m_w100p m_flright" role="presentation">
+<tr><td>
+<table cellpadding="0" cellspacing="0" border="0" width="145" align="left" class="d_left t_flleft t_w142px m_flnone m_mauto m_w150px" role="presentation">
+<tr><td>
+<table cellpadding="0" cellspacing="0" border="0" width="100%" align="center" class="d_center t_w100p m_w100p" role="presentation">
+<tr><td style="padding-top:20px;padding-bottom:25px;text-align:center;vertical-align:middle" class="m_pt0px m_pb32px">
+<a href="%%=RedirectTo(@URLlogo)=%%" width="145" style="color:#000000;outline:0;border:none;margin:auto;display:block" class="t_w100p m_w100p">
+<img src="%%=v(@shoppingCenterlogo)=%%" alt="" width="145" style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:16px;display:block;border:none" class="t_w100p m_w100p"/></a>
+</td></tr></table>
+</td></tr></table>
+</td></tr></table>
+<table cellpadding="0" cellspacing="0" border="0" width="427" align="right" class="d_right t_w67p t_flright m_w100p m_flright" role="presentation">
+<tr><td>
+<table cellpadding="0" cellspacing="0" border="0" width="426" align="center" style="margin:auto;clear:both" class="d_center t_w100p m_w100p m_dnone" aria-hidden="true">
+<tr><td height="45" style="height:45px;font-size:45px;line-height:45px" class="m_dnone"> &nbsp; </td></tr></table>
+</td></tr><tr><td>
+<table cellpadding="0" cellspacing="0" border="0" width="251" align="right" class="d_right t_flright t_w70p m_flnone m_mauto m_w93p" role="presentation">
+<tr><td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;text-transform:uppercase;
+font-size:20px;border-top:1px solid #000000;border-right:1px solid #000000;border-bottom:1px solid #000000;
+border-left:1px solid #000000;padding-top:10px;padding-bottom:10px;vertical-align:middle;line-height:22px;
+font-weight:700"
+class="t_fz18px t_lh20px">
+<a href="%%=RedirectTo(@barcodeCPURL)=%%" style="color:#000000;line-height:22px;display:block;text-decoration:none;outline:0" class="t_lh20px"> %%=V(@title_visitor_barcode)=%% </a>
+</td></tr></table>
+</td></tr><tr><td>
+<table cellpadding="0" cellspacing="0" border="0" width="426" align="center" style="margin:auto;clear:both" class="d_center t_w100p m_w100p" aria-hidden="true">
+<tr><td height="0" style="height:0;font-size:0;line-height:0" class="m_h33px m_fz33px m_lh33px"> &nbsp; </td></tr></table>
+</td></tr></table>
+</td></tr></table>                   
+                            
+<table cellpadding="0" cellspacing="0" border="0" width="384" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w375px m_flnone m_mauto m_w97p" role="presentation">
+<tr><td>
+<table cellpadding="0" cellspacing="0" border="0" width="168" align="left" class="d_left t_w43p t_flleft m_w45p m_flleft" role="presentation">
+<tr><td>
+<table cellpadding="0" cellspacing="0" border="0" width="168" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+<tr><td>
+<div style="border-right:1px solid #000000;display:block;overflow:hidden;mso-border-alt:none #ffffff 0">
+<table cellpadding="0" cellspacing="0" border="0" width="167" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+<tr><td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;text-transform:uppercase;
+font-size:18px;padding-top:4px;padding-bottom:4px;vertical-align:middle;line-height:20px;font-weight:700"
+class="m_fz16px m_lh18px">
+<a href="%%=RedirectTo(@CENTEROFFERSURL)=%%" style="color:#000000;line-height:20px;display:block;text-decoration:none;outline:0" class="m_lh18px"> %%=V(@TITLE_OFFERS)=%% </a>
+</td></tr></table>
+<!--[if gte mso 9]></td></tr></table><![endif]--></div>
+</td></tr></table>
+</td></tr></table>
+<!--[if gte mso 9]> </td><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+<table cellpadding="0" cellspacing="0" border="0" width="127" align="left" class="d_left t_w37p t_flleft m_w34p m_flleft" role="presentation">
+<tr><td>
+<table cellpadding="0" cellspacing="0" border="0" width="127" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+<tr><td>
+<div style="border-right:1px solid #000000;display:block;overflow:hidden;mso-border-alt:none #ffffff 0">
+<!--[if gte mso 9]><table cellpadding="0" cellspacing="0" border="0" width="126" style="border-right:1px solid #000000;border-collapse:collapse"><tr><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+<table cellpadding="0" cellspacing="0" border="0" width="126" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+<tr><td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;text-transform:uppercase;
+font-size:18px;padding-top:4px;padding-bottom:4px;vertical-align:middle;line-height:20px;font-weight:700"
+class="m_fz16px m_lh18px">
+<a href="%%=RedirectTo(@CENTERSTORESURL)=%%" style="color:#000000;line-height:20px;display:block;text-decoration:none;outline:0" class="m_lh18px"> %%=V(@TITLE_STORES)=%% </a>
+</td></tr></table>
+</div>
+</td></tr></table>
+</td></tr></table>
+<table cellpadding="0" cellspacing="0" border="0" width="89" align="right" class="d_right t_w20p t_flright m_w21p m_flright" role="presentation">
+<tr><td>
+<table cellpadding="0" cellspacing="0" border="0" width="89" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+<tr><td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;text-transform:uppercase;
+font-size:18px;padding-top:4px;padding-bottom:4px;vertical-align:middle;line-height:20px;font-weight:700"
+class="m_fz16px m_lh18px">
+<a href="%%=RedirectTo(@centerclubsUrl)=%%" style="color:#000000;line-height:20px;display:block;text-decoration:none;outline:0" class="m_lh18px"> %%=V(@TITLE_CLUB)=%% </a>
+</td></tr></table>
+</td></tr></table>
+</td></tr></table>
+<table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="margin:auto;clear:both" class="d_center t_w100p m_w100p" aria-hidden="true">
+<tr><td height="10" style="height:10px;font-size:10px;line-height:10px"> &nbsp; </td></tr></table>
+<table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="margin:auto;clear:both" class="d_center t_w100p m_w100p" aria-hidden="true">
+<tr><td height="10" style="height:10px;font-size:10px;line-height:10px"> &nbsp; </td></tr></table>
+
+</div>

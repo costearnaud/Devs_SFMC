@@ -1,0 +1,49 @@
+SET @scriptBeginning = concat('<','script','>')
+SET @scriptEnd = concat('<','/','script','>')
+
+%%=treatascontent(@scriptBeginning)=%%
+
+document.getElementById('init');
+if(init) {
+    console.log('initInputs executed!');
+    initInputs();
+}
+
+function initInputs() {
+    let stateElements = document.getElementsByName('State');
+    let selectElements = Array.from(stateElements).filter(element => element.tagName === 'select');
+    let stateElement =  selectElements[0];
+    stateElement.value = %%=v(@state)=%%;
+
+    let industryElements = document.getElementsByName('Industry');
+    let selectElements = Array.from(industryElements).filter(element => element.tagName === 'select');
+    let industryElement =  selectElements[0];
+    industryElement.value = "%%=v(@industry)=%%";
+
+    let marketElements = document.getElementsByName('marketsegmentsc-snTbi-29');
+    let selectElements = Array.from(marketElements).filter(element => element.tagName === 'select');
+    let marketElement =  selectElements[0];
+    marketElement.value = "%%=v(@marketSegment)=%%";
+
+    let countryElements = document.getElementsByName('Country');
+    let countryElements = Array.from(countryElements).filter(element => element.tagName === 'input');
+    let countryElement = countryElements[0];
+    countryElement.value = "%%=v(@country)=%%";
+}
+%%=treatascontent(@scriptEnd)=%%
+
+
+SET @scriptBeginning = concat('<','script','>')
+          SET @scriptEnd = concat('<','/','script','>')
+          %%=treatascontent(@scriptBeginning)=%%
+           function changeCountry() {
+            var new = document.getElementById('country').value;
+            if (new == 'United States') {
+              document.getElementById('statesCanada').style.display = 'none'
+              document.getElementById('statesUSA').style.display = 'block'
+            } else {
+              document.getElementById('statesUSA').style.display = 'none'
+              document.getElementById('statesCanada').style.display = 'block'
+            }
+           }
+          %%=treatascontent(@scriptEnd)=%%

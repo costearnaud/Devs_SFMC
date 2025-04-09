@@ -1,0 +1,50 @@
+%%[
+/* Replace @data by yours */
+SET @input = TreatAsContent(@data);
+
+]%%
+
+<script runat="server">
+
+Platform.Load("core","1.1.1");
+
+// get the value of the body_intro1 AMPscript variable
+var input = Variable.GetValue("@input");
+
+if (!String.prototype.codePointAt) {
+    String.prototype.codePointAt = function (pos) {
+        pos = isNaN(pos) ? 0 : pos;
+        var str = String(this),
+            code = str.charCodeAt(pos),
+            next = str.charCodeAt(pos + 1);
+        // If a surrogate pair
+        if (0xD800 <= code && code <= 0xDBFF && 0xDC00 <= next && next <= 0xDFFF) {
+            return ((code - 0xD800) * 0x400) + (next - 0xDC00) + 0x10000;
+        }
+        return code;
+    };
+}
+
+/**
+ * Encodes special html characters
+ * @param string
+ * @return {*}
+ */
+function html_encode(string) {
+    var ret_val = '';
+    for (var i = 0; i < string.length; i++) { 
+        if (string.codePointAt(i) > 127) {
+            ret_val += '&#' + string.codePointAt(i) + ';';
+        } else {
+            ret_val += string.charAt(i);
+        }
+    }
+    return ret_val;
+}
+
+var output = html_encode(input);
+
+// set the value of the output AMPscript variable
+Variable.SetValue("@output", output);
+
+</script>

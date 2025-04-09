@@ -1,0 +1,114 @@
+SELECT
+MemberID,
+AutomationName,
+AutomationCustomerKey,
+AutomationDescription,
+AutomationType,
+AutomationNotificationRecipient_Complete,
+AutomationNotificationRecipient_Error,
+AutomationNotificationRecipient_Skip,
+AutomationStepCount,
+AutomationInstanceID,
+AutomationInstanceIsRunOnce,
+FilenameFromTrigger,
+AutomationInstanceScheduledTime_UTC,
+AutomationInstanceStartTime_UTC,
+AutomationInstanceEndTime_UTC,
+AutomationInstanceStatus,
+AutomationInstanceActivityErrorDetails
+FROM _AutomationInstance
+WHERE AutomationName = 'all_visitors_delta'
+
+SELECT TOP 1000
+MemberID,
+AutomationName,
+AutomationCustomerKey,
+AutomationDescription,
+AutomationType,
+AutomationNotificationRecipient_Complete,
+AutomationNotificationRecipient_Error,
+AutomationNotificationRecipient_Skip,
+AutomationStepCount,
+AutomationInstanceID,
+AutomationInstanceIsRunOnce,
+FilenameFromTrigger,
+AutomationInstanceScheduledTime_UTC,
+AutomationInstanceStartTime_UTC,
+AutomationInstanceEndTime_UTC,
+AutomationInstanceStatus,
+AutomationInstanceActivityErrorDetails
+FROM _AutomationInstance
+WHERE AutomationName = 'all_visitors_delta'
+ORDER BY AutomationInstanceStartTime_UTC DESC
+
+SELECT TOP 1
+AutomationInstanceID,
+AutomationInstanceStartTime_UTC
+FROM _AutomationInstance
+WHERE AutomationName = 'all_visitors_delta'
+ORDER BY AutomationInstanceStartTime_UTC DESC
+
+SELECT
+MemberID,
+AutomationName,
+AutomationCustomerKey,
+AutomationInstanceID,
+ActivityType,
+ActivityName,
+ActivityDescription,
+ActivityCustomerKey,
+ActivityInstanceStep,
+ActivityInstanceID,
+ActivityInstanceStartTime_UTC,
+ActivityInstanceEndTime_UTC,
+ActivityInstanceStatus,
+ActivityInstanceStatusDetails
+FROM _AutomationActivityInstance
+WHERE AutomationName = 'PROD_REFRESH_SEGMENTS_SERVICE_CHECKIN'
+
+all_visitors_delta
+
+SELECT
+MemberID,
+AutomationName,
+AutomationCustomerKey,
+AutomationInstanceID,
+ActivityType,
+ActivityName,
+ActivityDescription,
+ActivityCustomerKey,
+ActivityInstanceStep,
+ActivityInstanceID,
+ActivityInstanceStartTime_UTC,
+ActivityInstanceEndTime_UTC,
+ActivityInstanceStatus,
+ActivityInstanceStatusDetails
+FROM _AutomationActivityInstance
+WHERE AutomationInstanceID = 'F419F8C0-BDD3-4848-B896-53A05AEECF79'
+
+-- Pour l'automation : 'all_visitors_delta'
+
+SELECT TOP 1000
+MemberID,
+AutomationName,
+AutomationCustomerKey,
+AutomationInstanceID,
+ActivityType,
+ActivityName,
+ActivityDescription,
+ActivityCustomerKey,
+ActivityInstanceStep,
+ActivityInstanceID,
+ActivityInstanceStartTime_UTC,
+ActivityInstanceEndTime_UTC,
+ActivityInstanceStatus,
+ActivityInstanceStatusDetails
+FROM _AutomationActivityInstance
+WHERE AutomationName = 'all_visitors_delta'
+AND AutomationInstanceID = 
+(SELECT TOP 1
+AutomationInstanceID
+FROM _AutomationInstance
+WHERE AutomationName = 'all_visitors_delta'
+ORDER BY AutomationInstanceStartTime_UTC DESC)
+AND ActivityInstanceStatus = 'Error'

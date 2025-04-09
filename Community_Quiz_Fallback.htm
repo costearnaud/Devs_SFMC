@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+    type="text/css" />
+  
+  <title>Fallback_EnrichmentForm</title>
+
+  <style>
+    body {
+      padding: 16px;
+      background-color: #fafafa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .content {
+      text-align: center;
+      color: #727272;
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 35px;
+      font-weight: bold;
+      text-decoration: none;
+      margin-top: 20px;
+    }
+
+    .margintop15 {
+      margin-top: 15px;
+    }
+
+    .marginbottom15 {
+      margin-bottom: 15px;
+    }
+
+    .tags {
+      text-align: center;
+    }
+
+    .tag {
+      position: relative;
+      z-index: 1;
+      display: inline-block;
+      vertical-align: top;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      font-weight: normal;
+    }
+
+    .selectable .tag:hover {
+      z-index: 2;
+    }
+
+    .tag input {
+      display: none;
+    }
+
+    .tag label {
+      position: relative;
+      display: block;
+      margin: 0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid;
+      font-size: 12px;
+      font-weight: bold;
+      line-height: 18px;
+      outline: none;
+      transition: background-color 0.1s;
+    }
+
+    .tag .count {
+      display: inline-block;
+      height: 16px;
+      padding: 0 4px;
+      border-radius: 4px;
+      font-size: 9px;
+      line-height: 16px;
+      text-align: center;
+    }
+
+    .selectable .tag label {
+      cursor: pointer;
+    }
+
+    .tag:hover label {
+      border-color: #d7d7d7;
+    }
+
+    .tag label {
+      background-color: white;
+      border-color: #f0f0f0;
+      color: #727272;
+    }
+
+    .tag label .count {
+      background-color: #f0f0f0;
+      color: #727272;
+    }
+
+    .tag label .delete {
+      background-color: white;
+      border-color: #d7d7d7;
+    }
+
+    :not(.selectable)>.tag label,
+    .selectable .tag input:checked+label {
+      background-color: #727272;
+      color: #f0f0f0;
+    }
+
+    :not(.selectable)>.tag label .count,
+    .selectable .tag input:checked+label .count {
+      background-color: white;
+    }
+
+    :not(.selectable)>.tag label .delete,
+    .selectable .tag input:checked+label .delete {
+      background-color: #f0f0f0;
+    }
+
+    .img {
+      width: 10%;
+      height: 100px;
+    }
+
+    button {
+      border: 1px solid #555;
+      overflow: hidden;
+      color: #555;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 35px;
+      font-weight: bold;
+      text-decoration: none;
+      text-transform: uppercase;
+      background: transparent;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      border: 1px solid #000;
+      overflow: hidden;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 35px;
+      text-decoration: none;
+      text-transform: uppercase;
+      background: #555;
+    }
+  </style>
+
+  <style id="jsbin-css">
+    body {
+      font-family: "Open Sans", Helvetica, Arial, sans-serif;
+      color: #555;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 0 20px;
+      background-color: white;
+    }
+
+    * {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    *:before,
+    *:after {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    .clearfix {
+      clear: both;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    a {
+      color: tomato;
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: #2196f3;
+    }
+
+    pre {
+      display: block;
+      padding: 9.5px;
+      margin: 0 0 10px;
+      font-size: 13px;
+      line-height: 1.42857143;
+      color: #333;
+      word-break: break-all;
+      word-wrap: break-word;
+      background-color: #F5F5F5;
+      border: 1px solid #CCC;
+      border-radius: 4px;
+    }
+
+    .header {
+      padding: 20px 0;
+      position: relative;
+      margin-bottom: 10px;
+
+    }
+
+    .header:after {
+      content: "";
+      display: block;
+      height: 1px;
+      background: #eee;
+      position: absolute;
+      left: 30%;
+      right: 30%;
+    }
+
+    .header h2 {
+      font-size: 3em;
+      font-weight: 300;
+      margin-bottom: 0.2em;
+    }
+
+    .header p {
+      font-size: 14px;
+    }
+
+
+
+    #a-footer {
+      margin: 20px 0;
+    }
+
+    .new-react-version {
+      padding: 20px 20px;
+      border: 1px solid #eee;
+      border-radius: 20px;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .new-react-version .react-svg-logo {
+      text-align: center;
+      max-width: 60px;
+      margin: 20px auto;
+      margin-top: 0;
+    }
+
+    .success-box {
+      margin: 20px 0;
+      padding: 10px 10px;
+      border: 0px solid #eee;
+      background: #ffffff;
+      text-align: center;
+    }
+
+    .success-box>div {
+      vertical-align: top;
+      display: inline-block;
+      color: #888;
+    }
+
+
+
+    /* Rating Star Widgets Style */
+    .rating-stars ul {
+      list-style-type: none;
+      padding: 0;
+
+      -moz-user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .rating-stars ul>li.star {
+      display: inline-block;
+
+    }
+
+    /* Idle State of the stars */
+    .rating-stars ul>li.star>i.fa {
+      font-size: 2.5em;
+      /* Change the size of the stars */
+      color: #ccc;
+      /* Color on idle state */
+    }
+
+    /* Hover state of the stars */
+    .rating-stars ul>li.star.hover>i.fa {
+      color: #FFCC36;
+    }
+
+    /* Selected state of the stars */
+    .rating-stars ul>li.star.selected>i.fa {
+      color: #FF912C;
+  
+    }
+
+    button {
+      border: 0px solid #555;
+      overflow: hidden;
+      color: #727272;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 35px;
+      font-weight: bold;
+      text-decoration: none;
+      text-transform: uppercase;
+      background: #e8eaed;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      border: 1px solid #000;
+      overflow: hidden;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 35px;
+      text-decoration: none;
+      text-transform: uppercase;
+      background: #555;
+    }
+    
+    label {
+      width:150px;
+    }
+  </style>
+</head>
+
+<body>
+ <div>
+
+    <script runat="server">
+        Platform.Load("core","1");
+        try {
+    </script>
+
+      %%[
+
+          VAR @visitorLPId
+          SET @visitorLPId = QueryParameter("visitorLPId")
+
+          SET @visitorRows = LookupRows('ent.visitor_repository','visitor_id', @visitorLPId)
+          SET @visitorRow = Row(@visitorRows, 1)
+          /* Initializing visitor variables */
+          VAR @vPrivateId, @pcCode, @acquisitionCountry
+
+          SET @pcCode = Field(@visitorRow, 'acquisition_pc_code')
+          SET @acquisitionCountry = Substring(@pcCode,1,2)
+              
+              If @acquisitionCountry == "GB" then
+              SET @acquisitionCountry = "UK"
+              ENDIF
+          
+        SET @centerLogo = Lookup("ENT.PROD_center_details", "logo_centre", "pc_code", @pcCode)
+        SET @centerName = Lookup("ENT.PROD_center_details", "from_name_center_full", "pc_code", @pcCode)
+
+        SET @Button_Leisure_quiz = Lookup("ent.data_community_quiz_interactive_email","Button_Leisure_quiz","country", @acquisitionCountry)
+        SET @Button_Family_quiz = Lookup("ent.data_community_quiz_interactive_email","Button_Family_quiz","country", @acquisitionCountry)
+        SET @Button_Shoppers_quiz = Lookup("ent.data_community_quiz_interactive_email","Button_Shoppers_quiz","country", @acquisitionCountry)
+        SET @Button_Foodies_quiz = Lookup("ent.data_community_quiz_interactive_email","Button_Foodies_quiz","country", @acquisitionCountry)
+        SET @Button_SUBMIT_quiz = Lookup("ent.data_community_quiz_interactive_email","Button_SUBMIT_quiz","country", @acquisitionCountry)
+        SET @title_quiz = Lookup("ent.data_community_quiz_interactive_email","title_quiz","country", @acquisitionCountry)
+
+
+    ]%%
+
+    <script runat="server">
+        }
+            catch (err) {
+            Write("Error Message: " + Stringify(err.message) + Stringify(err.description));
+        }
+    </script>
+
+  
+</div>
+
+  <header class='header text-center'>
+    <img alt="Unibail Rodamco Westfield" src="%%=v(@centerLogo )=%%" style="width:100%; max-width:300px"/>
+  </header>
+
+
+  <section class='rating-widget'>
+    <form
+      action="%%=CloudPagesURL(3502,'subscriberKey', @subscriberKey, 'visitorId', @visitorLPId, 'pcCode', @pcCode,'acquisitionCountry',@acquisitionCountry, 'centerLogo', @centerLogo)=%%"
+      method="post" id="form" onsubmit="">
+      <div class="content">
+        %%=v(@title_interactive)=%%
+        
+<div class="tags selectable margintop15">
+  <div class="tag">
+            <input type="radio" name="community_id" id="Leisure" value="4" required="required">
+            <label for="Leisure">%%=v(@Button_Leisure_quiz)=%%</label>
+          </div>
+  
+          <div class="tag">
+            <input type="radio" name="community_id" id="Family"  value="3" required="required" >
+            <label for="Family">%%=v(@Button_Family_quiz)=%%</label>
+          </div>
+  
+          <div class="tag">
+            <input type="radio" name="community_id" id="Shoppers" value="1" required="required">
+            <label for="Shoppers">%%=v(@Button_Shoppers_quiz)=%%</label>
+          </div>
+  
+          <div class="tag">
+            <input type="radio" name="community_id" id="Foodies"  value="2" required="required">
+            <label for="Foodies">%%=v(@Button_Foodies_quiz)=%%</label>
+          </div>
+        </div>
+ 
+        </div>
+        <div class='success-box'>
+          <div class='clearfix'></div>
+          <div class='text-message'></div>
+          <div class='clearfix'></div>
+          <input type="hidden" id="ratingValue" name="ratingValue" value="0">
+          <button type="submit" form="form" value="Submit">%%=v(@Button_SUBMIT_quiz)=%%</button>
+
+        </div>
+
+      </div>
+
+    </form>
+
+
+
+  </section>
+
+
+  <footer id="a-footer">
+
+  </footer>
+  
+
+</body>
+
+</html>
+

@@ -1,0 +1,1473 @@
+<script runat="server">
+
+    Platform.Load("core", "1.1");
+
+    var prox = new Script.Util.WSProxy();
+    targetMID = 524006077; /* Filters will e created in PROD BU */
+    prox.setClientId({ "ID": targetMID });
+
+    var DE_SEGMENTS_DESCRIPTION_Name = "PROD_FR_SEGMENTS_DESCRIPTION";
+    var DE_SEGMENTS_DESCRIPTION_Key = "PROD_FR_SEGMENTS_DESCRIPTION";
+
+    var DE_LOGS_SEGMENTS_DESCRIPTION_Name = "LOGS_PROD_FR_SEGMENTS_DESCRIPTION";
+    var DE_LOGS_SEGMENTS_DESCRIPTION_Key = "LOGS_PROD_FR_SEGMENTS_DESCRIPTION";
+
+    var activityName = "PROD_FR_SEGMENTS_FILTERS_CREATION";
+
+ 
+    /**************************************************************************************/
+    /****************** Defining Filters that will be used in the Script ******************/
+    /**************************************************************************************/
+
+
+    function generateLoyaltyMembersFullCommercialOptinFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+                                    
+                                    /*******************************************************
+                                                        Account = Full
+                                                        Com optin = true
+                                                        Is active = true
+                                                        Has valid email = true
+                                                        count_email_4d = 0
+                                    ********************************************************/
+
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "account_type", SimpleOperator: "equals", Value: ["full"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["true"] };
+        var sfp3 = { "__Type__": "SimpleFilterPart", Property: "is_inactive", SimpleOperator: "equals", Value: ["false"] };
+        var sfp4 = { "__Type__": "SimpleFilterPart", Property: "email_invalid", SimpleOperator: "equals", Value: ["false"] };
+        var sfp5 = { "__Type__": "SimpleFilterPart", Property: "count_email_4d", SimpleOperator: "equals", Value: ["0"] };
+        var sfp6 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_1_2_3 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfp3
+        };
+
+        var cfp_1_2_3_4 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3
+            , LogicalOperator: "AND"
+            , RightOperand: sfp4
+        };
+
+        var cfp_1_2_3_4_5 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4
+            , LogicalOperator: "AND"
+            , RightOperand: sfp5
+        };
+
+        var cfp_1_2_3_4_5_6 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5
+            , LogicalOperator: "AND"
+            , RightOperand: sfp6
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5_6
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        
+        if (Boolean(checkFilterExistsObjectID)){
+                    
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+    function generateLoyaltyMembersFullLoyaltyOptinFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+
+                                    /*******************************************************
+                                                        Com optin = false
+                                                        Loyalty optin = true
+                                                        Is active = true
+                                                        Has valid email = true
+                                                        count_email_7d = 0
+                                    ********************************************************/
+
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["false"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "optin_loyalty", SimpleOperator: "equals", Value: ["true"] };
+        var sfp3 = { "__Type__": "SimpleFilterPart", Property: "is_inactive", SimpleOperator: "equals", Value: ["false"] };
+        var sfp4 = { "__Type__": "SimpleFilterPart", Property: "email_invalid", SimpleOperator: "equals", Value: ["false"] };
+        var sfp5 = { "__Type__": "SimpleFilterPart", Property: "count_email_7d", SimpleOperator: "equals", Value: ["0"] };
+        var sfp6 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_1_2_3 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfp3
+        };
+
+        var cfp_1_2_3_4 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3
+            , LogicalOperator: "AND"
+            , RightOperand: sfp4
+        };
+
+        var cfp_1_2_3_4_5 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4
+            , LogicalOperator: "AND"
+            , RightOperand: sfp5
+        };
+
+        var cfp_1_2_3_4_5_6 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5
+            , LogicalOperator: "AND"
+            , RightOperand: sfp6
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5_6
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        
+        if (Boolean(checkFilterExistsObjectID)){
+                    
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+    function generateNLSubscribersCommercialOptinFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+
+                                    /*******************************************************
+                                                        Account = Partial
+                                                        Com optin = true
+                                                        Is active = true
+                                                        Has valid email = true
+                                                        count_email_4d = 0
+                                    ********************************************************/
+
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "account_type", SimpleOperator: "equals", Value: ["partial"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["true"] };
+        var sfp3 = { "__Type__": "SimpleFilterPart", Property: "is_inactive", SimpleOperator: "equals", Value: ["false"] };
+        var sfp4 = { "__Type__": "SimpleFilterPart", Property: "email_invalid", SimpleOperator: "equals", Value: ["false"] };
+        var sfp5 = { "__Type__": "SimpleFilterPart", Property: "count_email_4d", SimpleOperator: "equals", Value: ["0"] };
+        var sfp6 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_1_2_3 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfp3
+        };
+
+        var cfp_1_2_3_4 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3
+            , LogicalOperator: "AND"
+            , RightOperand: sfp4
+        };
+
+        var cfp_1_2_3_4_5 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4
+            , LogicalOperator: "AND"
+            , RightOperand: sfp5
+        };
+
+        var cfp_1_2_3_4_5_6 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5
+            , LogicalOperator: "AND"
+            , RightOperand: sfp6
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5_6
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        
+        if (Boolean(checkFilterExistsObjectID)){
+                    
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+    function generateLoyaltyMembersFullCommercialOptinUnlockedFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+
+                                    /*******************************************************
+                                                        Account = Full
+                                                        Com optin = true
+                                                        Is active = true
+                                                        Has valid email = true
+                                    ********************************************************/
+
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "account_type", SimpleOperator: "equals", Value: ["full"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["true"] };
+        var sfp3 = { "__Type__": "SimpleFilterPart", Property: "is_inactive", SimpleOperator: "equals", Value: ["false"] };
+        var sfp4 = { "__Type__": "SimpleFilterPart", Property: "email_invalid", SimpleOperator: "equals", Value: ["false"] };
+        var sfp5 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+        
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_1_2_3 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfp3
+        };
+
+        var cfp_1_2_3_4 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3
+            , LogicalOperator: "AND"
+            , RightOperand: sfp4
+        };
+
+        var cfp_1_2_3_4_5 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4
+            , LogicalOperator: "AND"
+            , RightOperand: sfp5
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        
+        if (Boolean(checkFilterExistsObjectID)){
+                    
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+    function generateLoyaltyMembersLoyaltyOptinUnlockedFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+
+                                    /*******************************************************
+                                                        Com optin = false
+                                                        Loyalty optin = true
+                                                        Is active = true
+                                                        Has valid email = true
+                                    ********************************************************/
+
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["false"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "optin_loyalty", SimpleOperator: "equals", Value: ["true"] };
+        var sfp3 = { "__Type__": "SimpleFilterPart", Property: "is_inactive", SimpleOperator: "equals", Value: ["false"] };
+        var sfp4 = { "__Type__": "SimpleFilterPart", Property: "email_invalid", SimpleOperator: "equals", Value: ["false"] };
+        var sfp5 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_1_2_3 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfp3
+        };
+
+        var cfp_1_2_3_4 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3
+            , LogicalOperator: "AND"
+            , RightOperand: sfp4
+        };
+
+        var cfp_1_2_3_4_5 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4
+            , LogicalOperator: "AND"
+            , RightOperand: sfp5
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        
+        if (Boolean(checkFilterExistsObjectID)){
+                    
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+    function generateNLsubscribersCommercialOptinUnlockedFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+
+                                    /*******************************************************
+                                                        Account = Partial
+                                                        Com optin = true
+                                                        Is active = true
+                                                        Has valid email = true
+                                    ********************************************************/
+
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "account_type", SimpleOperator: "equals", Value: ["partial"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["true"] };
+        var sfp3 = { "__Type__": "SimpleFilterPart", Property: "is_inactive", SimpleOperator: "equals", Value: ["false"] };
+        var sfp4 = { "__Type__": "SimpleFilterPart", Property: "email_invalid", SimpleOperator: "equals", Value: ["false"] };
+        var sfp5 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_1_2_3 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfp3
+        };
+
+        var cfp_1_2_3_4 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3
+            , LogicalOperator: "AND"
+            , RightOperand: sfp4
+        };
+
+        var cfp_1_2_3_4_5 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4
+            , LogicalOperator: "AND"
+            , RightOperand: sfp5
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        
+        if (Boolean(checkFilterExistsObjectID)){
+                    
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+    function generateLoyaltyMembersFullCommercialOptinInactivedFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+
+                                    /*******************************************************
+                                                        Account = Full
+                                                        Com optin = true
+                                                        Is active = false
+                                                        Has valid email = true
+                                    ********************************************************/
+
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "account_type", SimpleOperator: "equals", Value: ["full"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["true"] };
+        var sfp3 = { "__Type__": "SimpleFilterPart", Property: "is_inactive", SimpleOperator: "equals", Value: ["true"] };
+        var sfp4 = { "__Type__": "SimpleFilterPart", Property: "email_invalid", SimpleOperator: "equals", Value: ["false"] };
+        var sfp5 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_1_2_3 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfp3
+        };
+
+        var cfp_1_2_3_4 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3
+            , LogicalOperator: "AND"
+            , RightOperand: sfp4
+        };
+
+        var cfp_1_2_3_4_5 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4
+            , LogicalOperator: "AND"
+            , RightOperand: sfp5
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        
+        if (Boolean(checkFilterExistsObjectID)){
+                    
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+    function generateLoyaltyMembersFullLoyaltyOptinInactiveFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+
+                                    /*******************************************************
+                                                        Com optin = false
+                                                        Loyalty optin = true
+                                                        Is active = false
+                                                        Has valid email = true
+                                    ********************************************************/
+
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["false"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "optin_loyalty", SimpleOperator: "equals", Value: ["true"] };
+        var sfp3 = { "__Type__": "SimpleFilterPart", Property: "is_inactive", SimpleOperator: "equals", Value: ["true"] };
+        var sfp4 = { "__Type__": "SimpleFilterPart", Property: "email_invalid", SimpleOperator: "equals", Value: ["false"] };
+        var sfp5 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_1_2_3 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfp3
+        };
+
+        var cfp_1_2_3_4 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3
+            , LogicalOperator: "AND"
+            , RightOperand: sfp4
+        };
+
+        var cfp_1_2_3_4_5 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4
+            , LogicalOperator: "AND"
+            , RightOperand: sfp5
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        
+        if (Boolean(checkFilterExistsObjectID)){
+                    
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+    function generateNLsubscribersCommercialOptinInactiveFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+                                    
+                                    /*******************************************************
+                                                        Account = Partial
+                                                        Com optin = true
+                                                        Is active = false
+                                                        Has valid email = true
+                                    ********************************************************/
+        
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "account_type", SimpleOperator: "equals", Value: ["partial"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["true"] };
+        var sfp3 = { "__Type__": "SimpleFilterPart", Property: "is_inactive", SimpleOperator: "equals", Value: ["true"] };
+        var sfp4 = { "__Type__": "SimpleFilterPart", Property: "email_invalid", SimpleOperator: "equals", Value: ["false"] };
+        var sfp5 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_1_2_3 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfp3
+        };
+
+        var cfp_1_2_3_4 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3
+            , LogicalOperator: "AND"
+            , RightOperand: sfp4
+        };
+
+        var cfp_1_2_3_4_5 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4
+            , LogicalOperator: "AND"
+            , RightOperand: sfp5
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        
+        if (Boolean(checkFilterExistsObjectID)){
+                    
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+    function generatePremiumSegmentFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+                                    
+                                    /*******************************************************
+                                                    Com optin = false
+                                                    Loyalty optin = true
+                                                    Is active = true
+                                                    Has valid email = true
+                                                    is_tlp = true
+                                    ********************************************************/
+        
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["false"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "optin_loyalty", SimpleOperator: "equals", Value: ["true"] };
+        var sfp3 = { "__Type__": "SimpleFilterPart", Property: "is_inactive", SimpleOperator: "equals", Value: ["false"] };
+        var sfp4 = { "__Type__": "SimpleFilterPart", Property: "email_invalid", SimpleOperator: "equals", Value: ["false"] };
+        var sfp5 = { "__Type__": "SimpleFilterPart", Property: "is_tlp", SimpleOperator: "equals", Value: ["true"] };
+        var sfp6 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_1_2_3 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfp3
+        };
+
+        var cfp_1_2_3_4 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3
+            , LogicalOperator: "AND"
+            , RightOperand: sfp4
+        };
+
+        var cfp_1_2_3_4_5 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4
+            , LogicalOperator: "AND"
+            , RightOperand: sfp5
+        };
+
+        var cfp_1_2_3_4_5_6 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5
+            , LogicalOperator: "AND"
+            , RightOperand: sfp6
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4_5_6
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        
+        if (Boolean(checkFilterExistsObjectID)){
+                    
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+
+    function generateManualSegmentFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+                                    
+                                    /*******************************************************
+                                                    Com optin = true
+                                                    Has valid email = true
+                                                    Is active = true
+                                    ********************************************************/
+        
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "optin_commercial", SimpleOperator: "equals", Value: ["true"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "email_invalid", SimpleOperator: "equals", Value: ["false"] };
+        var sfp3 = { "__Type__": "SimpleFilterPart", Property: "is_inactive", SimpleOperator: "equals", Value: ["false"] };
+        var sfp4 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_1_2_3 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfp3
+        };
+
+        var cfp_1_2_3_4 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3
+            , LogicalOperator: "AND"
+            , RightOperand: sfp4
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2_3_4
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+        
+        if (Boolean(checkFilterExistsObjectID)){
+                    
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+        
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+        
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+
+    function generateAdvLoyaltyMembersSegmentFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+                                        
+                        /*******************************************************
+                                        optin_loyalty= true
+                        ********************************************************/
+
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "account_type", SimpleOperator: "equals", Value: ["full"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+
+        if (Boolean(checkFilterExistsObjectID)){
+
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+
+    function generateAdvProspectsSegmentFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+                                            
+            /*******************************************************
+                            Account = Partial
+            ********************************************************/
+        
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "account_type", SimpleOperator: "equals", Value: ["partial"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+
+        var cfp_1_2 = {
+        "__Type__": "ComplexFilterPart"
+        , LeftOperand: sfp1
+        , LogicalOperator: "AND"
+        , RightOperand: sfp2
+        };
+
+        var cfp_final = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+
+        if (Boolean(checkFilterExistsObjectID)){
+
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+
+
+    function generateAdvPremiumSegmentFilter(countryCode, pcCode, filterName, filterCustomerKey, filterFolderCategoryId, sourceDataExtensionCustomerKey, DE_SEGMENTS_DESCRIPTION) {
+                                            
+                    /*******************************************************
+                                    Loyalty optin = true
+                                    is_tlp = true
+                    ********************************************************/
+        
+                                    
+        var sfp1 = { "__Type__": "SimpleFilterPart", Property: "account_type", SimpleOperator: "equals", Value: ["full"] };
+        var sfp2 = { "__Type__": "SimpleFilterPart", Property: "is_tlp", SimpleOperator: "equals", Value: ["true"] };
+        var sfp3 = { "__Type__": "SimpleFilterPart", Property: "is_favorite", SimpleOperator: "equals", Value: ["true"] };
+
+        var sfpSc = { "__Type__": "SimpleFilterPart", Property: "pc_code", SimpleOperator: "equals", Value: [pcCode] };
+
+
+        var cfp_1_2 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: sfp1
+            , LogicalOperator: "AND"
+            , RightOperand: sfp2
+        };
+
+        var cfp_1_2_3 = {
+            "__Type__": "ComplexFilterPart"
+            , LeftOperand: cfp_1_2
+            , LogicalOperator: "AND"
+            , RightOperand: sfp3
+        };
+
+        var cfp_final = {
+        "__Type__": "ComplexFilterPart"
+        , LeftOperand: cfp_1_2_3
+        , LogicalOperator: "AND"
+        , RightOperand: sfpSc
+        };
+
+        var filterDefinition = {
+            "Name": filterName
+            , "CustomerKey": filterCustomerKey
+            , "DataSource": { "__Type__": "DataExtension", "CustomerKey": sourceDataExtensionCustomerKey }
+            , "DataFilter": cfp_final
+            , "CategoryID": filterFolderCategoryId
+        };
+
+
+        var checkFilterExists = prox.retrieve("filterDefinition", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: filterCustomerKey
+        });
+
+        var checkFilterExistsObjectID = checkFilterExists.Results[0].ObjectID;
+
+        if (Boolean(checkFilterExistsObjectID)){
+
+            var result = prox.updateItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        } else {
+
+            var result = prox.createItem("filterDefinition", filterDefinition);
+
+            var resultRetrieve = prox.retrieve("filterDefinition", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: filterCustomerKey
+            });
+
+            var DataFilterObjectID = resultRetrieve.Results[0].ObjectID;
+
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey],["FilterDefinitionID"],[DataFilterObjectID]);
+        }
+        return result;
+
+    }
+    /***************************************************************************************/
+    /***************************************************************************************/
+    /***************************************************************************************/ 
+
+
+    /***************************************************************************************/
+    /********************************* Creating Filters ************************************/
+    /***************************************************************************************/
+
+
+    try {
+
+        var ListOfFiltersDE = DataExtension.Init(DE_SEGMENTS_DESCRIPTION_Key);
+        var Rows = ListOfFiltersDE.Rows.Retrieve();
+
+        if (Rows.length > 0) {
+            for(var i in Rows) {
+
+                var country_i = Rows[i]["Country"];
+                var countryCode_i = Rows[i]["CountryCode"];
+
+                var scName_i = Rows[i]["ShoppingCenterName"];
+                var pcCode_i = Rows[i]["pcCode"];
+                
+                var filterType_i = Rows[i]["FilterType"];
+
+                var filterName_i = Rows[i]["FilterName"];
+                var filterCustomerKey_i = Rows[i]["FilterCustomerKey"];
+
+                var  filterFolder_i = Rows[i]["FilterFolder"];
+                var  filterFolderCategoryId_i = Rows[i]["FilterCategoryId"];
+            
+                var filterDefinitionID_i = Rows[i]["FilterDefinitionID"];
+
+                var sourceDataExtensionName_i = Rows[i]["SourceDataExtensionName"];
+                var sourceDataExtensionCustomerKey_i = Rows[i]["SourceDataExtensionCustomerKey"];
+
+                try {
+                    if (filterType_i === "Loyalty_Members_Full_Commercial_Optin") {
+                        generateLoyaltyMembersFullCommercialOptinFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "Loyalty_Members_Full_Loyalty_Optin") {
+                        generateLoyaltyMembersFullLoyaltyOptinFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "NL_subscribers_Commercial_Optin") {
+                        generateNLSubscribersCommercialOptinFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "Loyalty_Members_Full_Commercial_Optin_Unlocked") {
+                        generateLoyaltyMembersFullCommercialOptinUnlockedFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "Loyalty_Members_Loyalty_Optin_Unlocked") {
+                        generateLoyaltyMembersLoyaltyOptinUnlockedFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "NL_subscribers_Commercial_Optin_Unlocked") {
+                        generateNLsubscribersCommercialOptinUnlockedFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "Loyalty_Members_Full_Commercial_Optin_Inactive") {
+                        generateLoyaltyMembersFullCommercialOptinInactivedFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "Loyalty_Members_Full_Loyalty_Optin_Inactive") {
+                        generateLoyaltyMembersFullLoyaltyOptinInactiveFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "NL_subscribers_Commercial_Optin_Inactive") {
+                        generateNLsubscribersCommercialOptinInactiveFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "Premium_segment") {
+                        generatePremiumSegmentFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "Manual_segment") {
+                        generateManualSegmentFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "Advertising_LoyaltyMembers_segment") {
+                        generateAdvLoyaltyMembersSegmentFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "Advertising_Prospects_segment") {
+                        generateAdvProspectsSegmentFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else if (filterType_i === "Advertising_Premium_segment") {
+                        generateAdvPremiumSegmentFilter(countryCode_i, pcCode_i, filterName_i, filterCustomerKey_i, filterFolderCategoryId_i, sourceDataExtensionCustomerKey_i, DE_SEGMENTS_DESCRIPTION_Name);
+                    } else {
+                        Platform.Function.InsertData(DE_LOGS_SEGMENTS_DESCRIPTION_Name,["DateTime", "ActivityName", "ErrorMessage"], [DateTime.SystemDateToLocalDate(Platform.Function.Now()), activityName, "Filter Type :" + filterType_i +" not found."]);
+                    }
+                } catch (err) {
+                    //Logging Errors
+                    Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["FilterCustomerKey"],[filterCustomerKey_i],["FilterDefinitionID"],["Error"]);     
+                    Platform.Function.InsertData(DE_LOGS_SEGMENTS_DESCRIPTION_Name,["DateTime", "ActivityName", "ErrorMessage"], [DateTime.SystemDateToLocalDate(Platform.Function.Now()), activityName, filterName_i + Stringify(err)]);
+                }
+                
+            }
+        }
+    } catch (err) {
+        //Logging Errors     
+        Platform.Function.InsertData(DE_LOGS_SEGMENTS_DESCRIPTION_Name,["DateTime", "ActivityName", "ErrorMessage"], [DateTime.SystemDateToLocalDate(Platform.Function.Now()), activityName, Stringify(err)]);
+    }
+
+    /***************************************************************************************/
+    /***************************************************************************************/
+    /***************************************************************************************/ 
+
+
+</script>

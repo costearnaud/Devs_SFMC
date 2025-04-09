@@ -1,0 +1,351 @@
+<script runat='server'>
+  Platform.Load('Core', '1.1.5');
+  var api = new Script.Util.WSProxy();
+  var session = Platform.Request.GetCookieValue('BytelSession');
+  var customerKey = "ED992C30-B8F2-45F2-973C-F75D24F15EA1";
+  var de = DataExtension.Init(customerKey);
+  var result = de.Rows.Retrieve({
+    Property: "session",
+    SimpleOperator: "equals",
+    Value: session
+});
+  var BU = result[0]['BU'];
+  var MID = Request.GetQueryStringParameter("MID");
+  var MID2 = parseInt(MID);
+  var Criticite = Request.GetQueryStringParameter("Criticite");
+  //Write('MID : '+MID);
+  // Positionne le MID pour la procédure Retrieve
+  api.setClientId({
+    "ID": MID2}
+                 );
+  // API Admin : MID = 7211327
+  // API Marketing : MID = 7213695
+  // API Prospect : MID = 7226728
+  // API Interne : MID = 7310020
+  // API Externe : MID = 7310019
+  // Affichage des dates GMT+2 (pour GMT+1, positionner la valeur 7 car format GMT-6 affiché par défaut)
+  var decalage = 7;
+  var steps = 6;
+  //function SortByCriticite(x, y){
+  //return x.Criticite.localeCompare(y.Criticite);
+  //}
+  function SortByErrorScore(x, y){
+    return (y.errorScore - x.errorScore);
+  }
+
+  function getAutomationStatusbyName(name,stepsPrev) {
+    var tab = ["Inconnu","Inconnu"];
+    var dates = [];
+    var nbOccurence = 0;
+    var objID = 'X';
+    var hasError = false;
+    var key = '';
+    var activityInError = '';
+    var resultActivity = '';
+    var resultInstance = '';
+    var statusA = '';
+    var statusB = '';
+
+    var previousRuns = {
+    };
+    var lastRun = {
+    };
+    var errorScore= 0;
+    var cols = ["Name","CompletedTime", "ObjectID", "CustomerKey", "Status", "StatusMessage", "StartTime","StatusLastUpdate"];
+    var filterName = {
+      Property: "Name",
+      SimpleOperator: "equals",
+      Value: name
+    };
+
+    try {
+      //Write('Date avant pour '+name+' : '+Date.now());
+      resultInstance = api.retrieve("AutomationInstance", cols, filterName);
+      //Write('Date après pour '+name+' : '+Date.now());
+      if (resultInstance.Results) {
+        nbOccurence = resultInstance.Results.length;
+        var array = resultInstance.Results;
+
+        // Tri par date ascendante selon date de lancement : StartTime
+        array.sort(function compare(a, b) {
+          var dateA = new Date(a.StartTime);
+          var dateB = new Date(b.StartTime);
+          return dateA - dateB;
+        }
+                  );
+
+        for (var index = 1; index < stepsPrev+1; index++) {
+          if (nbOccurence-index>0){
+            tab[index] = array[nbOccurence-index].StatusMessage;
+            var datetochange = new Date(array[nbOccurence-index].CompletedTime);
+            datetochange.setTime(datetochange.getTime() + decalage * 60 * 60 * 1000);
+            dates[index] = datetochange.toString().replace(' GMT-06:00', '');
+            if ( index == 1 ){
+              if (tab[index] == "Error"){
+                errorScore+=7;
+                hasError = true;
+              }
+              if (tab[index] == "Stopped"){
+                errorScore+=1;
+              }
+              lastRun = {
+                status :tab[index],dateFin: dates[index]}
+            }
+            else{
+              if (tab[index] == "Error"){
+                errorScore+=7;
+                hasError = true;
+              }
+              if (tab[index] == "Stopped"){
+                errorScore+=1;
+              }
+              var namerun = 'N-'+(index-1).toString();
+              var nameObject = 'N'+(index-1).toString();
+              previousRuns[nameObject] = {
+                name:namerun,status:tab[index],dateFin: dates[index]}
+            }
+          }
+          else{
+            var namerun = 'N-'+(index-1).toString();
+            var nameObject = 'N'+(index-1).toString();
+            previousRuns[nameObject] = {
+              name:namerun,status:null,dateFin: null}
+          }
+        }
+        if(hasError){
+          try {
+            var col = ["Name", "CustomerKey", "ObjectID"];
+            // columns
+            var data = api.retrieve("Program", col, filterName);
+            if (data.Results.length > 0) {
+              objID = data.Results[0].ObjectID;
+              //key = data.Results[0].CustomerKey;
+            }
+          }
+          catch(err) {
+            Write('api.retrieve("Program") Error : '+Stringify(err));
+          }
+          try {
+            if (objID != 'X') {
+              //Write('objID defined successfully => '+objID+'<br/>');
+              resultActivity = retrieveActivity(objID);
+              //Write('resultActivity : '+Stringify(resultActivity));
+              if (resultActivity != null) {
+                activityInError = resultActivity.Name;
+                //Write('activityInError : '+activityInError);
+              }
+            }
+          }
+          catch(err) {
+            Write('api.retrieve("Activity") Error : '+Stringify(err));
+          }
+        }
+      }
+    }
+    catch(err) {
+      Write('api.retrieve("AutomationInstance") Error : '+err);
+    }
+    var returnValue= {
+      statusInstance:{
+        activityInError: activityInError,AutomationLastRun:lastRun,AutomationPreviousRuns:previousRuns}
+      ,errorScore:errorScore}
+    return returnValue;
+  }
+  function retrieveActivity(auto) {
+    //Write('auto : '+auto);
+    var cols = [
+      "Name",
+      "CustomerKey",
+      "StatusMessage",
+      "Status",
+      "CreatedDate",
+      "ModifiedDate",
+      "StatusLastUpdate",
+      "ProgramID"
+    ];
+    var filter = {
+      LeftOperand:{
+        Property:"StatusMessage",
+        SimpleOperator:"equals",
+        Value: "Error"
+      }
+      ,
+      LogicalOperator:"AND",
+      RightOperand:{
+        Property: "ProgramID",
+        SimpleOperator: "equals",
+        Value: auto
+      }
+    };
+    var data = api.retrieve("ActivityInstance", cols, filter);
+    //Write('data status => '+Stringify(data.Status));
+    if (data.Results != null) {
+      //Write('return sth');
+      //Write("data value :" + Stringify(data));
+      return data.Results[0];
+    }
+    else {
+      //Write('return nothing');
+      return null;
+    }
+    // Uniquement une activité en erreur, RAF : tri pour avoir la dernière en date !
+  }
+  /* Recuperation de la liste des Automations CRITIQUE depuis la DE source Supervision Parametrage */
+  try {
+    //var dataRows = Platform.Function.LookupRows('Supervision Parametrage','Criticite','MINEURE');
+    // var dataRows = Platform.Function.LookupRows('Supervision Dashboard','Automation', 'SFMC_PURGE');
+    // var dataRows = Platform.Function.LookupRows('Supervision Parametrage','Automation', 'Process d\'historisation récurrent - Relais - Quotidien');
+    // var ExternalKey = "5DCB3DA3-F66F-4457-9042-79A673F8DFA6" // Supervision Parametrage
+    var ExternalKey = "Contrat_Service_Complement";
+    // Contrat_Service
+    // var ExternalKey = 'Contrat_Service' ne marche pas du tout !!
+    var DE = DataExtension.Init(ExternalKey);
+   
+
+    var filter1 = {
+      Property: "Criticite",
+      SimpleOperator: "equals",
+      Value: Criticite?Criticite:'P1'
+    };
+    var filter2 = {
+      Property: "MID",
+      SimpleOperator: "equals",
+      Value: MID
+    };
+ var filter3 = {
+      Property: "displayProfil",
+      SimpleOperator: "like",
+      Value: BU
+    };
+ 
+    var complexFilter = {
+      LeftOperand: filter1,
+      LogicalOperator: "AND",
+      RightOperand: filter2
+    };
+ var complexFilter2 = {
+      LeftOperand: complexFilter,
+      LogicalOperator: "AND",
+      RightOperand: filter3
+    };
+
+   
+    var dataRows = DE.Rows.Retrieve(complexFilter2);
+   
+    //var dataRowsSorted = dataRows.sort(SortByCriticite);
+    var dataRowsSorted = dataRows;
+    //Write(dataRows.length + '/' + dataRowsSorted.length);
+    var response = [];
+    var responsebyAutomation = {
+    };
+    var automationName = '';
+ var today = Platform.Function.Now();
+    for (var i=0; i<dataRowsSorted.length; i++) {
+  //calcul de lastrunautomation
+  var column=["LastRunTime"];
+  automationName = dataRowsSorted[i].Automation;
+ 
+  var resultat = api.retrieve("Automation", column, {
+            Property: "Name",
+            SimpleOperator: "equals",
+            Value: automationName
+        });
+     
+  var lastrunautomation = new Date(resultat.Results[0].LastRunTime);
+  var dateAggregat = new Date(dataRowsSorted[i].Date_Aggregat);
+     // Write( '[' + lastrunautomation + ' : ' + dateAggregat + ']');
+   if (dateAggregat < lastrunautomation ) {
+
+     // automationName = dataRowsSorted[i].Automation;
+      // ["Automation"];
+      automationLink = dataRowsSorted[i].Lien;
+      responsebyAutomation = {
+      };
+      // INIT indispensable pour chaque boucle
+      responsebyAutomation.name = automationName;
+      // Champ name au sein de chaque objet Automation
+      responsebyAutomation.lien = automationLink;
+      // Champ lien au sein de chaque objet Automation
+      try{
+        var automationStatusbyName = getAutomationStatusbyName(automationName,steps);
+        responsebyAutomation.statusInstance = automationStatusbyName.statusInstance;
+        responsebyAutomation.errorScore=automationStatusbyName.errorScore;
+ 
+   //var api = new Script.Util.WSProxy();
+        var automationNameString = automationName;
+        var responsebyAutomationStringify= Stringify(responsebyAutomation);
+        var today = Platform.Function.Now();
+        var props = [
+            {
+                "Name": "Automation",
+                "Value": automationNameString
+            },
+            {
+                "Name": "Aggregat_format_json",
+                "Value": responsebyAutomationStringify
+            },
+            {
+                "Name": "Date_Aggregat",
+                "Value": today
+            },
+            {
+                "Name": "errorScore",
+                "Value": responsebyAutomation.errorScore
+            }
+        ];
+
+        var result = api.updateItem('DataExtensionObject', {
+            CustomerKey: ExternalKey,
+            Properties: props
+        });
+      }
+      catch(err) {
+        Write('Error : '+err);
+      }
+      //response[i] = responsebyAutomation;
+      // Champ id = compteur i pour chaque objet Automation
+   }
+    }
+    //var sortedResponse = response.sort(SortByErrorScore);
+    //Write(Stringify(response));
+ var customerKey = "Contrat_Service_Complement";
+      var filter1 = {
+      Property: "Criticite",
+      SimpleOperator: "equals",
+      Value: Criticite
+    };
+    var filter2 = {
+      Property: "MID",
+      SimpleOperator: "equals",
+      Value: MID
+    };
+ var filter3 = {
+      Property: "displayProfil",
+      SimpleOperator: "like",
+      Value: BU
+    };
+ 
+    var complexFilter = {
+      LeftOperand: filter1,
+      LogicalOperator: "AND",
+      RightOperand: filter2
+    };
+ var complexFilter2 = {
+      LeftOperand: complexFilter,
+      LogicalOperator: "AND",
+      RightOperand: filter3
+    };
+    var DE = DataExtension.Init(customerKey);
+    var dataRows = DE.Rows.Retrieve(complexFilter2);
+     if(dataRows && dataRows.length > 0) {
+       Write('[');
+          for(var i=0; i<dataRows.length-1; i++) {
+               Platform.Response.Write(dataRows[i]["Aggregat_format_json"]+',' );
+          }
+       Platform.Response.Write(dataRows[i]["Aggregat_format_json"]+']');
+     }
+ }
+  catch(err) {
+    Write('Error : '+err);
+  }
+</script>

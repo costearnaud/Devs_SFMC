@@ -1,0 +1,569 @@
+<script runat="server">
+    Platform.Load("Core", "1.1.1");
+
+    var api = new Script.Util.WSProxy();
+    api.setClientId({"ID": "524006045" });
+
+    var AutoCustomerKey = "Relaunch_Segments_For_Countries";
+    var createdAutomationID = 0;
+    var relaunchAT = 0,relaunchCZ = 0,relaunchDE = 0,relaunchFR = 0,relaunchNL = 0,relaunchES = 0,relaunchSE = 0,relaunchSK = 0,relaunchPL,relaunchUS = 0,relaunchUK = 0;
+    var countDE = 0;
+
+    var segmentZero = "PROD_SegmentsZero";
+    try {
+        var result = api.retrieve(
+            "DataExtensionObject[" + segmentZero + "]",
+            [
+                "country"
+            ]
+        );
+        Write("RESULT : "+Stringify(result)+"<br>");
+        var rows = [];
+        rows = result.Results;
+        Write("rows = "+rows+"<br>");
+        var nbRows = rows.length;
+        Write("Nb Rows = "+nbRows+"<br>");
+        for (i=0; i<nbRows; i++) {
+            var country = rows[i].Properties[0].Value
+            Write("Country = "+country+"<br>");
+            if (country == "AT") {relaunchAT=1}
+            if (country == "CZ") {relaunchCZ=1}
+            if (country == "DK") {relaunchDK=1}
+            if (country == "DE") {countDE++}
+            if (country == "FR") {relaunchFR=1}
+            if (country == "NL") {relaunchNL=1}
+            if (country == "ES") {relaunchES=1}
+            if (country == "SE") {relaunchSE=1}
+            if (country == "SK") {relaunchSK=1}
+            if (country == "PL") {relaunchPL=1}
+            if (country == "US") {relaunchUS=1}
+            if (country == "UK") {relaunchUK=1}
+        }
+        if (countDE > 1) {relaunchDE=1}
+	} catch(error) {
+        Write(Stringify(error));
+    }
+  
+  
+/*  Write("<br/>THIS IS THE ACCESS TOKEN <br/>" + accessToken);
+    Write("<br/>THIS IS THE createdAutomation ID " + createdAutomationID);
+    Write("<br/>THIS IS THE NLScriptActivity Name :" + NLscriptActivityName);
+    Write("<br/>THIS IS THE ScriptId NL :" + ScriptIdNL);
+
+    // Set Activities Name Name in Automation Studio
+    var ATscriptActivityName = "Launch_AT_DEV_Segments";
+    var CZscriptActivityName = "Launch_CZ_DEV_Segments";
+    var DKscriptActivityName = "Launch_DK_DEV_Segments";
+    var DEscriptActivityName = "Launch_DE_DEV_Segments";
+    var FRscriptActivityName = "Launch_FR_DEV_Segments";
+    var NLscriptActivityName = "Launch_NL_DEV_Segments";
+    var ESscriptActivityName = "Launch_ES_DEV_Segments";
+    var SEscriptActivityName = "Launch_SE_DEV_Segments";
+    var SKscriptActivityName = "Launch_SK_DEV_Segments";
+    var PLscriptActivityName = "Launch_PL_DEV_Segments";
+    var USscriptActivityName = "Launch_US_DEV_Segments";
+    var UKscriptActivityName = "Launch_UK_DEV_Segments";
+    
+    // Set Script Activity ID 
+    var ScriptIdAT = "ebb62a60-d1e4-4f89-a372-11b5f7a7e2f0";
+    var ScriptIdCZ = "f1f789d9-825c-4065-b5b4-ad68d92269f0";
+    var ScriptIdDK = "d909957c-aee5-4bfc-9418-caad3866b714";
+    var ScriptIdDE = "f5ba6594-e50c-4288-ab7f-3b304d4e5d6a";           
+    var ScriptIdFR = "442d4005-0741-4fa5-ad6a-b0a3b401bdbc";           
+    var ScriptIdNL = "5dc064c3-c650-4d7e-a1a3-ac52d57319cd";           
+    var ScriptIdES = "60ae8db7-9d17-4fd3-937e-2015c0c35141";           
+    var ScriptIdSE = "268fd396-2f02-4546-9f6f-d7fe5efd98c8";          
+    var ScriptIdSK = "d03a0a8f-4c8b-42b3-adb1-cf54993ac2ca";           
+    var ScriptIdPL = "b2d9cdee-3a8d-4b52-8505-3df7149a35b1";
+    var ScriptIdUS = "29ecd6fa-5320-485a-ac41-e1c6b22005e4";    
+    var ScriptIdUK = "d527ef0a-68ca-45c9-9b29-519d949b2511";
+
+   function retrieveScriptActivity(name, accessToken) {
+    var pagesize = 300,
+        page = 1,
+        fields = [
+            "ssjsActivityId",
+            "name",
+            "key",
+            "description",
+            "script",
+            "categoryId",
+            "createdDate",
+            "modifiedDate"
+        ];
+    
+    var filter = "name%20eq%20'" + name + "'";
+    var queryString = "&$filter=" + filter;
+    var endpoint = "https://mch0c8s-29c44sl3scfs5zqfzrm4.rest.marketingcloudapis.com/automation/v1/scripts?" + queryString; 
+    var names = ["Authorization"];
+    var values = ["Bearer " + accessToken];
+    var activityScriptId = 0;
+    
+    try {
+        var response = HTTP.Get(endpoint, names, values);
+        var result = Platform.Function.ParseJSON(String(response.Content));
+        if (result && result.items && result.items.length > 0) {
+            var items = result.items[0];
+            activityScriptId = items.ssjsActivityId;
+        } else {
+            Write("<br><br>No matching items found for the provided name.");
+        }
+    } catch (error) {
+        Write("<br><br>Error of the call to get the activity: " + Stringify(error));
+    }
+
+    return activityScriptId;
+  }
+
+  
+  
+    function generatePayload(relaunchAT,relaunchCZ,relaunchDK,relaunchDE,relaunchFR,relaunchNL,relaunchES,relaunchSE,relaunchSK,relaunchPL,relaunchUS,relaunchUK) {
+        var payload = {};
+        var steps = [];
+        var stepNumber = 0
+        var scriptName = ''
+        var scriptId = 0
+
+        if (relaunchAT==1) {
+          var scriptName = ATscriptActivityName; 
+          var scriptId = retrieveScriptActivity(scriptName, accessToken);
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": ATscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 1,
+                        "activityObjectId": scriptId
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+             stepNumber++;
+       }
+
+        if (relaunchCZ==1) {
+          var scriptName = CZscriptActivityName; 
+          var scriptId = retrieveScriptActivity(scriptName, accessToken);
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": CZscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 1,
+                        "activityObjectId": scriptId
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+             stepNumber++;
+        }
+        if (relaunchDK==1) {
+          var scriptName = DKscriptActivityName; 
+          var scriptId = retrieveScriptActivity(scriptName, accessToken);
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": DKscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 1,
+                        "activityObjectId": scriptId
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+             stepNumber++;
+        }
+        if (relaunchDE==1) {
+          var scriptName = DEscriptActivityName; 
+          var scriptId = retrieveScriptActivity(scriptName, accessToken);
+          steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": DEscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 1,
+                        "activityObjectId": scriptId
+                    }
+                ]
+            });
+            stepNumber++;
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+             stepNumber++;
+        }
+        if (relaunchFR==1) {
+          var scriptName = FRscriptActivityName; 
+          var scriptId = retrieveScriptActivity(scriptName, accessToken);
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": FRscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 1,
+                        "activityObjectId": scriptId
+                    }
+                ]
+            });
+            stepNumber++;
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+             stepNumber++;
+        }
+        if (relaunchNL==1) {
+          var scriptName = NLscriptActivityName; 
+          var scriptId = retrieveScriptActivity(scriptName, accessToken);
+          steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": NLscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 1,
+                        "activityObjectId": scriptId
+                    }
+                ]
+            });
+          stepNumber++;
+          // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+             stepNumber++;
+        }
+        if (relaunchES==1) {
+          var scriptName = ESscriptActivityName; 
+          var scriptId = retrieveScriptActivity(scriptName, accessToken);
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": ESscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 1,
+                        "activityObjectId": scriptId
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchSE==1) {
+          var scriptName = SEscriptActivityName; 
+          var scriptId = retrieveScriptActivity(scriptName, accessToken);
+          steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": SEscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 1,
+                        "activityObjectId": scriptId
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchSK==1) {
+          var scriptName = SKscriptActivityName; 
+          var scriptId = retrieveScriptActivity(scriptName, accessToken);
+          steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": SKscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 1,
+                        "activityObjectId": scriptId
+                    }
+                ]
+            });
+            stepNumber++;
+          // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchPL==1) {
+          var scriptName = PLscriptActivityName; 
+          var scriptId = retrieveScriptActivity(scriptName, accessToken);
+          steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": PLscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 1,
+                        "activityObjectId": scriptId
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchUS==1) {
+          var scriptName = USscriptActivityName; 
+          var scriptId = retrieveScriptActivity(scriptName, accessToken);
+          steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": USscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 1,
+                        "activityObjectId": scriptId
+                    }
+                ]
+            });
+            stepNumber++;
+          // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchUK==1) {
+          var scriptName = UKscriptActivityName; 
+          var scriptId = retrieveScriptActivity(scriptName, accessToken);
+          steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": UKscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 1,
+                        "activityObjectId": scriptId
+                    }
+                ]
+            });
+            stepNumber++;
+         // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++; 
+        }
+
+        payload.steps = steps;
+        return payload;
+    }
+
+    // Delete Automation
+    try {     
+        var result = api.deleteItem("Automation", {
+        CustomerKey: AutoCustomerKey
+        });
+        Write("<br>Automation '"+AutoCustomerKey+"' deleted : "+Stringify(result));
+    } catch(error) {
+        Write("<br>Deletion error: "+Stringify(error));
+    };
+
+    Write("<br><br>Relaunch NL : "+relaunchNL);
+    Write("<br>Relaunch FR : "+relaunchFR);
+        
+    // Set Activities CustomerKey Name in Automation Studio
+    var ATscriptCustomerKey = "Launch_AT_DEV_Segments";
+    var CZscriptCustomerKey = "Launch_CZ_DEV_Segments";
+    var DKscriptCustomerKey = "Launch_DK_DEV_Segments";
+    var DEscriptCustomerKey = "Launch_DE_DEV_Segments";
+    var FRscriptCustomerKey = "Launch_FR_DEV_Segments";
+    var NLscriptCustomerKey = "Launch_NL_DEV_Segments";
+    var ESscriptCustomerKey = "Launch_ES_DEV_Segments";
+    var SEscriptCustomerKey = "Launch_SE_DEV_Segments";
+    var SKscriptCustomerKey = "Launch_SK_DEV_Segments";
+    var PLscriptCustomerKey = "Launch_PL_DEV_Segments";
+    var USscriptCustomerKey = "Launch_US_DEV_Segments";
+    var UKscriptCustomerKey = "Launch_UK_DEV_Segments";
+
+    // Create Automation 
+    try {
+        var config = {
+            Name: AutoCustomerKey,
+            CustomerKey: AutoCustomerKey,
+            Description: "",
+            AutomationType: "scheduled",
+            CategoryID: null
+        };
+        var result = api.createItem('Automation', config);
+        createdAutomationID = result.Results[0].NewObjectID;
+        Write("<br><br>Empty Automation created: "+Stringify(result));
+    } catch(error) {
+        Write("<br>Creation Error: "+Stringify(error));
+    };
+
+
+      var authEndpoint = "https://mch0c8s-29c44sl3scfs5zqfzrm4.auth.marketingcloudapis.com/v2/token";
+    var payload = {
+        grant_type: "client_credentials",
+        client_id: "06lhn1sq144zavcu2pgm4eul",
+        client_secret: "QwYVz2b4mLMUTJZ3E7rxXYzC",
+        account_id: "524006045"
+    };
+    var contentType = "application/json"
+    var accessTokenRequest = HTTP.Post(authEndpoint, contentType, Stringify(payload));
+    if (accessTokenRequest.StatusCode == 200) {
+        var tokenResponse = Platform.Function.ParseJSON(accessTokenRequest.Response[0]);
+        var accessToken = tokenResponse.access_token;
+    }
+
+    // Modify Automation
+    var payload = generatePayload(relaunchAT,relaunchCZ,relaunchDK,relaunchDE,relaunchFR,relaunchNL,relaunchES,relaunchSE,relaunchSK,relaunchPL,relaunchUS,relaunchUK)
+    Write("<br>Automation payload: " + Stringify(payload));
+    var endpoint = "https://mch0c8s-29c44sl3scfs5zqfzrm4.rest.marketingcloudapis.com/automation/v1/automations/" + createdAutomationID;
+    var request = new Script.Util.HttpRequest(endpoint);
+    request.emptyContentHandling = 0;
+    request.retries = 2;
+    request.continueOnError = true;
+    request.setHeader("Authorization", "Bearer " + accessToken);
+    request.method = "PATCH";
+    request.contentType = "application/json";
+    request.encoding = "UTF-8";
+    request.postData = Stringify(payload);
+
+    // Modify Automation with all steps
+    try {
+        var results = request.send();
+        var result = Platform.Function.ParseJSON(String(results.content));
+        Write("<br><br>Automation modification result: " + Stringify(result));
+    } catch(err) {
+        Write("<br><br>Automation modification Error: " + Stringify(steps));
+    }*/
+  /*
+     // Start Automation  
+            if (relaunchAT === 1  || relaunchCZ === 1  || relaunchDK === 1  || relaunchDE === 1  || relaunchFR === 1  || relaunchNL === 1  || relaunchES === 1  || relaunchSE === 1  || relaunchSK === 1  || relaunchPL === 1  || relaunchUK === 1  || relaunchUS === 1 ) {
+            
+            var props = { ObjectID: createdAutomationID };
+            var action = "start";
+            var options = {};
+            var result = api.performItem("Automation", props, action, options);   
+            }
+  */
+</script>

@@ -1,0 +1,64 @@
+<script runat="server">
+
+    Platform.Load("core", "1.1");
+    
+    var prox = new Script.Util.WSProxy();
+    var DE_Segments_List = "PROD_SegmentsList";
+    var countryCodes = "AT,CZ,DK,FR,DE,NL,PL,SK,ES,SE,UK,US";
+    var countries = countryCodes.split(',');
+
+    try {
+      var properties = {
+       CustomerKey: DE_Segments_List
+      };
+      var action = "ClearData";
+      var options = {};
+      var result = prox.performItem("DataExtension", properties, action, options);
+      Write ('PROD_SegmentsList well deleted!');
+    } catch(error) {
+        Write('Error DeleteData: '+error);
+    }
+
+    try {
+        // Loop for each country
+        for (let i=0; i<countries.length; i++) {
+            var countryCode = countries[i];
+            var DE_SEGMENTS_DESCRIPTION_Name = "PROD_"+countryCode+"_SEGMENTS_DESCRIPTION";
+
+            var config = {
+                name: DE_SEGMENTS_DESCRIPTION_Name,
+                cols: [
+                    "DataExtensionName"
+                ],
+                filter: null,
+                opts: {
+                    BatchSize: 300
+                },
+                props: {
+                    QueryAllAccounts: false
+                }
+            }
+
+            var req = prox.retrieve("DataExtensionObject[" + config.name + "]", config.cols, config.filter, config.opts, config.props);
+            var results = req.Results;
+            Write ('results: '+Stringify(results));
+/*
+            var de = DataExtension.Init(DE_Segments_List);
+
+            var payload = {
+                segmentName: DataExtensionName,
+                country : countryCode
+            };
+
+            var result = de.Rows.Add(payload);
+
+            var DataExtensionName = Lookup(DE_SEGMENTS_DESCRIPTION_Name, "DataExtensionName", "CountryCode", countryCode)
+            var count = UpsertData(DE_Segments_List,1,"segmentName", DataExtensionName, "col", "value", "country", countryCode)
+*/
+        }
+    } catch(error) {
+        Write('Error Loop countries: '+error);
+    }
+    
+
+</script>

@@ -1,0 +1,141 @@
+%%[ 
+    SET @data_trad = "ent.data_trad_interactive_interest"
+    ContentBlockByKey("varGenericAllBlocks")
+
+    SET @centerLogo = Lookup("ENT.PROD_center_details", "logo_centre", "pc_code", @DisplayPcCode)
+
+    SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code',@DisplayPcCode,'type',@DisplayCenterRebranded,'mail',@DisplayMail)
+    IF RowCount(@DataTrad) > 0 THEN
+        SET @DataTradRow = Row(@DataTrad,1)
+        SET @title_interactive = Field(@DataTradRow,'title_interactive')
+        SET @Button_Family = Field(@DataTradRow,'Button_Family')
+        SET @Button_Fashion = Field(@DataTradRow,'Button_Fashion')
+        SET @Button_Sport = Field(@DataTradRow,'Button_Sport')
+        SET @Button_Food = Field(@DataTradRow,'Button_Food')
+        SET @Button_Beauty = Field(@DataTradRow,'Button_Beauty')
+        SET @Button_Home = Field(@DataTradRow,'Button_Home')
+        SET @Button_Entertainment = Field(@DataTradRow,'Button_Entertainment')
+        SET @Button_Luxury = Field(@DataTradRow,'Button_Luxury')
+        SET @Button_Services = Field(@DataTradRow,'Button_Services')
+        SET @Button_Automotive = Field(@DataTradRow,'Button_Automotive')
+        SET @Button_Technology = Field(@DataTradRow,'Button_Technology')
+        SET @Button_Travel = Field(@DataTradRow,'Button_Travel')
+        SET @Button_SUBMIT = Field(@DataTradRow,'Button_SUBMIT')
+    ELSE
+        SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail',@DisplayMail)
+        IF RowCount(@DataTrad) > 0 THEN
+            SET @DataTradRow = Row(@DataTrad,1)
+            SET @title_interactive = Field(@DataTradRow,'title_interactive')
+            SET @Button_Family = Field(@DataTradRow,'Button_Family')
+            SET @Button_Fashion = Field(@DataTradRow,'Button_Fashion')
+            SET @Button_Sport = Field(@DataTradRow,'Button_Sport')
+            SET @Button_Food = Field(@DataTradRow,'Button_Food')
+            SET @Button_Beauty = Field(@DataTradRow,'Button_Beauty')
+            SET @Button_Home = Field(@DataTradRow,'Button_Home')
+            SET @Button_Entertainment = Field(@DataTradRow,'Button_Entertainment')
+            SET @Button_Luxury = Field(@DataTradRow,'Button_Luxury')
+            SET @Button_Services = Field(@DataTradRow,'Button_Services')
+            SET @Button_Automotive = Field(@DataTradRow,'Button_Automotive')
+            SET @Button_Technology = Field(@DataTradRow,'Button_Technology')
+            SET @Button_Travel = Field(@DataTradRow,'Button_Travel')
+            SET @Button_SUBMIT = Field(@DataTradRow,'Button_SUBMIT')
+        ELSE
+            SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail','all')
+            IF RowCount(@DataTrad) > 0 THEN
+                SET @DataTradRow = Row(@DataTrad,1)
+                SET @title_interactive = Field(@DataTradRow,'title_interactive')
+                SET @Button_Family = Field(@DataTradRow,'Button_Family')
+                SET @Button_Fashion = Field(@DataTradRow,'Button_Fashion')
+                SET @Button_Sport = Field(@DataTradRow,'Button_Sport')
+                SET @Button_Food = Field(@DataTradRow,'Button_Food')
+                SET @Button_Beauty = Field(@DataTradRow,'Button_Beauty')
+                SET @Button_Home = Field(@DataTradRow,'Button_Home')
+                SET @Button_Entertainment = Field(@DataTradRow,'Button_Entertainment')
+                SET @Button_Luxury = Field(@DataTradRow,'Button_Luxury')
+                SET @Button_Services = Field(@DataTradRow,'Button_Services')
+                SET @Button_Automotive = Field(@DataTradRow,'Button_Automotive')
+                SET @Button_Technology = Field(@DataTradRow,'Button_Technology')
+                SET @Button_Travel = Field(@DataTradRow,'Button_Travel')
+                SET @Button_SUBMIT = Field(@DataTradRow,'Button_SUBMIT')
+            ENDIF
+        ENDIF
+    ENDIF
+]%%
+<div id="block">
+    <table cellpadding="0" cellspacing="0" width="100%" role="presentation"
+        style="background-color: transparent; min-width: 100%; " class="stylingblock-content-wrapper">
+        <tr>
+            <td style="padding: 0px; " class="stylingblock-content-wrapper camarker-inner">
+                <div>
+                    <div class="flex justify-center items-center m-4">
+                        <img src="%%=v(@shoppingCenterlogo)=%%" alt="Unibail Rodamco Westfield" width="145" style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:16px;display:block;border:none" class="t_w100p m_w100p"/>
+                    </div>
+                    <div class="ie-form" rebel="">
+                        <form action="" method="post" id="form" onsubmit="">
+                            <div class="content">
+                                %%=v(@title_interactive)=%%
+                                <div class="flex">
+                                    <div class="w-1/4 p-4">
+                                        <input type="checkbox" name="family" id="family"  value="1">
+                                        <label for="family">%%=v(@Button_Family)=%%</label>
+                                    </div>
+                                    <div class="w-1/4 p-4">
+                                        <input type="checkbox" name="sport" id="sport" value="1">
+                                        <label for="sport">%%=v(@Button_Sport)=%%</label>
+                                    </div>
+                                    <div class="w-1/4 p-4">
+                                        <input type="checkbox" name="fashion" id="fashion" value="1">
+                                        <label for="fashion">%%=v(@Button_Fashion)=%%</label>
+                                    </div>
+                                    <div class="w-1/4 p-4">
+                                        <input type="checkbox" name="food" id="food"  value="1">
+                                        <label for="food">%%=v(@Button_Food)=%%</label>
+                                    </div>
+                                </div>
+                                <div class="flex">
+                                    <div class="w-1/4 p-4">
+                                        <input type="checkbox" name="beauty" id="beauty" value="1">
+                                        <label for="beauty">%%=v(@Button_Beauty)=%%</label>
+                                    </div>
+                                    <div class="w-1/4 p-4">
+                                        <input type="checkbox" name="entertainment" id="entertainment" value="1">
+                                        <label for="entertainment">%%=v(@Button_Entertainment)=%%</label>
+                                    </div>
+                                    <div class="w-1/4 p-4">
+                                        <input type="checkbox" name="luxury" id="luxury" value="1">
+                                        <label for="luxury">%%=v(@Button_Luxury)=%%</label>
+                                    </div>
+                                    <div class="w-1/4 p-4">
+                                        <input type="checkbox" name="services" id="services" value="1">
+                                        <label for="services">%%=v(@Button_Services)=%%</label>
+                                    </div>
+                                </div>
+                                <div class="flex">
+                                    <div class="w-1/4 p-4">
+                                        <input type="checkbox" name="automotive" id="automotive" value="1">
+                                        <label for="automotive">%%=v(@Button_Automotive)=%%</label>
+                                    </div>
+                                    <div class="w-1/4 p-4">
+                                        <input type="checkbox" name="technology" id="technology" value="1">
+                                        <label for="technology">%%=v(@Button_Technology)=%%</label>
+                                    </div>
+                                    <div class="w-1/4 p-4">
+                                        <input type="checkbox" name="travel" id="travel" value="1">
+                                        <label for="travel">%%=v(@Button_Travel)=%%</label>
+                                    </div>
+                                    <div class="w-1/4 p-4">
+                                        <input type="checkbox" name="home" id="home" value="1">
+                                        <label for="home">%%=v(@Button_Home)=%%</label>
+                                    </div>
+                                </div>
+                                <button class="my-2 bg-gray-300 hover:font-semibold text-gray-900 py-2 px-4 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                                    %%=v(@Button_SUBMIT)=%%
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>

@@ -1,0 +1,112 @@
+%%[
+
+SET @data_trad = 'ent.data_trad_subject_preheader'
+ContentBlockByKey("varGenericAllBlocks")
+
+SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code',@DisplayPcCode,'type',@DisplayCenterRebranded,'mail',@DisplayMail)
+IF RowCount(@DataTrad) > 0 THEN
+    SET @DataTradRow = Row(@DataTrad,1)
+    SET @subject_u = Field(@DataTradRow,'subject_u')
+    SET @preheader_u = Field(@DataTradRow,'preheader_u')
+    SET @subject_w = Field(@DataTradRow,'subject_w')
+    SET @preheader_w = Field(@DataTradRow,'preheader_w')
+    SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail',@DisplayMail)
+ELSE
+    SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail',@DisplayMail)
+    IF RowCount(@DataTrad) > 0 THEN
+        SET @DataTradRow = Row(@DataTrad,1)
+        SET @subject_u = Field(@DataTradRow,'subject_u')
+        SET @preheader_u = Field(@DataTradRow,'preheader_u')
+        SET @subject_w = Field(@DataTradRow,'subject_w')
+        SET @preheader_w = Field(@DataTradRow,'preheader_w')
+    ELSE
+        SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail','all')
+        IF RowCount(@DataTrad) > 0 THEN
+            SET @DataTradRow = Row(@DataTrad,1)
+            SET @subject_u = Field(@DataTradRow,'subject_u')
+            SET @preheader_u = Field(@DataTradRow,'preheader_u')
+            SET @subject_w = Field(@DataTradRow,'subject_w')
+            SET @preheader_w = Field(@DataTradRow,'preheader_w')
+        ENDIF
+    ENDIF
+ENDIF
+
+IF @DisplayCenterRebranded == 'branded' THEN
+    SET @subject = @subject_w
+    SET @preheader = @preheader_w
+ELSE
+    SET @subject = @subject_u
+    SET @preheader = @preheader_u
+ENDIF
+
+/*Variable Name is not read in code fix */
+
+SET @fullSubject = @subject
+SET @name = "%%=v(@visitorFirstName)=%%"
+SET @position = IndexOf(@fullSubject, @name)
+
+IF @position > 0 THEN
+    SET @beforePart = Substring(@fullSubject, 1, Subtract(@position, 1))
+    SET @FirtNameLength = Length(@name)
+    SET @middlePart = Substring(@fullSubject, @position, @FirtNameLength)
+    SET @middlePart = 'John'
+    SET @afterPart = Substring(@fullSubject, Add(@position, @FirtNameLength), Length(@fullSubject))
+    SET @subject = Concat(@beforePart,@middlePart,@afterPart)
+ENDIF
+
+]%%
+
+<div id="block">
+    <table cellpadding="0" cellspacing="0" border="0" width="576" align="center" style="margin:auto"
+        class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w100p" role="presentation">
+        <tr>
+            <td>
+                <table cellpadding="0" cellspacing="0" border="0" width="149" align="center"
+                    class="d_left t_w33p t_flleft m_w100p m_flright" role="presentation">
+                    <tr>
+                        <td>
+                            <table cellpadding="0" cellspacing="0" border="0" width="145" align="center"
+                                class="d_left t_flleft t_w142px m_flnone m_mauto m_w150px" role="presentation">
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%" align="center"
+                                            class="d_center t_w100p m_w100p" role="presentation">
+                                            <tr>
+                                                <td style="padding-top:20px;padding-bottom:25px;text-align:center;vertical-align:middle"
+                                                    class="m_pt0px m_pb32px">
+                                                    <a href="%%=RedirectTo(@URLlogo)=%%" width="145"
+                                                        style="color:#000000;outline:0;border:none;margin:auto;display:block"
+                                                        class="t_w100p m_w100p">
+                                                        <img src="%%=v(@shoppingCenterlogo)=%%" alt="" width="145"
+                                                            style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:16px;display:block;border:none"
+                                                            class="t_w100p m_w100p" /></a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <table cellpadding="0" cellspacing="0" border="0" width="" align="center" style="margin:auto"
+                    class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+                    <tr>
+                        <td style="padding-bottom:10px;font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;;
+font-size:16px;vertical-align:middle;font-weight:700" class="m_fz16px m_lh18px">
+
+                            <a href=""
+                                style="color:#000000;line-height:20px;display:block;text-decoration:none;outline:0"
+                                class="m_lh18px"> Subject : %%=v(@subject)=%% </a>
+                            <br>
+                            <a href="" style="color:#000000;line-height:20px;text-decoration:none;outline:0"
+                                class="m_lh18px"> Preheader : %%=v(@preheader)=%%
+                            </a>
+                            <br>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>

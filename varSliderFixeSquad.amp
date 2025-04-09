@@ -1,0 +1,35 @@
+%%[
+    SET @blockDE = "data_SliderFixe_squad"
+    IF (@emailCode == "SCHN03" OR @emailCode == "SCHO03") THEN
+        SET @community_to_push = LOOKUP("ent.segments", "community_to_push", "visitor_private_id", @visitorPrivateId)
+        IF @visitorCommunity == "all" THEN SET @visitorCommunity = @community_to_push ENDIF
+        IF Empty(@visitorCommunity) THEN SET @visitorCommunity = "Shoppers" ENDIF
+    ENDIF
+    TreatAsContent(ContentBlockByKey("varBlockCommunitySquad"))
+    SET @blockDE = "data_color_squad"
+    TreatAsContent(ContentBlockByKey("varGenericMasterSquad"))
+
+    IF  @centerRebranded == 'TRUE' THEN
+        SET @ctaBgColor = @genericBgColorRed
+        SET @ctaTextColor = @genericBgColorWhite
+        SET @titleTextColor = @genericBgColorWhite
+        SET @titleBgColor = @genericBgColorRed
+    
+    ELSE
+       IF @colorswitch == 'blue' THEN
+        SET @ctaBgColor = @genericBgColorBlue
+        SET @ctaTextColor = @genericBgColorWhite
+        SET @titleTextColor = @genericBgColorWhite
+        SET @titleBgColor = @genericBgColorBlue
+        SET @colorswitch = 'yellow'
+       ElSE
+        SET @ctaBgColor = @genericBgColorYellow
+        SET @ctaTextColor = @genericBgColorBlue
+        SET @titleTextColor = @genericBgColorBlack
+        SET @titleBgColor = @genericBgColorYellow
+        SET @colorswitch = 'blue'
+       ENDIF 
+        
+   ENDIF        
+   
+]%%

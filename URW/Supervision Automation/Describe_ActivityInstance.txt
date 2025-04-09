@@ -1,0 +1,60 @@
+ActivityInstance
+
+Name	isRetrievable
+ObjectID	true
+ActivityDefinition.ObjectID	true
+ProgramInstance.ObjectID	true
+TaskInstance.ObjectID	true
+SequenceID	true
+CustomerKey	true
+Status	true
+Client.ID	true
+IsActive	true
+Name	true
+Description	true
+Definition.ID	true
+Definition.ObjectID	true
+PartnerAPIObjectTypeID	true
+Definition	true
+CreatedDate	true
+Client.CreatedBy	true
+ModifiedDate	true
+Client.ModifiedBy	true
+StatusLastUpdate	true
+StatusMessage	true
+Client.EnterpriseID	true
+ProgramID	true
+
+Task
+
+Name	isRetrievable
+ObjectID	true
+Program.ObjectID	true
+Name	true
+Description	true
+Sequence	true
+Client.ID	true
+Client.UserID	true
+CreatedDate	true
+Client.CreatedBy	true
+ModifiedDate	true
+Client.ModifiedBy	true
+Client.EnterpriseID	true
+
+TaskInstance
+
+Name	isRetrievable
+ObjectID	true
+TaskDefinition.ObjectID	true
+Program.ObjectID	true
+ProgramInstance.ObjectID	true
+Name	true
+Description	true
+Sequence	true
+Client.ID	true
+Client.UserID	true
+CreatedDate	true
+Client.CreatedBy	true
+ModifiedDate	true
+Client.ModifiedBy	true
+Client.EnterpriseID	true

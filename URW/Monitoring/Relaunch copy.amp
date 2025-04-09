@@ -1,0 +1,494 @@
+%%[
+    SET @SegmentsWithZero = LookupRows("DEV_SegmentsZero","general", 1)
+    SET @CountSWZRows = RowCount(@SegmentsWithZero)
+    
+    SET @countAT = 0
+    SET @countCZ = 0
+    SET @countDE = 0
+    SET @countDK = 0
+    SET @countFR = 0
+    SET @countNL = 0
+    SET @countES = 0
+    SET @countSK = 0
+    SET @countSE = 0
+    SET @countPL = 0
+    SET @countUS = 0
+    SET @countUK = 0
+    
+    FOR @i = 1 TO RowCount(@SegmentsWithZero) DO
+        SET @rowSWZ = Row(@SegmentsWithZero, @i)
+        SET @Country = Field(@rowSWZ, "country")
+
+        IF @Country == "AT" THEN
+            SET @countAT = Add(@countAT, 1)
+        ELSEIF @Country == "CZ" THEN
+            SET @countCZ = Add(@countCZ, 1)
+        ELSEIF @Country == "DE" THEN
+            SET @countDE = Add(@countDE, 1)
+        ELSEIF @Country == "DK" THEN
+            SET @countDK = Add(@countDK, 1)
+        ELSEIF @Country == "FR" THEN
+            SET @countFR = Add(@countFR, 1)
+        ELSEIF @Country == "NL" THEN
+            SET @countNL = Add(@countNL, 1)
+        ELSEIF @Country == "ES" THEN
+            SET @countES = Add(@countES, 1)
+        ELSEIF @Country == "SK" THEN
+            SET @countSK = Add(@countSK, 1)      
+        ELSEIF @Country == "PL" THEN
+            SET @countPL = Add(@countPL, 1)    
+        ELSEIF @Country == "US" THEN
+            SET @countUS = Add(@countUS, 1)    
+        ELSEIF @Country == "UK" THEN
+            SET @countUK = Add(@countUK, 1)                                                          
+        ENDIF
+    NEXT @i
+
+    SET @RelaunchAT = IIF(@countAT >= 1, 1, 0)
+    SET @RelaunchCZ = IIF(@countCZ >= 1, 1, 0)
+    SET @RelaunchDK = IIF(@countDK >= 1, 1, 0)
+    SET @RelaunchDE = IIF(@countDE >= 2, 1, 0)
+    SET @RelaunchFR = IIF(@countFR >= 1, 1, 0)
+    SET @RelaunchNL = IIF(@countNL >= 1, 1, 0)
+    SET @RelaunchES = IIF(@countES >= 1, 1, 0)
+    SET @RelaunchSK = IIF(@countSK >= 1, 1, 0)
+    SET @RelaunchSE = IIF(@countSE >= 1, 1, 0)
+    SET @RelaunchPL = IIF(@countPL >= 1, 1, 0)
+    SET @RelaunchUS = IIF(@countUS >= 1, 1, 0)
+    SET @RelaunchUK = IIF(@countUK >= 1, 1, 0)
+]%%
+<script runat="server">
+    Platform.Load("Core", "1.1.1");
+
+    var api = new Script.Util.WSProxy();
+    api.setClientId({"ID": "524006045" });
+    var autoCustomerKey = "Relaunch_Contries";
+    var createdAutomationID = 0;
+    var stepNumber = 0;
+
+    // Set Activities Name Name in Automation Studio
+    var ATscriptActivityName = "Launch_AT_DEV_Segments";
+    var CZscriptActivityName = "Launch_CZ_DEV_Segments";
+    var DKscriptActivityName = "Launch_DK_DEV_Segments";
+    var DEscriptActivityName = "Launch_DE_DEV_Segments";
+    var FRscriptActivityName = "Launch_FR_DEV_Segments";
+    var NLscriptActivityName = "Launch_NL_DEV_Segments";
+    var ESscriptActivityName = "Launch_ES_DEV_Segments";
+    var SEscriptActivityName = "Launch_SE_DEV_Segments";
+    var SKscriptActivityName = "Launch_SK_DEV_Segments";
+    var PLscriptActivityName = "Launch_PL_DEV_Segments";
+    var USscriptActivityName = "Launch_US_DEV_Segments";
+    var UKscriptActivityName = "Launch_UK_DEV_Segments";
+    
+    // Set Script Activity ID 
+    var ScriptIdAT = "ebb62a60-d1e4-4f89-a372-11b5f7a7e2f0";
+    var ScriptIdCZ = "f1f789d9-825c-4065-b5b4-ad68d92269f0";
+    var ScriptIdDK = "d909957c-aee5-4bfc-9418-caad3866b714";
+    var ScriptIdDE = "f5ba6594-e50c-4288-ab7f-3b304d4e5d6a";           
+    var ScriptIdFR = "442d4005-0741-4fa5-ad6a-b0a3b401bdbc";           
+    var ScriptIdNL = "5dc064c3-c650-4d7e-a1a3-ac52d57319cd";           
+    var ScriptIdES = "60ae8db7-9d17-4fd3-937e-2015c0c35141";           
+    var ScriptIdSE = "268fd396-2f02-4546-9f6f-d7fe5efd98c8";          
+    var ScriptIdSK = "d03a0a8f-4c8b-42b3-adb1-cf54993ac2ca";           
+    var ScriptIdPL = "b2d9cdee-3a8d-4b52-8505-3df7149a35b1";
+    var ScriptIdUS = "29ecd6fa-5320-485a-ac41-e1c6b22005e4";    
+    var ScriptIdUK = "d527ef0a-68ca-45c9-9b29-519d949b2511";
+
+    function getAutomationID(CustomerKey) {
+        Write("<br>function getAutomationID");
+        var result = api.retrieve("Automation", ["ProgramID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: CustomerKey
+        });
+        return result.Results[0].ObjectID;
+    }
+
+    var automationObjectID = getAutomationID(autoCustomerKey);
+    Write("<br>Auto Object ID: "+automationObjectID);
+    var waitObjectID = "e7fcea44-73ee-4ce1-89c7-a2003abf52e0"
+
+    function generatePayload(relaunchAT,relaunchCZ,relaunchDK,relaunchDE,relaunchFR,relaunchNL,relaunchES,relaunchSE,relaunchSK,relaunchPL,relaunchUS,relaunchUK) {
+        var payload = {};
+        var steps = [];
+
+        if (relaunchAT==1) {
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": ATscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 0,
+                        "activityObjectId": ScriptIdAT
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchCZ==1) {
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": CZscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 0,
+                        "activityObjectId": ScriptIdCZ
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchDK==1) {
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": DKscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 0,
+                        "activityObjectId": ScriptIdDK
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchDE==1) {
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": DEscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 0,
+                        "activityObjectId": ScriptIdDE
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchFR==1) {
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": FRscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 0,
+                        "activityObjectId": ScriptIdFR
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchNL==1) {
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": NLscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 0,
+                        "activityObjectId": ScriptIdNL
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchES==1) {
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": ESscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 0,
+                        "activityObjectId": ScriptIdES
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchSE==1) {
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": SEscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 0,
+                        "activityObjectId": ScriptIdSE
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchSK==1) {
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": SKscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 0,
+                        "activityObjectId": ScriptIdSK
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchPL==1) {
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": PLscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 0,
+                        "activityObjectId": ScriptIdPL
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchUS==1) {
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": USscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 0,
+                        "activityObjectId": ScriptIdUS
+                    }
+                ]
+            });
+            stepNumber++;
+            // add Wait Activity
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name":"15 Minutes",
+                        "objectTypeId":467,
+                        "displayOrder":0,
+                        "serializedObject":"{\"duration\":15,\"durationUnits\":\"Minutes\"}"
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+        if (relaunchUK==1) {
+            steps.push({
+                "stepNumber": stepNumber,
+                "activities": [
+                    {
+                        "name": UKscriptActivityName,
+                        "objectTypeId": 423,
+                        "displayOrder": 0,
+                        "activityObjectId": ScriptIdUK
+                    }
+                ]
+            });
+            stepNumber++;
+        }
+
+        payload.steps = steps;
+        return payload;
+    }
+
+    // Retrieve AMPscript variables in SSJS
+    var relaunchAT = Variable.GetValue("@relaunchAT");
+    var relaunchCZ = Variable.GetValue("@relaunchCZ");
+    var relaunchDK = Variable.GetValue("@relaunchDK");
+    var relaunchDE = Variable.GetValue("@relaunchDE");
+    var relaunchFR = Variable.GetValue("@relaunchFR");
+    var relaunchNL = Variable.GetValue("@relaunchNL");
+    var relaunchES = Variable.GetValue("@relaunchES");
+    var relaunchSE = Variable.GetValue("@relaunchSE");
+    var relaunchSK = Variable.GetValue("@relaunchSK");
+    var relaunchPL = Variable.GetValue("@relaunchPL");
+    var relaunchUS = Variable.GetValue("@relaunchUS");
+    var relaunchUK = Variable.GetValue("@relaunchUK");
+
+    // Get Access Token 
+    var authEndpoint = "https://mch0c8s-29c44sl3scfs5zqfzrm4.auth.marketingcloudapis.com/v2/token";
+    var payload = {
+        grant_type: "client_credentials",
+        client_id: "06lhn1sq144zavcu2pgm4eul",
+        client_secret: "QwYVz2b4mLMUTJZ3E7rxXYzC",
+        account_id: "524006045"
+    };
+    var contentType = "application/json"
+    var accessTokenRequest = HTTP.Post(authEndpoint, contentType, Stringify(payload));
+    if (accessTokenRequest.StatusCode == 200) {
+        var tokenResponse = Platform.Function.ParseJSON(accessTokenRequest.Response[0]);
+        var accessToken = tokenResponse.access_token;
+    }
+    Write("<br/>THIS IS THE ACCESS TOKEN <br/>" + accessToken);
+    //Write("<br/>THIS IS THE createdAutomation ID " + automationObjectID);
+    //Write("<br/>THIS IS THE NLScriptActivity Name :" + NLscriptActivityName);
+    //Write("<br/>THIS IS THE ScriptId NL :" + ScriptIdNL);
+
+    // Prepare Automation modification
+    var payload = generatePayload(relaunchAT,relaunchCZ,relaunchDK,relaunchDE,relaunchFR,relaunchNL,relaunchES,relaunchSE,relaunchSK,relaunchPL,relaunchUS,relaunchUK)
+    Write("<br>Automation payload: " + Stringify(payload));
+    var endpoint = "https://mch0c8s-29c44sl3scfs5zqfzrm4.rest.marketingcloudapis.com/automation/v1/automations/" + automationObjectID;
+    var request = new Script.Util.HttpRequest(endpoint);
+    request.emptyContentHandling = 0;
+    request.retries = 2;
+    request.continueOnError = true;
+    request.setHeader("Authorization", "Bearer " + accessToken);
+    request.method = "PATCH";
+    request.contentType = "application/json";
+    request.encoding = "UTF-8";
+    request.postData = Stringify(payload);
+
+    // Modify Automation with all steps
+    try {
+        var results = request.send();
+        var result = Platform.Function.ParseJSON(String(results.content));
+        Write("<br><br>Automation modification result: " + Stringify(result));
+    } catch(err) {
+        Write("<br><br>Automation modification Error: " + Stringify(steps));
+    }
+    Write("<br><br>stepNumber = " + stepNumber);
+
+    // Start the Automation (only if at least one Country has to be relaunched ie stepNumber > 0)
+    if (stepNumber > 0) {
+        var result = api.performItem("Automation", {ObjectID: automationObjectID}, "start", {});
+        Write("<br><br>Automation started: " + Stringify(result));
+    }
+
+</script>

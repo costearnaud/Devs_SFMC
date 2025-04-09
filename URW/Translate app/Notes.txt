@@ -1,0 +1,10 @@
+Blocage à cause d'un cnetre DE RIem (pc_code = 'DE-SC-RIEM1')
+
+legal_mentions_1 dans centers_details_imported et center_details_static
+*Entdecken Sie die Rituals Body Bars, eine luxuriöse feste Seife für Körper und Haar, jetzt zu einem Preis von 9,90 € statt 12,90 €.Diese seifenfreie Pflege wurde exklusiv entwickelt, um Ihre Haut und Ihr Haar sanft zu reinigen und zu pflegen, damit Sie sich rundum frisch fühlen und in einen zarten Duft gehüllt sind.Rituals Cosmetics Germany GmbH | Stadtwaldgürtel 42 | 50931 Köln
+
+RAF
+
+1/ Le hover sur les boutons tous identiques (vert foncé)
+
+2/ Bouton de Test et Validation

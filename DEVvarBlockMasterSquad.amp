@@ -1,0 +1,85 @@
+%%[
+
+SET @referenceDE = "ENT.DEV_block_de_fields_squad"
+SET @fieldsSet = LookupRows(@referenceDE, "blocde_name", @blockDE)
+SET @sharedBlockedDE = Concat("ent.", @blockDE)
+SET @fieldsSetNb = rowcount(@fieldsSet)
+
+IF (@fieldsSetNb == 1) THEN
+    SET @fieldsRow = Row(@fieldsSet,1)
+    SET @fieldsList = Field(@fieldsRow, "fields_list")
+    SET @numRowSet = BuildRowsetFromString(@fieldsList,',')
+    IF @emailCode == "all" THEN
+        SET @message = Concat('sharedBlockedDE : ',@sharedBlockedDE, ' / centerCountry : ', @centerCountry, ' / pc_code : ', @visitorPcCode)
+        /*RaiseError(@message, true)*/
+        SET @rows = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', @visitorPcCode, 'mail', 'all')
+        SET @rowCount = rowcount(@rows)
+        IF (@rowCount == 1) THEN
+            FOR @i = 1 TO Rowcount(@numRowSet) DO
+                SET @row = Row(@numRowSet,@i)
+                SET @tempName = Field(@row,1,0)
+                SET @line = Row(@rows,1)
+                SET @value = Field(@line,@tempName)
+                SET @FieldSet = TreatAsContent(CONCAT('%','%[SET ', CONCAT('@',@tempName), ' = "', @value, '")]%', '%'))
+            NEXT @i
+        ELSE
+            SET @rows = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', 'all', 'mail', 'all')
+            SET @rowCount = rowcount(@rows)
+            IF (@rowCount == 1) THEN
+                FOR @i = 1 TO Rowcount(@numRowSet) DO
+                    SET @row = Row(@numRowSet,@i)
+                    SET @tempName = Field(@row,1,0)
+                    SET @line = Row(@rows,1)
+                    SET @value = Field(@line,@tempName)
+                    SET @FieldSet = TreatAsContent(CONCAT('%','%[SET ', CONCAT('@',@tempName), ' = "', @value, '")]%', '%'))
+                NEXT @i
+            ELSE
+                /*Output(Concat('DE : ', @sharedBlockedDE,' / center Country : ', @centerCountry, ' / visitor pc code : ', @visitorPcCode))*/
+                RaiseError(Concat('No translation found / DE : ', @sharedBlockedDE,' / center Country : ', @centerCountry, ' / visitor pc code : ', @visitorPcCode), true)
+            ENDIF
+        ENDIF
+    ELSE
+        SET @rows = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code',@visitorPcCode, 'mail', @emailCode)
+        SET @rowCount = rowcount(@rows)
+        IF (@rowCount == 1) THEN
+            FOR @i = 1 TO Rowcount(@numRowSet) DO
+                SET @row = Row(@numRowSet,@i)
+                SET @tempName = Field(@row,1,0)
+                SET @line = Row(@rows,1)
+                SET @value = Field(@line,@tempName)
+                SET @FieldSet = TreatAsContent(CONCAT('%','%[SET ', CONCAT('@',@tempName), ' = "', @value, '")]%', '%'))
+            NEXT @i
+        ELSE
+            SET @rows = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', 'all', 'mail', @emailCode)
+            SET @rowCount = rowcount(@rows)
+            IF (@rowCount == 1) THEN
+                FOR @i = 1 TO Rowcount(@numRowSet) DO
+                    SET @row = Row(@numRowSet,@i)
+                    SET @tempName = Field(@row,1,0)
+                    SET @line = Row(@rows,1)
+                    SET @value = Field(@line,@tempName)
+                    SET @FieldSet = TreatAsContent(CONCAT('%','%[SET ', CONCAT('@',@tempName), ' = "', @value, '")]%', '%'))
+                NEXT @i
+            ELSE
+                SET @rows = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', 'all', 'mail', 'all')
+                SET @rowCount = rowcount(@rows)
+                IF (@rowCount == 1) THEN
+                    FOR @i = 1 TO Rowcount(@numRowSet) DO
+                        SET @row = Row(@numRowSet,@i)
+                        SET @tempName = Field(@row,1,0)
+                        SET @line = Row(@rows,1)
+                        SET @value = Field(@line,@tempName)
+                        SET @FieldSet = TreatAsContent(CONCAT('%','%[SET ', CONCAT('@',@tempName), ' = "', @value, '")]%', '%'))
+                    NEXT @i
+                ELSE
+                    RaiseError(Concat('No translation found / DE : ', @sharedBlockedDE,' / center Country : ', @centerCountry, ' / visitor pc code : ', @visitorPcCode), true)
+                ENDIF
+            ENDIF
+        ENDIF
+    ENDIF
+
+ELSE
+    RaiseError('No block reference table', true)
+ENDIF
+
+]%%

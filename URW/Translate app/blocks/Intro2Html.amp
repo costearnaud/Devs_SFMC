@@ -1,0 +1,117 @@
+%%[
+    SET @data_trad = 'ent.data_trad_intro2'
+    ContentBlockByKey("varGenericAllBlocks")
+
+    IF  @centerRebranded == TRUE THEN
+        SET @headbandbgcolor = @genericBgColorRed
+        SET @HeadbandTextColor = @genericBgColorWhite
+        SET @ctaBgColor = @genericBgColorRed
+        SET @ctaTextColor = @genericBgColorwhite
+    ELSE
+        SET @headbandbgcolor = @genericBgColorYellow
+        SET @HeadbandTextColor = @genericBgColorBlue
+        SET @ctaBgColor = @genericBgColorYellow
+        SET @ctaTextColor = @genericBgColorBlue
+    ENDIF
+
+    SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code',@DisplayPcCode,'type',@DisplayCenterRebranded,'mail',@DisplayMail)
+    IF RowCount(@DataTrad) > 0 THEN
+        SET @DataTradRow = Row(@DataTrad,1)
+        SET @title_intro2 = Field(@DataTradRow,'title_intro2')
+        SET @ctaText_intro2 = Field(@DataTradRow,'ctaText_intro2')
+        SET @body_intro2 = Field(@DataTradRow,'body_intro2')
+        SET @ctaUrl_intro2 = Field(@DataTradRow,'ctaUrl_intro2')
+        SET @Image_intro2 = Field(@DataTradRow,'Image_intro2')
+    ELSE
+        SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail',@DisplayMail)
+        IF RowCount(@DataTrad) > 0 THEN
+            SET @DataTradRow = Row(@DataTrad,1)
+            SET @title_intro2 = Field(@DataTradRow,'title_intro2')
+            SET @ctaText_intro2 = Field(@DataTradRow,'ctaText_intro2')
+            SET @body_intro2 = Field(@DataTradRow,'body_intro2')
+            SET @ctaUrl_intro2 = Field(@DataTradRow,'ctaUrl_intro2')
+            SET @Image_intro2 = Field(@DataTradRow,'Image_intro2')
+        ELSE
+            SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail','all')
+            IF RowCount(@DataTrad) > 0 THEN
+                SET @DataTradRow = Row(@DataTrad,1)
+                SET @title_intro2 = Field(@DataTradRow,'title_intro2')
+                SET @ctaText_intro2 = Field(@DataTradRow,'ctaText_intro2')
+                SET @body_intro2 = Field(@DataTradRow,'body_intro2')
+                SET @ctaUrl_intro2 = Field(@DataTradRow,'ctaUrl_intro2')
+                SET @Image_intro2 = Field(@DataTradRow,'Image_intro2')
+            ENDIF
+        ENDIF
+    ENDIF
+
+]%%
+
+<div id="block">
+    <table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="margin:auto"
+        class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+        <tr>
+            <td>
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" align="center"
+                    class="d_center t_w100p m_w100p" role="presentation">
+                    <tr>
+                        <td style="text-align:center;vertical-align:middle">
+                            <a href="%%=RedirectTo(@ctaUrl_intro2)=%%" width="640"
+                                style="color:#000000;outline:0;border:none;margin:auto;display:block"
+                                class="t_w100p m_w100p">
+                                <img src="%%=treatascontent(@Image_intro2)=%%" alt="" width="640"
+                                    style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:16px;display:block;border:none"
+                                    class="t_w100p m_w100p" /></a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    <table cellpadding="0" cellspacing="0" border="0" width="640" align="center"
+        style="margin:auto;background-color:%%=V(@headbandbgcolor)=%%" class="d_center t_flnone t_mauto t_w100p 
+    m_flnone m_mauto m_w100p" role="presentation">
+        <tr>
+            <td>
+                <table cellpadding="0" cellspacing="0" border="0" width="576" align="center" style="margin:auto"
+                    class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w95p" role="presentation">
+                    <tr>
+                        <td style="font-family:Helvetica,Arial,sans-serif;color:%%=V(@HeadbandTextColor)=%%;text-align:center;font-size:36px;
+    padding-top:26px;padding-bottom:26px;vertical-align:middle;line-height:38px;font-weight:700"
+                            class="t_fz34px t_pt14px t_pb14px t_lh36px m_fz30px m_pt15px m_pb15px m_lh32px">
+                            %%=treatascontent(@title_intro2)=%% </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    <table cellpadding="0" cellspacing="0" border="0" width="544" align="center" style="margin:auto"
+        class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w95p" role="presentation">
+        <tr>
+            <td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;font-size:25px;padding-top:30px;
+    padding-bottom:30px;vertical-align:middle;line-height:27px" class="t_fz22px t_lh24px m_fz18px m_pt24px m_lh20px">
+                %%=treatascontent(@body_intro2)=%% </td>
+        </tr>
+    </table>
+    <table cellpadding="0" cellspacing="0" border="0" width="320" align="center"
+        style="margin:auto;border-collapse:separate" class="d_center t_flnone t_mauto t_bdclseparate t_w65p m_flnone 
+    m_mauto m_bdclseparate m_w85p" role="presentation">
+        <tr>
+            <td style="font-family:Helvetica,Arial,sans-serif;color:%%=V(@ctaTextColor)=%%;text-align:center;font-size:20px;
+    background-color:%%=V(@ctaBgColor)=%%;border-top-left-radius:50px;border-top-right-radius:50px;
+    border-bottom-left-radius:50px;border-bottom-right-radius:50px;padding-top:14px;padding-bottom:14px;vertical-align:middle;
+    line-height:22px;font-weight:700" class="m_fz18px m_pt15px m_pb15px m_lh20px">
+                <a href="%%=RedirectTo(@ctaUrl_intro2)=%%"
+                    style="color:%%=V(@ctaTextColor)=%%;line-height:22px;display:block;text-decoration:none;outline:0"
+                    class="m_lh20px"> %%=treatascontent(@ctaText_intro2)=%% </a>
+            </td>
+        </tr>
+    </table>
+    <table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="margin:auto;clear:both"
+        class="d_center t_w100p m_w100p" aria-hidden="true">
+        <tr>
+            <td height="32" style="height:32px;font-size:32px;line-height:32px" class="m_h24px m_fz24px m_lh24px">
+                &nbsp;
+            </td>
+        </tr>
+    </table>
+</div>

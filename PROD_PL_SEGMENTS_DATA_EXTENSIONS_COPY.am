@@ -1,0 +1,341 @@
+<script runat="server">
+
+    Platform.Load("core", "1.1");
+
+    var sourceMID = 524006077;  //PROD BU Source DE is stored in Child BU
+    var targetMID = 524006045; //CORP BU Shared DE are created in the Master BU
+
+    var DE_SEGMENTS_DESCRIPTION_Name = "PROD_PL_SEGMENTS_DESCRIPTION";
+    var DE_SEGMENTS_DESCRIPTION_Key = "PROD_PL_SEGMENTS_DESCRIPTION";
+
+    var DE_LOGS_SEGMENTS_DESCRIPTION_Name = "LOGS_PROD_PL_SEGMENTS_DESCRIPTION";
+    var DE_LOGS_SEGMENTS_DESCRIPTION_Key = "LOGS_PROD_PL_SEGMENTS_DESCRIPTION";
+
+    var activityName = "PROD_PL_SEGMENTS_DATA_EXTENSIONS_COPY";
+
+
+    function copyDE(sourceDE, targetDEName, targetDECustomerKey, targetDECategoryID, filterType, sourceMID, targetMID, DE_SEGMENTS_DESCRIPTION) {
+
+        //Retrieve DE information
+        var retrieveProx = new Script.Util.WSProxy();
+
+        retrieveProx.setClientId({
+            "ID": sourceMID
+        });
+
+        var cols = [
+            "Name",
+            "CustomerKey",
+            "CategoryID",
+            "IsSendable",
+            "SendableDataExtensionField.Name",
+            "SendableSubscriberField.Name"
+        ];
+
+        var filter = {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: sourceDE
+        };
+
+        var desc = retrieveProx.retrieve("DataExtension", cols, filter);
+
+        var sendable = desc.Results[0].IsSendable;
+
+        if (sendable) {
+            var sendableName = desc.Results[0].SendableDataExtensionField.Name; //visitor_id	
+            var RelatesOnSub = desc.Results[0].SendableSubscriberField.Name; //_SubscriberKey
+        }
+
+        // Retrieve DE Field Schema
+        var fieldProx = new Script.Util.WSProxy();
+        fieldProx.setClientId({
+            "ID": sourceMID
+        });
+        
+        var cols2 = [
+            "CustomerKey",
+            "Name",
+            "FieldType",
+            "IsPrimaryKey",
+            "MaxLength",
+            "Ordinal",
+            "DefaultValue",
+            "IsRequired"
+        ];
+        var filter2 = {
+            Property: "DataExtension.CustomerKey",
+            SimpleOperator: "equals",
+            Value: sourceDE
+        };
+        var deFields = fieldProx.retrieve("DataExtensionField", cols2, filter2);
+        
+        var fieldLength = deFields.Results.length;
+        var deFieldObj = deFields.Results;
+
+
+        var fieldArray = [];
+
+        for (var a = 0; a < deFieldObj.length; a++) {
+
+            var fieldObj = deFields.Results[a];
+
+
+            //Fields that need to be removed prior to creation of new DE
+            delete fieldObj.AttributeMaps;
+            delete fieldObj.CustomerKey;
+            delete fieldObj.ObjectID;
+            if (fieldObj.MaxLength == "" || fieldObj.MaxLength == 0) {
+                delete fieldObj.MaxLength;
+            }
+            delete fieldObj.StorageType;
+            delete fieldObj.DataExtension;
+            delete fieldObj.IsUpdatable;
+            delete fieldObj.IsRetrievable;
+            delete fieldObj.IsQueryable;
+            delete fieldObj.IsFilterable;
+            delete fieldObj.IsPartnerProperty;
+            delete fieldObj.IsAccountProperty;
+            delete fieldObj.PartnerMap;
+            delete fieldObj.Markups;
+            delete fieldObj.Precision;
+            delete fieldObj.Scale;
+            delete fieldObj.Label;
+            if (fieldObj.MinLength == "" || fieldObj.MinLength == 0) {
+            delete fieldObj.MinLength;
+            }
+            delete fieldObj.CreatedDate;
+            delete fieldObj.ModifiedDate;
+            delete fieldObj.ID;
+            delete fieldObj.IsRestrictedPicklist;
+            delete fieldObj.PicklistItems;
+            delete fieldObj.IsSendTime;
+            delete fieldObj.DisplayOrder;
+            delete fieldObj.References;
+            delete fieldObj.RelationshipName;
+            delete fieldObj.Status;
+            delete fieldObj.IsContextSpecific;
+            delete fieldObj.StorageType;
+            delete fieldObj.DataExtension;
+            delete fieldObj.DataType;
+            delete fieldObj.ValueType;
+            delete fieldObj.PropertyType;
+            delete fieldObj.IsCreatable;
+            delete fieldObj.IsUpdatable;
+            delete fieldObj.IsRetrievable;
+            delete fieldObj.IsQueryable;
+            delete fieldObj.IsFilterable;
+            delete fieldObj.IsPartnerProperty;
+            delete fieldObj.IsAccountProperty;
+            delete fieldObj.PartnerMap;
+            delete fieldObj.Markups;
+            delete fieldObj.Precision;
+            delete fieldObj.Scale;
+            delete fieldObj.Label;
+            delete fieldObj.Description;
+            delete fieldObj.MinLength;
+            delete fieldObj.MinValue;
+            delete fieldObj.MaxValue;
+            delete fieldObj.IsViewable;
+            delete fieldObj.IsEditable;
+            delete fieldObj.IsNillable;
+            delete fieldObj.IsSendTime;
+            delete fieldObj.Client;
+            delete fieldObj.PartnerKey;
+            delete fieldObj.PartnerProperties;
+            delete fieldObj.Owner;
+            delete fieldObj.CorrelationID;
+            delete fieldObj.ObjectState;
+            delete fieldObj.IsPlatformObject;
+            
+            fieldArray.push(fieldObj);
+
+            //set sendable field type
+            if ((sendableName === fieldObj.Name)) {
+                var sendableFieldType = fieldObj.FieldType;
+            }
+
+            //Reset fieldObj
+            var fieldObj = "";
+        }
+
+
+        // Create New DE
+        
+        var name = targetDEName;
+        var de = {
+            Name: name,
+            CustomerKey: targetDECustomerKey,
+            Description: "",
+            Fields: fieldArray,
+            CategoryID: targetDECategoryID
+        };
+
+        
+        if (sendable) {
+            if ((RelatesOnSub = "_SubscriberKey")) {
+                RelatesOnSub = "Subscriber Key";
+            }
+
+            de.IsSendable = true;
+            de.SendableDataExtensionField = {
+                Name: sendableName,
+                FieldType: sendableFieldType
+            };
+            de.SendableSubscriberField = { Name: RelatesOnSub };
+        }
+
+
+        /* Check if DE already exists */
+        var prox = new Script.Util.WSProxy();
+        prox.setClientId({ "ID": targetMID });
+
+        var checkDEExists = prox.retrieve("DataExtension", ["ObjectID"], {
+            Property: "CustomerKey",
+            SimpleOperator: "equals",
+            Value: targetDECustomerKey
+        });
+
+        var checkDEExistsObjectID = checkDEExists.Results[0].ObjectID;
+
+        // checking the filter type 
+        // for permanent filter Tables Data will be removed than the table will be updated 
+        var permanentFilters = ["Loyalty_Members_Full_Commercial_Optin", "Loyalty_Members_Full_Loyalty_Optin", "NL_subscribers_Commercial_Optin", "Loyalty_Members_Full_Commercial_Optin_Unlocked", "Loyalty_Members_Loyalty_Optin_Unlocked", "NL_subscribers_Commercial_Optin_Unlocked", "Loyalty_Members_Full_Commercial_Optin_Inactive", "Loyalty_Members_Full_Loyalty_Optin_Inactive", "NL_subscribers_Commercial_Optin_Inactive", "Premium_segment", "Manual_segment", "Advertising_LoyaltyMembers_segment", "Advertising_Prospects_segment", "Advertising_Premium_segment"];
+        var isPermanentFilter = false;
+        for(var i=0; permanentFilters.length>i; i++){
+            var isPermanentFilterTest = filterType.indexOf(permanentFilters[i]);
+                if(isPermanentFilterTest>=0){
+                    isPermanentFilter = true;
+                    break;
+                }
+            }
+
+        if (Boolean(checkDEExistsObjectID)){
+
+
+            if (isPermanentFilter == true){
+                //clear Data Extension
+                var prox = new Script.Util.WSProxy();
+                prox.setClientId({ "ID": targetMID });
+
+                var action = "ClearData";
+                var props = { CustomerKey: targetDECustomerKey};
+                var data = prox.performItem("DataExtension", props, action);
+
+                // Updating DE
+                var updateProx = new Script.Util.WSProxy();
+                updateProx.setClientId({ "ID": targetMID });
+                var options = {SaveOptions:[{'PropertyName':'*',SaveAction:'UpdateAdd'}]};
+                var result = updateProx.updateItem('DataExtension', de, options);
+
+                retrieveProx.setClientId({ "ID": targetMID });
+                var resultRetrieve = retrieveProx.retrieve("DataExtension", ["ObjectID"], {
+                    Property: "CustomerKey",
+                    SimpleOperator: "equals",
+                    Value: targetDECustomerKey
+                });
+
+                var DataExtensionObjectID = resultRetrieve.Results[0].ObjectID;
+                Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["DataExtensionCustomerKey"],[targetDECustomerKey],["DataExtensionID"],[DataExtensionObjectID]);
+
+            } else {
+                // Deleting old DE
+                var deleteProx = new Script.Util.WSProxy();
+                deleteProx.deleteItem("DataExtension", { "ObjectID": checkDEExistsObjectID });
+                    
+                
+                // Creating DE
+                var createProx = new Script.Util.WSProxy();
+                createProx.setClientId({ "ID": targetMID });
+                var result = createProx.createItem("DataExtension", de);
+
+
+                var retrieveProx = new Script.Util.WSProxy();
+                retrieveProx.setClientId({ "ID": targetMID });
+                
+                var resultRetrieve = retrieveProx.retrieve("DataExtension", ["ObjectID"], {
+                    Property: "CustomerKey",
+                    SimpleOperator: "equals",
+                    Value: targetDECustomerKey
+                });
+
+                var DataExtensionObjectID = resultRetrieve.Results[0].ObjectID;
+                Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["DataExtensionCustomerKey"],[targetDECustomerKey],["DataExtensionID"],[DataExtensionObjectID]);
+
+            }
+
+
+        } else {
+
+            new Script.Util.WSProxy();
+            var createProx = new Script.Util.WSProxy();
+            createProx.setClientId({ "ID": targetMID });
+            
+            var result = createProx.createItem("DataExtension", de); 
+            
+            new Script.Util.WSProxy();
+            var retrieveProx = new Script.Util.WSProxy();
+            retrieveProx.setClientId({ "ID": targetMID });
+
+            var resultRetrieve = retrieveProx.retrieve("DataExtension", ["ObjectID"], {
+                Property: "CustomerKey",
+                SimpleOperator: "equals",
+                Value: targetDECustomerKey
+            });
+
+            var DataExtensionObjectID = resultRetrieve.Results[0].ObjectID;
+
+
+            Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["DataExtensionCustomerKey"],[targetDECustomerKey],["DataExtensionID"],[DataExtensionObjectID]);
+        }
+        
+        return result;
+    }
+
+
+    try {
+
+        var ListOfFiltersDE = DataExtension.Init(DE_SEGMENTS_DESCRIPTION_Key);
+        var Rows = ListOfFiltersDE.Rows.Retrieve();
+
+        if (Rows.length > 0) {
+            for(var i in Rows) {
+
+                var country_i = Rows[i]["Country"];
+                var countryCode_i = Rows[i]["CountryCode"];
+
+                var scName_i = Rows[i]["ShoppingCenterName"];
+                var pcCode_i = Rows[i]["pcCode"];
+                
+                var filterType_i = Rows[i]["FilterType"];
+                var filterName_i = Rows[i]["FilterName"];
+                var filterCustomerKey_i = Rows[i]["FilterCustomerKey"];
+                var filterFolder_i = Rows[i]["FilterFolder"];
+                var filterFolderCategoryId_i = Rows[i]["FilterCategoryId"];
+                var filterDefinitionID_i = Rows[i]["FilterDefinitionID"];
+
+                var dataExtensionName_i = Rows[i]["DataExtensionName"];
+                var dataExtensionCustomerKey_i = Rows[i]["DataExtensionCustomerKey"];
+                var dataExtensionCategoryID_i = Rows[i]["DataExtensionCategoryID"];
+                
+                var sourceDataExtensionName_i = Rows[i]["SourceDataExtensionName"];
+                var sourceDataExtensionCustomerKey_i = Rows[i]["SourceDataExtensionCustomerKey"];
+
+                
+                try {
+                    copyDE(sourceDataExtensionName_i, dataExtensionName_i, dataExtensionCustomerKey_i, dataExtensionCategoryID_i, filterType_i, sourceMID, targetMID, DE_SEGMENTS_DESCRIPTION_Name);
+                } catch (err) {
+                    //Logging Errors
+                    Platform.Function.UpsertData(DE_SEGMENTS_DESCRIPTION ,["DataExtensionCustomerKey"],[dataExtensionCustomerKey_i],["DataExtensionID"],["Error"]);
+                    Platform.Function.InsertData(DE_LOGS_SEGMENTS_DESCRIPTION_Name,["DateTime", "ActivityName", "ErrorMessage"], [DateTime.SystemDateToLocalDate(Platform.Function.Now()), activityName, dataExtensionName_i + Stringify(err)]);
+                }
+            }
+        }
+    } catch (err) {
+        //Logging Errors
+        Platform.Function.InsertData(DE_LOGS_SEGMENTS_DESCRIPTION_Name,["DateTime", "ActivityName", "ErrorMessage"], [DateTime.SystemDateToLocalDate(Platform.Function.Now()), activityName, Stringify(err)]);
+
+    }
+
+
+</script>

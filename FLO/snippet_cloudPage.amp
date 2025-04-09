@@ -1,0 +1,62 @@
+<script runat="server">
+   Platform.Load("Core","1");
+   try{
+</script>
+%%[  
+  SET @deName = "TEST B2B database - All leads and contacts"
+  SET @leadId = RequestParameter('leadId')
+  SET @firstName = RequestParameter('firstName')
+  SET @lastName = RequestParameter('lastName')
+  SET @company = RequestParameter('company')
+  SET @stateU = RequestParameter('stateU')
+  SET @stateC = RequestParameter('stateC')
+  SET @state = ''
+  SET @country = RequestParameter('country')
+  SET @industry = RequestParameter('industry')
+  SET @marketSegment = RequestParameter('Market_Segments__c')
+  SET @email = RequestParameter('email')
+  SET @phone = RequestParameter('phone')
+  SET @language = RequestParameter('language')
+  
+  SET @optout = RequestParameter('optout')
+  IF EMPTY(@optout) THEN
+      SET @optout = False
+  ENDIF
+  
+  /* Set redirect URL based on country and language */
+  SET @redirectURL = "https://flo.com"
+  
+  IF @country == "United States" THEN
+    SET @redirectURL = "https://www.flo.com/profile-update/"
+    SET @state = @stateU
+  ELSEIF @country == "Canada" THEN
+    SET @state = @stateC
+    IF @language == "FR" THEN
+      SET @redirectURL = "https://www.flo.com/fr-ca/mise-a-jour-profil/"
+    ELSE 
+      SET @redirectURL = "https://www.flo.com/en-ca/profile-update/"
+    ENDIF
+  ENDIF
+  
+  SET @fullScript = CONCAT("<", "script>window.location.href = '", @redirectURL, "';<", "/script>");
+  
+  /* Update the Data Extension */
+  UpdateDE(@deName, 1, "SubscriberKey", @leadId, "LeadID", @leadId, "FirstName", @firstName, "LastName", @lastName, "Email", @email, "Company", @company, "State", @state, "Country", @country, "Industry", @industry, "Market_Segments__c", @marketSegment, "Phone", @phone, "OptOut", @optout)
+  
+  /* Update Salesforce record */
+  SET @updateSFResult = UpdateSingleSalesforceObject("Lead", @leadId, "FirstName", @firstName, "LastName", @lastName, "Email", @email, "Company", @company, "State", @state, "Country", @country, "Language__c", @language, "Industry", @industry, "Market_segments__c", @marketSegment, "Phone", @phone, "HasOptedOutOfEmail", @optout)
+  
+  /* Set Message Based on SF Results */
+  IF @updateSFResult == 1 THEN
+      SET @message = "Thank you! Your information has been successfully updated in Salesforce. Redirection in progress..."
+  ELSE
+      SET @message = "Salesforce not updated correctly! Redirection in progress..."
+  ENDIF
+]%%
+<p>%%=v(@message)=%%</p>
+%%=v(@fullScript)=%%
+<script runat="server">
+  }catch(e){
+    Write("An error occurred: " + Stringify(e));
+  }
+</script>

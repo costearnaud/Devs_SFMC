@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.min.js"
+            integrity="sha512-rgrFBaGRHjj2cy6RtcWr21S4oSicNV/Y3qACuRZZIVdi6hGIXOKZeFTtzFFZCJ7cI4OrwbY7/FGVvaJ5hXJdJg=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+            integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script type="module" crossorigin src="https://cloud.email.westfield.com/vueTranslate"></script>
+        <style>
+            .custom-scrollbar {
+                /* Set a fixed height for the container to enable scrolling */
+                max-height: 70vh;
+                max-width: fit-content;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 12px;
+                /* width of the entire scrollbar */
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background-color: #1249a9;
+                /* color of the thumb */
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background-color: #8fabdc;
+                /* color of the track */
+            }
+
+            .table-wrp {
+                overflow: auto;
+                display: block;
+            }
+
+            .sticky-head {
+                position: sticky;
+                top: -1px;
+            }
+        </style>
+    </head>
+
+    <body class="bg-[#b0c4df] bg-no-repeat bg-top p-4"
+        style="background-image: url('https://image.email.westfield.com/lib/fe2f11727164047b751378/m/1/c8a1f625-38f6-4354-b880-7d94ce03b16d.png');">
+        <div id="app" class="min-h-[480px]">
+            <div data-type="slot" data-key="col1"></div>
+            <div class="flex space-x-4">
+                <div class="p-4 rounded-lg w-1/4 bg-gray-100">
+                    Frontend V73 : {{ test }}
+                </div>
+            </div>
+            <div class="flex space-x-4 mt-4">
+                <div class="p-4 rounded-lg w-1/3 bg-gray-100">
+                    <div v-if="emails" class="mt-4 p-4">
+                        <div class="flex items-center mb-4">
+                            <i class="fa-solid fa-envelope"></i>
+                            <h5 class="ml-3 text-slate-800 text-xl font-semibold">
+                                Select Email name
+                            </h5>
+                        </div>
+                        <div class="w-full max-w-sm min-w-[80px]">
+                            <div class="relative">
+                                <select
+                                    class="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-400 shadow-sm focus:shadow-md appearance-none cursor-pointer"
+                                    v-model="selectedEmail" @change="getCountries('%%=v(@session)=%%', selectedEmail)">
+                                    <option disabled value="">select email</option>
+                                    <option v-for="email in emails" :value="email.email_code">{{ email.email_name }}
+                                    </option>
+                                </select>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.2" stroke="currentColor"
+                                    class="h-5 w-5 ml-1 absolute top-2.5 right-2.5 text-slate-700">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 rounded-lg w-1/3 bg-gray-100">
+                    <div v-if="countryLoading" class="flex items-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div v-if="countries.length > 0 && selectedEmail" class="mt-4 p-4">
+                        <div class="flex items-center mb-4">
+                            <i class="fa-solid fa-globe"></i>
+                            <h5 class="ml-3 text-slate-800 text-xl font-semibold">
+                                Select Country
+                            </h5>
+                        </div>
+                        <div class="w-full max-w-sm min-w-[80px]">
+                            <div class="relative">
+                                <select
+                                    class="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-400 shadow-sm focus:shadow-md appearance-none cursor-pointer"
+                                    v-model="selectedCountry"
+                                    @change="getShoppingCenters('%%=v(@session)=%%', selectedCountry)">
+                                    <option disabled value="">select country</option>
+                                    <option v-for="country in countries" :value="country.country">{{
+                                        country.country_name }} ({{ country.country }})</option>
+                                </select>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.2" stroke="currentColor"
+                                    class="h-5 w-5 ml-1 absolute top-2.5 right-2.5 text-slate-700">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 rounded-lg w-1/3 bg-gray-100">
+                    <div v-if="centerLoading" class="flex items-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div v-if="centers.length > 0 && selectedEmail && selectedCountry" class="mt-4 p-4">
+                        <div class="flex items-center mb-4">
+                            <i class="fa-solid fa-building"></i>
+                            <h5 class="ml-3 text-slate-800 text-xl font-semibold">
+                                Select Shopping Center
+                            </h5>
+                        </div>
+                        <div class="w-full max-w-sm min-w-[80px]">
+                            <div class="relative">
+                                <select
+                                    class="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-400 shadow-sm focus:shadow-md appearance-none cursor-pointer"
+                                    v-model="selectedCenter" @change="resetBlocks">
+                                    <option disabled value="">select center</option>
+                                    <option v-for="center in centers" :value="center.pc_code">{{
+                                        center.name }} ({{ center.pc_code }})</option>
+                                    <option value="all">All</option>
+                                </select>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.2" stroke="currentColor"
+                                    class="h-5 w-5 ml-1 absolute top-2.5 right-2.5 text-slate-700">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div v-if="selectedCenter == 'all'" class="space-y-2">
+                            <label class="inline-flex items-center">
+                                <input type="radio" class="form-radio h-5 w-5 text-indigo-600" name="brand"
+                                    value="branded" v-model="type">
+                                <span class="ml-1 text-gray-700">Branded</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" class="ml-4 form-radio h-5 w-5 text-indigo-600" name="brand"
+                                    value="unbranded" v-model="type">
+                                <span class="ml-1 text-gray-700">Unbranded</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-if="!showValidate" class="flex space-x-4 mt-4">
+                <div class="w-full p-4 rounded-lg bg-gray-100">
+                    <div v-if="oneBlockEditing" class="max-w-2xl mx-auto px-4 py-4 mb-2">
+                        <div class="flex justify-center">
+                            <button class="bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg p-2"
+                                @click="getBackToBlocks">
+                                <i class="fa-solid fa-left-long">&nbsp;</i>Back
+                            </button>
+                        </div>
+                        <div v-if="oneBlockLoading" class="text-center mt-4">
+                            <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-blue-500"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4">
+                                </circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div v-if="oneBlockEditing && !oneBlockLoading">
+                        <div class="text-center text-green-700" v-if="saveOkMessage !== ''">{{ saveOkMessage }}</div>
+                        <div class="text-center text-red-700" v-if="saveErrorMessage !== ''">{{ saveErrorMessage }}
+                        </div>
+                        <div class="flex space-x-4">
+                            <div class="w-3/5 my-4 bg-white shadow-sm border border-slate-200 rounded-lg p-2">
+                                <div class="p-3 text-center">
+                                    <div>
+                                        <button :class="activeTab === 'draft' ? activeClass : inactiveClass"
+                                            @click="activeTab = 'draft'">Draft version</button>
+                                        <button :class="activeTab === 'live' ? activeClass : inactiveClass"
+                                            @click="activeTab = 'live'">Live version</button>
+                                    </div>
+                                    <div class="flex justify-center mb-2">
+                                        <h5 class="text-slate-800 text-2xl font-semibold">
+                                            {{ blockLabel }} ({{ activeTab }} version)
+                                        </h5>
+                                    </div>
+                                    <div v-if="activeTab === 'draft'"
+                                        class="bg-gray-100 border border-grey-800 border-solid text-center"
+                                        v-if="draftSnippetHTML !== ''">
+                                        <span class="max-w-full overflow-auto" v-html="draftSnippetHTML"
+                                            @click.prevent="doNothing"></span>
+                                    </div>
+                                    <div v-else class="bg-gray-100 border border-grey-800 border-solid text-center"
+                                        v-if="selectedBlockHTML !== ''">
+                                        <span class="max-w-full overflow-auto" v-html="selectedBlockHTML"
+                                            @click.prevent="doNothing"></span>
+                                    </div>
+                                    <button class="mt-4 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg p-2"
+                                        @click="validate('%%=v(@session)=%%')">
+                                        <i class="fa-solid fa-check">&nbsp;</i>Test and Validate
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="w-2/5 mx-auto bg-white shadow-md rounded px-4 py-4 mb-2">
+                                <div
+                                    class="bg-orange-700 text-white px-2 py-1 rounded-sm shadow-md font-bold uppercase text-xs inline-block">
+                                    Draft view
+                                </div>
+                                <div class="mt-4 columns-4">
+                                    <div v-for="(value, key) in dataBlockKeys" :key="key" class="mb-4">
+                                        <span
+                                            class="whitespace-nowrap block text-gray-700 text-sm font-bold mb-2 capitalize">
+                                            {{ key }}
+                                        </span>
+                                        {{ value }}
+                                    </div>
+                                </div>
+                                <div v-for="(value, key) in dataBlock" :key="key" class="mt-4 mb-4">
+                                    <label :for="key" class="block text-gray-700 text-sm font-bold mb-2 capitalize">
+                                        {{ key }}
+                                    </label>
+                                    <textarea v-if="isTextarea(key)" :id="key" v-model="formData[key]"
+                                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                        rows="4">
+                                        </textarea>
+                                    <input v-else type="text" :id="key" v-model="formData[key]"
+                                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                                </div>
+                                <div class="flex justify-center">
+                                    <button @click="resetTrad('%%=v(@session)=%%')"
+                                        class="text-center bg-orange-600 hover:bg-orange-700 text-white font-bold p-2 rounded-lg focus:outline-none focus:shadow-outline mx-4">
+                                        <i class="fa-solid fa-rotate-left">&nbsp;</i>Reset All
+                                    </button>
+                                    <button @click="saveTradDraft('%%=v(@session)=%%')"
+                                        class="text-center bg-cyan-600 hover:bg-cyan-700 text-white font-bold p-2 rounded-lg focus:outline-none focus:shadow-outline">
+                                        <i class="fa-regular fa-floppy-disk">&nbsp;</i>Save changes
+                                    </button>
+                                </div>
+                                <div class="flex justify-center">
+                                    <span class="text-xs">
+                                        (Only saved as a draft version)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="!oneBlockEditing && selectedEmail && selectedCountry && selectedCenter">
+                        <div class="flex py-4 justify-center">
+                            <button class="bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg p-2"
+                                @click="getBlocks('%%=v(@session)=%%',selectedEmail,selectedCountry,selectedCenter)">
+                                See all blocks&nbsp;<i class="fa-solid fa-arrow-down-long"></i>
+                            </button>
+                        </div>
+                        <div>
+                            <img v-if="showPreview" :src="emailPreview">
+                        </div>
+                        <div v-if="blockLoading" class="mt-4 flex items-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-blue-500"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4">
+                                </circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                        </div>
+                        <div class="mt-4 grid grid-cols-2 gap-4">
+                            <div v-for="block in blocks"
+                                class="my-4 bg-white shadow-sm border border-slate-200 rounded-lg p-2">
+                                <div class="p-3 text-center">
+                                    <div class="flex justify-center mb-2">
+                                        <h5 class="text-slate-800 text-2xl font-semibold">
+                                            {{ block.block_label }}
+                                        </h5>
+                                    </div>
+                                    <div class="bg-gray-100 border border-grey-800 border-solid text-center"
+                                        v-if="block.snippet !== ''">
+                                        <span class="max-w-full overflow-auto" v-html="block.snippetHTML"
+                                            @click.prevent="doNothing"></span>
+                                    </div>
+                                    <div class="mt-4 text-center" v-if="block.snippet !== ''">
+                                        <button
+                                            class="min-w-32 rounded-md bg-slate-800 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none"
+                                            type="button"
+                                            @click="openBlock('%%=v(@session)=%%',block,selectedCountry,selectedCenter,selectedEmail,type)">
+                                            Edit
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-if="showValidate" class="flex space-x-4 mt-4">
+                <div class="w-full p-4 rounded-lg bg-gray-100">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-8">
+                        Validation Page ({{ selectedBlock }})
+                    </h1>
+
+                    <div class="grid grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <p class="text-gray-700">
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
+                                tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+                                veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+                                commodo consequat.
+                            </p>
+                        </div>
+                        <div>
+                            <img width="875" height="548"
+                                src="https://www.salesforce.com/news/wp-content/uploads/sites/3/2020/08/mktcloud.png?strip=all&amp;quality=95">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center mb-4">
+                        <input id="confirmation" type="checkbox"
+                            class="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500"
+                            v-model="validationChecked" />
+                        <label for="confirmation" class="ml-2 text-sm font-medium text-gray-900">
+                            I confirm that I have tested and validated the email proof.
+                        </label>
+                    </div>
+                    <button @click="cancelValidate"
+                        class="mx-4 bg-gray-200 hover:bg-gray-300 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Cancel
+                    </button>
+                    <button :disabled="!validationChecked"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        :class="{ 'opacity-50 cursor-not-allowed': !validationChecked }">
+                        Validate
+                    </button>
+                </div>
+            </div>
+        </div>
+    </body>
+
+</html>

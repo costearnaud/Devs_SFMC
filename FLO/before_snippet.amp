@@ -1,0 +1,30 @@
+%%[
+VAR @deName, @leadId, @firstName, @lastName, @email, @company, @state, @country, @phone, @industry, @marketSegment, @missingFields, @dynamicParams, @langUrl
+
+SET @deName = "TEST B2B database - All leads and contacts"
+
+SET @leadId = AttributeValue("LeadID") /* From DE used to send email */
+SET @firstName = Lookup(@deName, "FirstName", "LeadID", @leadId)
+SET @lastName = Lookup(@deName, "LastName", "LeadID", @leadId)
+SET @email = Lookup(@deName, "Email", "LeadID", @leadId)
+SET @company = Lookup(@deName, "Company", "LeadID", @leadId)
+SET @state = Lookup(@deName, "State", "LeadID", @leadId)
+SET @country = Lookup(@deName, "Country", "LeadID", @leadId)
+SET @phone = Lookup(@deName, "Phone", "LeadID", @leadId)
+SET @language = Lookup(@deName, "Language__c", "LeadID", @leadId)
+SET @industry = Lookup(@deName, "Industry", "LeadID", @leadId)
+SET @marketSegment = Lookup(@deName, "Market_segments__c", "LeadID", @leadId)
+
+SET @optout = Lookup(@deName, "OptOut", "LeadID", @leadId)
+IF EMPTY(@optout) THEN
+  SET @optout = False
+ENDIF
+
+SET @CTA_text_fallback = "Complete your profile"
+SET @CloudPageID = 4854 // CloudPage ID "FallbackPage"
+IF @language=="FR" THEN
+ SET @CTA_text_fallback = "Complétez votre profil"
+ SET @CloudPageID = 4895 // CloudPage ID "FallbackPage_FR"
+ENDIF
+
+]%%

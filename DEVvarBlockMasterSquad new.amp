@@ -1,0 +1,122 @@
+%%[
+
+SET @referenceDE = "ENT.DEV_block_de_fields_squad"
+SET @fieldsSet = LookupRows(@referenceDE, "blocde_name", @blockDE)
+SET @sharedBlockedDE = Concat("ent.", @blockDE)
+SET @fieldsSetNb = rowcount(@fieldsSet)
+
+IF (@fieldsSetNb == 1) THEN
+    SET @fieldsRow = Row(@fieldsSet,1)
+    SET @fieldsList = Field(@fieldsRow, "fields_list")
+
+    /* If no community for this visitor or the community name does not exist inside this block data DE */
+    IF (@visitorCommunity == 'all' OR IndexOf(@fieldsList, 'community_name') == 0) THEN
+    
+        SET @rowsPcCode = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', @visitorPcCode, 'mail', @emailCode)
+        SET @rowCountPcCode = Rowcount(@rowsPcCode)
+
+        IF (@rowCountPcCode == 1) THEN
+            SET @rows = @rowsPcCode
+        ELSE
+            SET @rows = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', 'all', 'mail', @emailCode)
+            SET @rowCountAll = Rowcount(@rows)
+            IF (@rowCountAll != 1) THEN
+                RaiseError(Concat('sharedBlockedDE : ', @sharedBlockedDE, ' / rowCount : ', @rowCountAll, ' / Country : ', @centerCountry, ' / emailCode : ', @emailCode, ' / visitor PC Code : ', @visitorPcCode), true) 
+                RaiseError('No data in translation table (no community)', true) 
+            ENDIF
+        ENDIF
+    ELSE
+        SET @rowsPcCode = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', @visitorPcCode, 'mail', @emailCode, 'community_name', @visitorCommunity)
+        SET @rowCountPcCode = Rowcount(@rowsPcCode)
+        IF (@rowCountPcCode == 1) THEN
+            SET @rows = @rowsPcCode
+        ELSE
+            SET @rowsCommunity = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', 'all', 'mail', @emailCode, 'community_name', @visitorCommunity)
+            SET @rowCountCo = Rowcount(@rowsCommunity)
+            IF (@rowCountCo == 1) THEN
+                SET @rows = @rowsCommunity
+            ELSE /* Everything by default */
+                SET @rows = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', 'all', 'mail', @emailCode, 'community_name', 'all')
+                SET @rowCountAll = Rowcount(@rows)
+                IF (@rowCountAll != 1) THEN
+                    RaiseError('No data in translation table (with community) / varMasterSquad forgot?', true)
+                ENDIF
+            ENDIF
+        ENDIF
+    ENDIF
+
+]%%
+
+<script runat="server">
+    Platform.Load("core", "1.1.1");
+
+    /**
+    * Declare codePointAt function
+    */
+    if (!String.prototype.codePointAt) {
+    String.prototype.codePointAt = function (pos) {
+        pos = isNaN(pos) ? 0 : pos;
+        var str = String(this),
+            code = str.charCodeAt(pos),
+            next = str.charCodeAt(pos + 1);
+        // If a surrogate pair
+        if (0xD800 <= code && code <= 0xDBFF && 0xDC00 <= next && next <= 0xDFFF) {
+            return ((code - 0xD800) * 0x400) + (next - 0xDC00) + 0x10000;
+        }
+        return code;
+    };
+    }
+
+    /**
+    * Encodes special html characters
+    * @param string
+    * @return {*}
+    */
+    function html_encode(string) {
+        var ret_val = '';
+        for (var i = 0; i < string.length; i++) { 
+            if (string.codePointAt(i) > 127) {
+                ret_val += '&#' + string.codePointAt(i) + ';';
+            } else {
+                ret_val += string.charAt(i);
+            }
+        }
+        return ret_val;
+    }
+
+    /**
+    * @function ampScript
+    * @description Executes provided AMPScript code and returns value assigned to @value variable
+    * @param {string} code - String of AMPScript code without start/end delimiters. Final outcome should be assigned to @value to enable passing back to SSJS
+    * @return {?string} - Returns value from AMPScript execution if any was assigned to @value variable
+    */
+    function ampScript(code) {
+        var ampBlock = '\%\%[' + code + ']\%\%';
+        Platform.Function.TreatAsContent(ampBlock);
+        return Variable.GetValue('@value');
+    };
+
+    function encodeVariables() {
+        var numRowSet = new Array();
+        numRowSet=fieldsList.split(",");
+        for (var i=0; i< numRowSet.length; i++) {
+            var row = numRowSet[i];
+            var declare = "SET @fieldName = '"+row+"' SET @line = Row(@rows,1) SET @value = Field(@line,@fieldName)";
+            var value = ampScript(declare);
+            var encodedValue = html_encode(value);
+            Variable.SetValue("@value", encodedValue);
+            var code = "SET @FieldSet = TreatAsContent(CONCAT('%','%[SET ', CONCAT('@',@fieldName), ' = \"', @value, '\")]%', '%')) SET @value = 0"
+            var useLess = ampScript(code);
+        }
+    }
+    
+    var fieldsList = Variable.GetValue("@fieldsList");
+    encodeVariables()
+
+</script>
+
+%%[
+ELSE
+    RaiseError('No block reference table', true)
+ENDIF
+]%%

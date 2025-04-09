@@ -1,0 +1,42 @@
+<script runat="server">
+
+    Platform.Load("Core","1");
+
+    var api = new Script.Util.WSProxy();
+
+    try {
+
+        var name = "MyAutomation";
+
+        var cols = [
+            "Name",
+            "ProgramID",
+            "CustomerKey",
+            "Status"
+        ];
+
+        var request = api.retrieve("Automation", cols, {
+            Property: "Name",
+            SimpleOperator: "equals",
+            Value: name
+        });
+
+        var objectID = request.Results[0].ObjectID;
+
+        var props = {
+            ObjectID: objectID
+        };
+
+        var action = "start"
+
+        var opts = {};
+
+        var result = api.performItem("Automation", props, action, opts);
+
+        Write(Stringify(result));
+
+    } catch(error) {
+        Write(Stringify(error));
+    }
+
+</script>

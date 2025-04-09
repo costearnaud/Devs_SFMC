@@ -1,0 +1,36 @@
+%%=ContentBlockByKey("DEVvarMaster")=%% %%=ContentBlockByKey("DEVvarMasterHeader")=%%
+%%=treatascontent(@url_title_services)=%%
+=> Super KO
+
+%%=ContentBlockByKey("DEVvarMasterSquad")=%% %%=ContentBlockByKey("DEVvarheadersquad")=%% %%=ContentBlockByKey("DEVvarIntro1Squad")=%% 
+%%=ContentBlockByKey("DEVvarMaster")=%% %%=ContentBlockByKey("DEVvarMasterHeader")=%%
+%%=treatascontent(@mirror_link_text)=%%
+%%=treatascontent(@body_intro1)=%%
+%%=treatascontent(@title_services)=%%
+=> Tout est OK !
+
+%%=ContentBlockByKey("DEVvarMaster")=%% %%=ContentBlockByKey("DEVvarMasterHeader")=%%
+%%=treatascontent(@title_services)=%%
+=> Toujours KO
+
+%%=ContentBlockByKey("DEVvarMasterSquad")=%% %%=ContentBlockByKey("DEVvarheadersquad")=%%
+%%=ContentBlockByKey("DEVvarMaster")=%% %%=ContentBlockByKey("DEVvarMasterHeader")=%%
+%%=treatascontent(@title_services)=%%
+=> Toujours KO
+
+%%=ContentBlockByKey("DEVvarMasterSquad")=%% %%=ContentBlockByKey("DEVvarheadersquad")=%% 
+%%=ContentBlockByKey("DEVvarMaster")=%% %%=ContentBlockByKey("DEVvarMasterHeader")=%%
+%%=treatascontent(@mirror_link_text)=%%
+%%=treatascontent(@title_services)=%%
+=> Tout est OK !
+
+%%=ContentBlockByKey("DEVvarMaster")=%%
+%%=ContentBlockByKey("DEVvarMasterHeader")=%%
+%%=treatascontent(@mirror_link_text)=%%
+%%=treatascontent(@title_services)=%%
+=> Tout est OK !
+
+%%=ContentBlockByKey("DEVvarMasterSquad")=%%
+%%=ContentBlockByKey("DEVvarIntro1Squad")=%%
+%%=treatascontent(@body_intro1)=%%
+=> OK!

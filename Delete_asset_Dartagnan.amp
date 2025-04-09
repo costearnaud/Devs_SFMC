@@ -1,0 +1,154 @@
+<script runat="server">
+Platform.Load("core", "1.1.1");
+
+var AT_MID = "524006080";
+var CZ_MID = "524006081";
+var FR_MID = "524006082";
+var DE_MID = "524006083";
+var DK_MID = "524006084";
+var NL_MID = "524006085";
+var SE_MID = "524006086";
+var PL_MID = "524006087";
+var SK_MID = "524006088";
+var ES_MID = "524006089";
+var UK_MID = "524006090";
+var US_MID = "524006091"; // Excluded from the MID List
+
+Write("BEGIN");
+var page = 1
+var pageSize = 50
+var MIDList = [AT_MID,CZ_MID,FR_MID,DE_MID,DK_MID,NL_MID,SE_MID,PL_MID,SK_MID,ES_MID,UK_MID]
+
+for (var i=0; i<MIDList.length; i++) {
+    var MID = MIDList[i]
+    var token = getToken(MID)
+    try {
+        // GET ASSETS PART
+        var str = String(getAssets(token, page, pageSize));
+        Write("</br></br>For this MID: "+MID);
+        var assets = Platform.Function.ParseJSON(str);
+        var count = 0;
+        if (assets) {
+            count = assets.count
+        }
+        Write("</br>Nb of assets recovered: "+count);
+
+        /*
+        // ASSETS DELETION PART
+
+        while (count > 0) {
+            for (var i=0; i < assets.items.length; i++) {
+                Write("</br>While loop ID="+assets.items[i].id);
+                deleteOneAsset(token, assets.items[i].id);
+            }
+            Write("</br>While loop: "+count+" assets deleted");
+            // All other results
+            str = String(getAssets(token, page, pageSize));
+            assets = Platform.Function.ParseJSON(str);
+            count = assets.count;
+            Write("</br>While loop: "+count+" assets to delete");
+        }
+        */
+    } catch(err) {
+        Write("</br>Sorry, an error occured: "+err);
+    }
+}
+
+Write("</br></br>END");
+
+function getToken(MID) {
+    var accessToken = undefined;
+    var token_payload = {
+        "grant_type": "client_credentials",
+        "client_id": "of86kc758rjrzjrkbvsrc8wq",
+        "client_secret": "DACzSIUsa6xc2CUFZJDxXdQz",
+        "account_id": MID
+    };
+    var authEndpoint = 'https://mch0c8s-29c44sl3scfs5zqfzrm4.auth.marketingcloudapis.com';
+    var url = authEndpoint + '/v2/token';
+    var contentType = 'application/json';
+    var accessTokenRequest = HTTP.Post(url, contentType, Stringify(token_payload));
+    if (accessTokenRequest.StatusCode == 200) {
+        var tokenResponse = Platform.Function.ParseJSON(accessTokenRequest.Response[0]);
+        var accessToken = tokenResponse.access_token;
+    }
+    return accessToken
+}
+
+function getAssets(token, page, pageSize) {
+    Write("</br></br>function getAssets");
+    // Check variables
+    if (!token) { return undefined }
+    if (!page) { page = 1 }
+    if (!pageSize) { page = 50 }
+
+    // Do API Call
+    var url = "https://mch0c8s-29c44sl3scfs5zqfzrm4.rest.marketingcloudapis.com/asset/v1/content/assets/query";
+    var auth = 'Bearer ' + token;
+    var req = new Script.Util.HttpRequest(url);
+    req.emptyContentHandling = 0;
+    req.retries = 2;
+    req.continueOnError = true;
+    req.contentType = "application/json";
+    req.setHeader("Authorization", auth);
+    req.method = "POST";
+    req.postData = Stringify({
+        "query": {
+            "rightOperand":{
+                "property": "assetType.name",
+                "simpleOperator": "in",
+                "value": ["htmlemail","templatebasedemail","image"]
+            },
+            "logicalOperator":"AND",
+            "leftOperand":{
+                "property": "createdDate",
+                "simpleOperator": "lessThan",
+                "value": "2023-04-01"
+            }
+        },
+        "fields": [
+            "id",
+            "name",
+            "description",
+            "createdDate",
+            "owner"
+            ],
+        "page":
+        {
+            "page":page,
+            "pageSize":pageSize
+        }
+    });
+    try {
+        var resp = req.send();
+        var assets = resp.content;
+        //Write("</br>getAssets > assets to delete: "+assets);
+        return assets;
+    } catch(err) {
+        Write("</br>getAssets > catch error: "+err);
+        return undefined;
+    }
+}
+
+function deleteOneAsset(token, ID) {
+    Write("</br>function deleteOneAsset");
+    var baseUrl = "https://mch0c8s-29c44sl3scfs5zqfzrm4.rest.marketingcloudapis.com/asset/v1/content/assets/"
+    var url = baseUrl + ID + "?isCdnDelete=1";
+    Write("</br>URL : "+url);
+    var auth = 'Bearer ' + token;
+    var req = new Script.Util.HttpRequest(url);
+    req.emptyContentHandling = 0;
+    req.retries = 2;
+    req.continueOnError = true;
+    req.contentType = "application/json";
+    req.setHeader("Authorization", auth);
+    req.method = "DELETE";
+    try {
+        var result = req.send()
+        Write("</br>deleteOneAsset > Result status: "+result.returnStatus+" & code: "+result.statusCode);
+    } catch (err) {
+        Write("</br>deleteOneAsset > Error: "+err);
+    }
+}
+
+</script>

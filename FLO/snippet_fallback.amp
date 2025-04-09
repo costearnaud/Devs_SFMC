@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+    type="text/css" />
+  
+  <title>FLO Page</title>
+
+  <style>
+    body {
+      padding: 16px;
+      background-color: #fafafa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .content {
+      text-align: center;
+      color: #727272;
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 35px;
+      font-weight: bold;
+      text-decoration: none;
+      margin-top: 20px;
+    }
+
+    .margintop15 {
+      margin-top: 15px;
+    }
+
+    .marginbottom15 {
+      margin-bottom: 15px;
+    }
+
+    .tags {
+      text-align: center;
+    }
+
+    .tag {
+      position: relative;
+      z-index: 1;
+      display: inline-block;
+      vertical-align: top;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      font-weight: normal;
+    }
+
+    .selectable .tag:hover {
+      z-index: 2;
+    }
+
+    .tag input {
+      display: none;
+    }
+
+    .tag label {
+      position: relative;
+      display: block;
+      margin: 0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid;
+      font-size: 12px;
+      font-weight: bold;
+      line-height: 18px;
+      outline: none;
+      transition: background-color 0.1s;
+    }
+
+    .tag .count {
+      display: inline-block;
+      height: 16px;
+      padding: 0 4px;
+      border-radius: 4px;
+      font-size: 9px;
+      line-height: 16px;
+      text-align: center;
+    }
+
+    .selectable .tag label {
+      cursor: pointer;
+    }
+
+    .tag:hover label {
+      border-color: #d7d7d7;
+    }
+
+    .tag label {
+      background-color: white;
+      border-color: #f0f0f0;
+      color: #727272;
+    }
+
+    .tag label .count {
+      background-color: #f0f0f0;
+      color: #727272;
+    }
+
+    .tag label .delete {
+      background-color: white;
+      border-color: #d7d7d7;
+    }
+
+    :not(.selectable)>.tag label,
+    .selectable .tag input:checked+label {
+      background-color: #727272;
+      color: #f0f0f0;
+    }
+
+    :not(.selectable)>.tag label .count,
+    .selectable .tag input:checked+label .count {
+      background-color: white;
+    }
+
+    :not(.selectable)>.tag label .delete,
+    .selectable .tag input:checked+label .delete {
+      background-color: #f0f0f0;
+    }
+
+    .img {
+      width: 10%;
+      height: 100px;
+    }
+
+    button {
+      border: 1px solid #555;
+      overflow: hidden;
+      color: #555;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 35px;
+      font-weight: bold;
+      text-decoration: none;
+      text-transform: uppercase;
+      background: transparent;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      border: 1px solid #000;
+      overflow: hidden;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 35px;
+      text-decoration: none;
+      text-transform: uppercase;
+      background: #555;
+    }
+  </style>
+
+  <style id="jsbin-css">
+    body {
+      font-family: "Open Sans", Helvetica, Arial, sans-serif;
+      color: #555;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 0 20px;
+      background-color: white;
+    }
+
+    * {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    *:before,
+    *:after {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    .clearfix {
+      clear: both;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    a {
+      color: tomato;
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: #2196f3;
+    }
+
+    pre {
+      display: block;
+      padding: 9.5px;
+      margin: 0 0 10px;
+      font-size: 13px;
+      line-height: 1.42857143;
+      color: #333;
+      word-break: break-all;
+      word-wrap: break-word;
+      background-color: #F5F5F5;
+      border: 1px solid #CCC;
+      border-radius: 4px;
+    }
+
+    .header {
+      padding: 20px 0;
+      position: relative;
+      margin-bottom: 10px;
+
+    }
+
+    .header:after {
+      content: "";
+      display: block;
+      height: 1px;
+      background: #eee;
+      position: absolute;
+      left: 30%;
+      right: 30%;
+    }
+
+    .header h2 {
+      font-size: 3em;
+      font-weight: 300;
+      margin-bottom: 0.2em;
+    }
+
+    .header p {
+      font-size: 14px;
+    }
+
+
+
+    #a-footer {
+      margin: 20px 0;
+    }
+
+    .new-react-version {
+      padding: 20px 20px;
+      border: 1px solid #eee;
+      border-radius: 20px;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .new-react-version .react-svg-logo {
+      text-align: center;
+      max-width: 60px;
+      margin: 20px auto;
+      margin-top: 0;
+    }
+
+    .success-box {
+      margin: 20px 0;
+      padding: 10px 10px;
+      border: 0px solid #eee;
+      background: #ffffff;
+      text-align: center;
+    }
+
+    .success-box>div {
+      vertical-align: top;
+      display: inline-block;
+      color: #888;
+    }
+
+
+
+    /* Rating Star Widgets Style */
+    .rating-stars ul {
+      list-style-type: none;
+      padding: 0;
+
+      -moz-user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .rating-stars ul>li.star {
+      display: inline-block;
+
+    }
+
+    /* Idle State of the stars */
+    .rating-stars ul>li.star>i.fa {
+      font-size: 2.5em;
+      /* Change the size of the stars */
+      color: #ccc;
+      /* Color on idle state */
+    }
+
+    /* Hover state of the stars */
+    .rating-stars ul>li.star.hover>i.fa {
+      color: #FFCC36;
+    }
+
+    /* Selected state of the stars */
+    .rating-stars ul>li.star.selected>i.fa {
+      color: #FF912C;
+  
+    }
+
+    button {
+      border: 0px solid #555;
+      overflow: hidden;
+      color: #727272;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 35px;
+      font-weight: bold;
+      text-decoration: none;
+      text-transform: uppercase;
+      background: #e8eaed;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      border: 1px solid #000;
+      overflow: hidden;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 35px;
+      text-decoration: none;
+      text-transform: uppercase;
+      background: #555;
+    }
+    
+    label {
+      width:150px;
+    }
+  </style>
+</head>
+
+<body>
+ <div>
+   
+
+    <script runat="server">
+        Platform.Load("core","1");
+        try {
+    </script>
+
+      %%[
+          SET @scriptBeginning = concat('<','script','>')
+          SET @scriptEnd = concat('<','/','script','>')
+          
+          VAR @leadId
+          SET @leadId = QueryParameter("leadId")
+
+          SET @rows = LookupRows('TEST B2B database - All leads and contacts','leadId', @leadId)
+          SET @row = Row(@rows, 1)
+          
+          SET @firstName = Field(@row, 'FirstName')
+          SET @lastName = Field(@row, 'LastName')
+          SET @email = Field(@row, 'Email')
+          SET @company = Field(@row, 'Company')
+          SET @state = Field(@row, 'State')
+          SET @country = Field(@row, 'Country')
+          SET @phone = Field(@row, 'Phone')
+          SET @language = Field(@row, 'Language__c')
+          SET @industry = Field(@row, 'Industry')
+          SET @marketSegment = Field(@row, 'Market_segments__c')
+          SET @optout = Field(@row, 'OptOut')
+
+    ]%%
+    <script runat="server">
+        }
+            catch (err) {
+            Write("Error Message: " + Stringify(err.message) + Stringify(err.description));
+        }
+    </script>
+    
+</div>
+
+  <header class='header text-center'>
+    <table style="background-color:#63B5D8" width="100%" cellspacing="0" cellpadding="0" role="presentation"><tr><td align="center"><img data-assetid="10807" src="http://image.email.flo.com/lib/fe3211747364047f731773/m/1/b5b57f23-63cb-4ef5-8199-d70bc9a134e9.png" alt="FLO logo" height="107" width="120" style="display: block; height: 107px; width: 120px; text-align: center; padding: 0px;"></td></tr></table>
+  </header>
+
+  <section class='rating-widget' style="background-color:#dff0f7">
+    
+   <form action="%%=CloudPagesURL(4338)=%%" method="post" enctype="multipart/form-data" class="frm-show-form frm_ajax_submit frm_pro_form" id="form_id36" style="overflow-x: visible;padding:20px;">
+        <div class="frm_form_fields ">
+            <fieldset style="border-width: 0px;border-style: solid;border-color: #000000;margin: 0;padding: 0 0 15px 0;background-color: transparent;">
+                <div style='font-family: Arial, helvetica, sans-serif;' class='frm_form_field form-field  frm_required_field frm_top_container frm_first frm_half'>
+                    <label for='firstName' class='frm_primary_label' style='max-width: 100%;font-size: 15px;;color: #3f4b5b;font-weight: bold;text-align: left;padding: 0 0 3px 0;margin: 0;width: auto;display: block;'>First Name
+                        <span class='frm_required' style='color: #B94A48;font-weight: bold;' aria-hidden='true'>*</span>
+                    </label>
+                    <input required style='border-width: 1px;border-style: solid;border-radius: 4px;line-height: 1.3;width:90%;padding: 6px 10px;background-color: #ffffff;border-color: #66afe9;color: #555555;box-shadow: 0px 0px 5px 0px rgba(102,175,233, 0.6);margin-bottom: 20px;' type='text' id='firstName' name='firstName' value='%%=v(@firstName)=%%' data-reqmsg='First Name cannot be blank.' aria-required='true' data-invmsg='Name is invalid' aria-invalid='false' required> 
+                </div>
+                <div style='font-family: Arial, helvetica, sans-serif;' class='frm_form_field form-field frm_required_field frm_top_container frm_last frm_half'>
+                <label for='lastName' class='frm_primary_label' style='max-width: 100%;font-size: 15px;;color: #3f4b5b;font-weight: bold;text-align: left;padding: 0 0 3px 0;margin: 0;width: auto;display: block;'>Last Name
+                    <span class='frm_required' style='color: #B94A48;font-weight: bold;' aria-hidden='true'>*</span>
+                </label>
+                <input required style='border-width: 1px;border-style: solid;border-radius: 4px;line-height: 1.3;width:90%;padding: 6px 10px;background-color: #ffffff;border-color: #66afe9;color: #555555;box-shadow: 0px 0px 5px 0px rgba(102,175,233, 0.6);margin-bottom: 20px;' type='text' id='lastName' name='lastName' value='%%=v(@lastName)=%%' data-reqmsg='Last Name cannot be blank.' aria-required='true' data-invmsg='Text is invalid' aria-invalid='false'>
+            </div>
+            <div style='font-family: Arial, helvetica, sans-serif;' class='frm_form_field form-field  frm_required_field frm_top_container frm_first frm_half'>
+                <label for='email' class='frm_primary_label' style='max-width: 100%;font-size: 15px;;color: #3f4b5b;font-weight: bold;text-align: left;padding: 0 0 3px 0;margin: 0;width: auto;display: block;'>Email
+                    <span class='frm_required' style='color: #B94A48;font-weight: bold;' aria-hidden='true'>*</span>
+                </label>
+                <input required style='border-width: 1px;border-style: solid;border-radius: 4px;line-height: 1.3;width:90%;padding: 6px 10px;background-color: #ffffff;border-color: #66afe9;color: #555555;box-shadow: 0px 0px 5px 0px rgba(102,175,233, 0.6);margin-bottom: 20px;' type='email' id='email' name='email' value='%%=v(@email)=%%' data-reqmsg='Email Address cannot be blank.' aria-required='true' data-invmsg='Please enter a valid email address' aria-invalid='false'>
+            </div>
+            <div style='font-family: Arial, helvetica, sans-serif;' class='frm_form_field form-field frm_required_field frm_top_container frm_last frm_half'>
+                <label for='phone' class='frm_primary_label' style='max-width: 100%;font-size: 15px;;color: #3f4b5b;font-weight: bold;text-align: left;padding: 0 0 3px 0;margin: 0;width: auto;display: block;'>Phone
+                    <span class='frm_required' style='color: #B94A48;font-weight: bold;' aria-hidden='true'>*</span>
+                </label>
+                <input required style='border-width: 1px;border-style: solid;border-radius: 4px;line-height: 1.3;width:90%;padding: 6px 10px;background-color: #ffffff;border-color: #66afe9;color: #555555;box-shadow: 0px 0px 5px 0px rgba(102,175,233, 0.6);margin-bottom: 20px;' type='text' id='phone' name='phone' value='%%=v(@phone)=%%' data-reqmsg='Phone cannot be blank.' aria-required='true' data-invmsg='Text is invalid' aria-invalid='false'>
+            </div>
+            <div style='font-family: Arial, helvetica, sans-serif;' class='frm_form_field form-field  frm_required_field frm_top_container frm12 frm_first'>
+                <label for='company' class='frm_primary_label' style='max-width: 100%;font-size: 15px;;color: #3f4b5b;font-weight: bold;text-align: left;padding: 0 0 3px 0;margin: 0;width: auto;display: block;'>Company/Organization
+                    <span class='frm_required' style='color: #B94A48;font-weight: bold;' aria-hidden='true'>*</span>
+                </label>
+                <input required style='border-width: 1px;border-style: solid;border-radius: 4px;line-height: 1.3;width:90%;padding: 6px 10px;background-color: #ffffff;border-color: #66afe9;color: #555555;box-shadow: 0px 0px 5px 0px rgba(102,175,233, 0.6);margin-bottom: 20px;' type='text' id='company' name='company' value='%%=v(@company)=%%' data-reqmsg='Company/Organization cannot be blank.' aria-required='true' data-invmsg='Last is invalid' aria-invalid='false'> 
+            </div>
+            <div style='font-family: Arial, helvetica, sans-serif;' class='frm_form_field form-field  frm_required_field frm_top_container'>
+                <label for='country' class='frm_primary_label' style='max-width: 100%;font-size: 15px;;color: #3f4b5b;font-weight: bold;text-align: left;padding: 0 0 3px 0;margin: 0;width: auto;display: block;'>Country
+                    <span class='frm_required' style='color: #B94A48;font-weight: bold;' aria-hidden='true'>*</span>
+                </label>
+                <select required onChange='changeCountry()' style='border-width: 1px;border-style: solid;border-radius: 4px;line-height: 1.3;width:95%;padding: 6px 10px;background-color: #ffffff;border-color: #66afe9;color: #555555;box-shadow: 0px 0px 5px 0px rgba(102,175,233, 0.6);margin-bottom: 20px;' name='country' id='country' data-placeholder='Please Select' placeholder='Please Select' data-reqmsg='Country cannot be blank.' aria-required='true' data-invmsg='Country is invalid' aria-invalid='false' class='selectBox'>
+                    <option value='United States' %%[IF @country == "United States" THEN]%%selected%%[ENDIF]%%>United States</option>
+                    <option value='Canada' %%[IF @country == "Canada" THEN]%%selected%%[ENDIF]%%>Canada</option>
+                </select>
+            </div>
+            
+            %%[IF @country == "United States" OR @country == "" THEN]%%
+            <div style='font-family: Arial, helvetica, sans-serif;' class='frm_form_field form-field  frm_required_field frm_top_container frm_last frm12 frm_first' id='statesUSA'>
+                <label for='state' class='frm_primary_label' style='max-width: 100%;font-size: 15px;;color: #3f4b5b;font-weight: bold;text-align: left;padding: 0 0 3px 0;margin: 0;width: auto;display: block;'>State
+                    <span class='frm_required' style='color: #B94A48;font-weight: bold;' aria-hidden='true'>*</span>
+                </label>
+                <select required style='border-width: 1px;border-style: solid;border-radius: 4px;line-height: 1.3;width:95%;padding: 6px 10px;background-color: #ffffff;border-color: #66afe9;color: #555555;box-shadow: 0px 0px 5px 0px rgba(102,175,233, 0.6);margin-bottom: 20px;' name='StateU' id='StateU' data-placeholder='Please Select' placeholder='Please Select' data-reqmsg='State cannot be blank.' aria-required='true' data-invmsg='State is invalid' aria-invalid='false' class='selectBox'>
+                    <option value='Alabama' id='Alabama' %%[IF @state == "Alabama" THEN]%%selected%%[ENDIF]%%>Alabama</option>
+                    <option value='Alaska' id='Alaska' %%[IF @state == "Alaska" THEN]%%selected%%[ENDIF]%%>Alaska</option>
+                    <option value='Arizona' id='Arizona' %%[IF @state == "Arizona" THEN]%%selected%%[ENDIF]%%>Arizona</option>
+                    <option value='Arkansas' id='Arkansas' %%[IF @state == "Arkansas" THEN]%%selected%%[ENDIF]%%>Arkansas</option>
+                    <option value='California' id='California' %%[IF @state == "California" THEN]%%selected%%[ENDIF]%%>California</option>
+                    <option value='Colorado' id='Colorado' %%[IF @state == "Colorado" THEN]%%selected%%[ENDIF]%%>Colorado</option>
+                    <option value='Connecticut' id='Connecticut' %%[IF @state == "Connecticut" THEN]%%selected%%[ENDIF]%%>Connecticut</option>
+                    <option value='Delaware' id='Delaware' %%[IF @state == "Delaware" THEN]%%selected%%[ENDIF]%%>Delaware</option>
+                    <option value='District of Columbia' id='District of Columbia' %%[IF @state == "District of Columbia" THEN]%%selected%%[ENDIF]%%>District of Columbia</option>
+                    <option value='Florida' id='Florida' %%[IF @state == "Florida" THEN]%%selected%%[ENDIF]%%>Florida</option>
+                    <option value='Georgia' id='Georgia' %%[IF @state == "Georgia" THEN]%%selected%%[ENDIF]%%>Georgia</option>
+                    <option value='Hawaii' id='Hawaii' %%[IF @state == "Hawaii" THEN]%%selected%%[ENDIF]%%>Hawaii</option>
+                    <option value='Idaho' id='Idaho' %%[IF @state == "Idaho" THEN]%%selected%%[ENDIF]%%>Idaho</option>
+                    <option value='Illinois' id='Illinois' %%[IF @state == "Illinois" THEN]%%selected%%[ENDIF]%%>Illinois</option>
+                    <option value='Indiana' id='Indiana' %%[IF @state == "Indiana" THEN]%%selected%%[ENDIF]%%>Indiana</option>
+                    <option value='Iowa' id='Iowa' %%[IF @state == "Iowa" THEN]%%selected%%[ENDIF]%%>Iowa</option>
+                    <option value='Kansas' id='Kansas' %%[IF @state == "Kansas" THEN]%%selected%%[ENDIF]%%>Kansas</option>
+                    <option value='Kentucky' id='Kentucky' %%[IF @state == "Kentucky" THEN]%%selected%%[ENDIF]%%>Kentucky</option>
+                    <option value='Louisiana' id='Louisiana' %%[IF @state == "Louisiana" THEN]%%selected%%[ENDIF]%%>Louisiana</option>
+                    <option value='Maine' id='Maine' %%[IF @state == "Maine" THEN]%%selected%%[ENDIF]%%>Maine</option>
+                    <option value='Maryland' id='Maryland' %%[IF @state == "Maryland" THEN]%%selected%%[ENDIF]%%>Maryland</option>
+                    <option value='Massachusetts' id='Massachusetts' %%[IF @state == "Massachusetts" THEN]%%selected%%[ENDIF]%%>Massachusetts</option>
+                    <option value='Michigan' id='Michigan' %%[IF @state == "Michigan" THEN]%%selected%%[ENDIF]%%>Michigan</option>
+                    <option value='Minnesota' id='Minnesota' %%[IF @state == "Minnesota" THEN]%%selected%%[ENDIF]%%>Minnesota</option>
+                    <option value='Mississippi' id='Mississippi' %%[IF @state == "Mississippi" THEN]%%selected%%[ENDIF]%%>Mississippi</option>
+                    <option value='Missouri' id='Missouri' %%[IF @state == "Missouri" THEN]%%selected%%[ENDIF]%%>Missouri</option>
+                    <option value='Montana' id='Montana' %%[IF @state == "Montana" THEN]%%selected%%[ENDIF]%%>Montana</option>
+                    <option value='Nebraska' id='Nebraska' %%[IF @state == "Nebraska" THEN]%%selected%%[ENDIF]%%>Nebraska</option>
+                    <option value='Nevada' id='Nevada' %%[IF @state == "Nevada" THEN]%%selected%%[ENDIF]%%>Nevada</option>
+                    <option value='New Hampshire' id='New Hampshire' %%[IF @state == "New Hampshire" THEN]%%selected%%[ENDIF]%%>New Hampshire</option>
+                    <option value='New Jersey' id='New Jersey' %%[IF @state == "New Jersey" THEN]%%selected%%[ENDIF]%%>New Jersey</option>
+                    <option value='New Mexico' id='New Mexico' %%[IF @state == "New Mexico" THEN]%%selected%%[ENDIF]%%>New Mexico</option>
+                    <option value='New York' id='New York' %%[IF @state == "New York" THEN]%%selected%%[ENDIF]%%>New York</option>
+                    <option value='North Carolina' id='North Carolina' %%[IF @state == "North Carolina" THEN]%%selected%%[ENDIF]%%>North Carolina</option>
+                    <option value='North Dakota' id='North Dakota' %%[IF @state == "North Dakota" THEN]%%selected%%[ENDIF]%%>North Dakota</option>
+                    <option value='Ohio' id='Ohio' %%[IF @state == "Ohio" THEN]%%selected%%[ENDIF]%%>Ohio</option>
+                    <option value='Oklahoma' id='Oklahoma' %%[IF @state == "Oklahoma" THEN]%%selected%%[ENDIF]%%>Oklahoma</option>
+                    <option value='Oregon' id='Oregon' %%[IF @state == "Oregon" THEN]%%selected%%[ENDIF]%%>Oregon</option>
+                    <option value='Pennsylvania' id='Pennsylvania' %%[IF @state == "Pennsylvania" THEN]%%selected%%[ENDIF]%%>Pennsylvania</option>
+                    <option value='Rhode Island' id='Rhode Island' %%[IF @state == "Rhode Island" THEN]%%selected%%[ENDIF]%%>Rhode Island</option>
+                    <option value='South Carolina' id='South Carolina' %%[IF @state == "South Carolina" THEN]%%selected%%[ENDIF]%%>South Carolina</option>
+                    <option value='South Dakota' id='South Dakota' %%[IF @state == "South Dakota" THEN]%%selected%%[ENDIF]%%>South Dakota</option>
+                    <option value='Tennessee' id='Tennessee' %%[IF @state == "Tennessee" THEN]%%selected%%[ENDIF]%%>Tennessee</option>
+                    <option value='Texas' id='Texas' %%[IF @state == "Texas" THEN]%%selected%%[ENDIF]%%>Texas</option>
+                    <option value='Utah' id='Utah' %%[IF @state == "Utah" THEN]%%selected%%[ENDIF]%%>Utah</option>
+                    <option value='Vermont' id='Vermont' %%[IF @state == "Vermont" THEN]%%selected%%[ENDIF]%%>Vermont</option>
+                    <option value='Virginia' id='Virginia' %%[IF @state == "Virginia" THEN]%%selected%%[ENDIF]%%>Virginia</option>
+                    <option value='Washington' id='Washington' %%[IF @state == "Washington" THEN]%%selected%%[ENDIF]%%>Washington</option>
+                    <option value='West Virginia' id='West Virginia' %%[IF @state == "West Virginia" THEN]%%selected%%[ENDIF]%%>West Virginia</option>
+                    <option value='Wisconsin' id='Wisconsin' %%[IF @state == "Wisconsin" THEN]%%selected%%[ENDIF]%%>Wisconsin</option>
+                    <option value='Wyoming' id='Wyoming' %%[IF @state == "Wyoming" THEN]%%selected%%[ENDIF]%%>Wyoming</option>
+                </select>
+            </div>
+            <div style='font-family: Arial, helvetica, sans-serif; display:none' class='frm_form_field form-field  frm_required_field frm_top_container frm_last frm12 frm_first' id='statesCanada'>
+                <label for='state' class='frm_primary_label' style='max-width: 100%;font-size: 15px;;color: #3f4b5b;font-weight: bold;text-align: left;padding: 0 0 3px 0;margin: 0;width: auto;display: block;'>State
+                    <span class='frm_required' style='color: #B94A48;font-weight: bold;' aria-hidden='true'>*</span>
+                </label>
+                <select required style='border-width: 1px;border-style: solid;border-radius: 4px;line-height: 1.3;width:95%;padding: 6px 10px;background-color: #ffffff;border-color: #66afe9;color: #555555;box-shadow: 0px 0px 5px 0px rgba(102,175,233, 0.6);margin-bottom: 20px;' name='StateC' id='StateC' data-placeholder='Please Select' placeholder='Please Select' data-reqmsg='State cannot be blank.' aria-required='true' data-invmsg='State is invalid' aria-invalid='false' class='selectBox'>
+                    <option value='Alberta' id='Alberta' %%[IF @state == "Alberta" THEN]%%selected%%[ENDIF]%%>Alberta</option>
+                    <option value='British Columbia' id='British Columbia' %%[IF @state == "British Columbia" THEN]%%selected%%[ENDIF]%%>British Columbia</option>
+                    <option value='Manitoba' id='Manitoba' %%[IF @state == "Manitoba" THEN]%%selected%%[ENDIF]%%>Manitoba</option>
+                    <option value='New Brunswick' id='New Brunswick' %%[IF @state == "New Brunswick" THEN]%%selected%%[ENDIF]%%>New Brunswick</option>
+                    <option value='Newfoundland and Labrador' id='Newfoundland and Labrador' %%[IF @state == "Newfoundland and Labrador" THEN]%%selected%%[ENDIF]%%>Newfoundland and Labrador</option>
+                    <option value='Northwest Territories' id='Northwest Territories' %%[IF @state == "Northwest Territories" THEN]%%selected%%[ENDIF]%%>Northwest Territories</option>
+                    <option value='Nova Scotia' id='Nova Scotia' %%[IF @state == "Nova Scotia" THEN]%%selected%%[ENDIF]%%>Nova Scotia</option>
+                    <option value='Nunavut' id='Nunavut' %%[IF @state == "Nunavut" THEN]%%selected%%[ENDIF]%%>Nunavut</option>
+                    <option value='Ontario' id='Ontario' %%[IF @state == "Ontario" THEN]%%selected%%[ENDIF]%%>Ontario</option>
+                    <option value='Prince Edward Island' id='Prince Edward Island' %%[IF @state == "Prince Edward Island" THEN]%%selected%%[ENDIF]%%>Prince Edward Island</option>
+                    <option value='Quebec' id='Quebec' %%[IF @state == "Quebec" THEN]%%selected%%[ENDIF]%%>Quebec</option>
+                    <option value='Saskatchewan' id='Saskatchewan' %%[IF @state == "Saskatchewan" THEN]%%selected%%[ENDIF]%%>Saskatchewan</option>
+                    <option value='Yukon' id='Yukon' %%[IF @state == "Yukon" THEN]%%selected%%[ENDIF]%%>Yukon</option>
+            </select>
+                </div>
+            %%[ELSE]%%
+            <div style='font-family: Arial, helvetica, sans-serif;' class='frm_form_field form-field  frm_required_field frm_top_container frm_last frm12 frm_first' id='statesCanada'>
+                <label for='state' class='frm_primary_label' style='max-width: 100%;font-size: 15px;;color: #3f4b5b;font-weight: bold;text-align: left;padding: 0 0 3px 0;margin: 0;width: auto;display: block;'>State
+                    <span class='frm_required' style='color: #B94A48;font-weight: bold;' aria-hidden='true'>*</span>
+                </label>
+                <select required style='border-width: 1px;border-style: solid;border-radius: 4px;line-height: 1.3;width:95%;padding: 6px 10px;background-color: #ffffff;border-color: #66afe9;color: #555555;box-shadow: 0px 0px 5px 0px rgba(102,175,233, 0.6);margin-bottom: 20px;' name='StateC' id='StateC' data-placeholder='Please Select' placeholder='Please Select' data-reqmsg='State cannot be blank.' aria-required='true' data-invmsg='State is invalid' aria-invalid='false' class='selectBox'>
+                    <option value='Alberta' id='Alberta' %%[IF @state == "Alberta" THEN]%%selected%%[ENDIF]%%>Alberta</option>
+                    <option value='British Columbia' id='British Columbia' %%[IF @state == "British Columbia" THEN]%%selected%%[ENDIF]%%>British Columbia</option>
+                    <option value='Manitoba' id='Manitoba' %%[IF @state == "Manitoba" THEN]%%selected%%[ENDIF]%%>Manitoba</option>
+                    <option value='New Brunswick' id='New Brunswick' %%[IF @state == "New Brunswick" THEN]%%selected%%[ENDIF]%%>New Brunswick</option>
+                    <option value='Newfoundland and Labrador' id='Newfoundland and Labrador' %%[IF @state == "Newfoundland and Labrador" THEN]%%selected%%[ENDIF]%%>Newfoundland and Labrador</option>
+                    <option value='Northwest Territories' id='Northwest Territories' %%[IF @state == "Northwest Territories" THEN]%%selected%%[ENDIF]%%>Northwest Territories</option>
+                    <option value='Nova Scotia' id='Nova Scotia' %%[IF @state == "Nova Scotia" THEN]%%selected%%[ENDIF]%%>Nova Scotia</option>
+                    <option value='Nunavut' id='Nunavut' %%[IF @state == "Nunavut" THEN]%%selected%%[ENDIF]%%>Nunavut</option>
+                    <option value='Ontario' id='Ontario' %%[IF @state == "Ontario" THEN]%%selected%%[ENDIF]%%>Ontario</option>
+                    <option value='Prince Edward Island' id='Prince Edward Island' %%[IF @state == "Prince Edward Island" THEN]%%selected%%[ENDIF]%%>Prince Edward Island</option>
+                    <option value='Quebec' id='Quebec' %%[IF @state == "Quebec" THEN]%%selected%%[ENDIF]%%>Quebec</option>
+                    <option value='Saskatchewan' id='Saskatchewan' %%[IF @state == "Saskatchewan" THEN]%%selected%%[ENDIF]%%>Saskatchewan</option>
+                    <option value='Yukon' id='Yukon' %%[IF @state == "Yukon" THEN]%%selected%%[ENDIF]%%>Yukon</option>
+                </select>
+            </div>
+            <div style='font-family: Arial, helvetica, sans-serif; display:none' class='frm_form_field form-field  frm_required_field frm_top_container frm_last frm12 frm_first' id='statesUSA'>
+                <label for='state' class='frm_primary_label' style='max-width: 100%;font-size: 15px;;color: #3f4b5b;font-weight: bold;text-align: left;padding: 0 0 3px 0;margin: 0;width: auto;display: block;'>State
+                    <span class='frm_required' style='color: #B94A48;font-weight: bold;' aria-hidden='true'>*</span>
+                </label>
+                <select required style='border-width: 1px;border-style: solid;border-radius: 4px;line-height: 1.3;width:95%;padding: 6px 10px;background-color: #ffffff;border-color: #66afe9;color: #555555;box-shadow: 0px 0px 5px 0px rgba(102,175,233, 0.6);margin-bottom: 20px;' name='StateU' id='StateU' data-placeholder='Please Select' placeholder='Please Select' data-reqmsg='State cannot be blank.' aria-required='true' data-invmsg='State is invalid' aria-invalid='false' class='selectBox'>
+                    <option value='Alabama' id='Alabama' %%[IF @state == "Alabama" THEN]%%selected%%[ENDIF]%%>Alabama</option>
+                    <option value='Alaska' id='Alaska' %%[IF @state == "Alaska" THEN]%%selected%%[ENDIF]%%>Alaska</option>
+                    <option value='Arizona' id='Arizona' %%[IF @state == "Arizona" THEN]%%selected%%[ENDIF]%%>Arizona</option>
+                    <option value='Arkansas' id='Arkansas' %%[IF @state == "Arkansas" THEN]%%selected%%[ENDIF]%%>Arkansas</option>
+                    <option value='California' id='California' %%[IF @state == "California" THEN]%%selected%%[ENDIF]%%>California</option>
+                    <option value='Colorado' id='Colorado' %%[IF @state == "Colorado" THEN]%%selected%%[ENDIF]%%>Colorado</option>
+                    <option value='Connecticut' id='Connecticut' %%[IF @state == "Connecticut" THEN]%%selected%%[ENDIF]%%>Connecticut</option>
+                    <option value='Delaware' id='Delaware' %%[IF @state == "Delaware" THEN]%%selected%%[ENDIF]%%>Delaware</option>
+                    <option value='District of Columbia' id='District of Columbia' %%[IF @state == "District of Columbia" THEN]%%selected%%[ENDIF]%%>District of Columbia</option>
+                    <option value='Florida' id='Florida' %%[IF @state == "Florida" THEN]%%selected%%[ENDIF]%%>Florida</option>
+                    <option value='Georgia' id='Georgia' %%[IF @state == "Georgia" THEN]%%selected%%[ENDIF]%%>Georgia</option>
+                    <option value='Hawaii' id='Hawaii' %%[IF @state == "Hawaii" THEN]%%selected%%[ENDIF]%%>Hawaii</option>
+                    <option value='Idaho' id='Idaho' %%[IF @state == "Idaho" THEN]%%selected%%[ENDIF]%%>Idaho</option>
+                    <option value='Illinois' id='Illinois' %%[IF @state == "Illinois" THEN]%%selected%%[ENDIF]%%>Illinois</option>
+                    <option value='Indiana' id='Indiana' %%[IF @state == "Indiana" THEN]%%selected%%[ENDIF]%%>Indiana</option>
+                    <option value='Iowa' id='Iowa' %%[IF @state == "Iowa" THEN]%%selected%%[ENDIF]%%>Iowa</option>
+                    <option value='Kansas' id='Kansas' %%[IF @state == "Kansas" THEN]%%selected%%[ENDIF]%%>Kansas</option>
+                    <option value='Kentucky' id='Kentucky' %%[IF @state == "Kentucky" THEN]%%selected%%[ENDIF]%%>Kentucky</option>
+                    <option value='Louisiana' id='Louisiana' %%[IF @state == "Louisiana" THEN]%%selected%%[ENDIF]%%>Louisiana</option>
+                    <option value='Maine' id='Maine' %%[IF @state == "Maine" THEN]%%selected%%[ENDIF]%%>Maine</option>
+                    <option value='Maryland' id='Maryland' %%[IF @state == "Maryland" THEN]%%selected%%[ENDIF]%%>Maryland</option>
+                    <option value='Massachusetts' id='Massachusetts' %%[IF @state == "Massachusetts" THEN]%%selected%%[ENDIF]%%>Massachusetts</option>
+                    <option value='Michigan' id='Michigan' %%[IF @state == "Michigan" THEN]%%selected%%[ENDIF]%%>Michigan</option>
+                    <option value='Minnesota' id='Minnesota' %%[IF @state == "Minnesota" THEN]%%selected%%[ENDIF]%%>Minnesota</option>
+                    <option value='Mississippi' id='Mississippi' %%[IF @state == "Mississippi" THEN]%%selected%%[ENDIF]%%>Mississippi</option>
+                    <option value='Missouri' id='Missouri' %%[IF @state == "Missouri" THEN]%%selected%%[ENDIF]%%>Missouri</option>
+                    <option value='Montana' id='Montana' %%[IF @state == "Montana" THEN]%%selected%%[ENDIF]%%>Montana</option>
+                    <option value='Nebraska' id='Nebraska' %%[IF @state == "Nebraska" THEN]%%selected%%[ENDIF]%%>Nebraska</option>
+                    <option value='Nevada' id='Nevada' %%[IF @state == "Nevada" THEN]%%selected%%[ENDIF]%%>Nevada</option>
+                    <option value='New Hampshire' id='New Hampshire' %%[IF @state == "New Hampshire" THEN]%%selected%%[ENDIF]%%>New Hampshire</option>
+                    <option value='New Jersey' id='New Jersey' %%[IF @state == "New Jersey" THEN]%%selected%%[ENDIF]%%>New Jersey</option>
+                    <option value='New Mexico' id='New Mexico' %%[IF @state == "New Mexico" THEN]%%selected%%[ENDIF]%%>New Mexico</option>
+                    <option value='New York' id='New York' %%[IF @state == "New York" THEN]%%selected%%[ENDIF]%%>New York</option>
+                    <option value='North Carolina' id='North Carolina' %%[IF @state == "North Carolina" THEN]%%selected%%[ENDIF]%%>North Carolina</option>
+                    <option value='North Dakota' id='North Dakota' %%[IF @state == "North Dakota" THEN]%%selected%%[ENDIF]%%>North Dakota</option>
+                    <option value='Ohio' id='Ohio' %%[IF @state == "Ohio" THEN]%%selected%%[ENDIF]%%>Ohio</option>
+                    <option value='Oklahoma' id='Oklahoma' %%[IF @state == "Oklahoma" THEN]%%selected%%[ENDIF]%%>Oklahoma</option>
+                    <option value='Oregon' id='Oregon' %%[IF @state == "Oregon" THEN]%%selected%%[ENDIF]%%>Oregon</option>
+                    <option value='Pennsylvania' id='Pennsylvania' %%[IF @state == "Pennsylvania" THEN]%%selected%%[ENDIF]%%>Pennsylvania</option>
+                    <option value='Rhode Island' id='Rhode Island' %%[IF @state == "Rhode Island" THEN]%%selected%%[ENDIF]%%>Rhode Island</option>
+                    <option value='South Carolina' id='South Carolina' %%[IF @state == "South Carolina" THEN]%%selected%%[ENDIF]%%>South Carolina</option>
+                    <option value='South Dakota' id='South Dakota' %%[IF @state == "South Dakota" THEN]%%selected%%[ENDIF]%%>South Dakota</option>
+                    <option value='Tennessee' id='Tennessee' %%[IF @state == "Tennessee" THEN]%%selected%%[ENDIF]%%>Tennessee</option>
+                    <option value='Texas' id='Texas' %%[IF @state == "Texas" THEN]%%selected%%[ENDIF]%%>Texas</option>
+                    <option value='Utah' id='Utah' %%[IF @state == "Utah" THEN]%%selected%%[ENDIF]%%>Utah</option>
+                    <option value='Vermont' id='Vermont' %%[IF @state == "Vermont" THEN]%%selected%%[ENDIF]%%>Vermont</option>
+                    <option value='Virginia' id='Virginia' %%[IF @state == "Virginia" THEN]%%selected%%[ENDIF]%%>Virginia</option>
+                    <option value='Washington' id='Washington' %%[IF @state == "Washington" THEN]%%selected%%[ENDIF]%%>Washington</option>
+                    <option value='West Virginia' id='West Virginia' %%[IF @state == "West Virginia" THEN]%%selected%%[ENDIF]%%>West Virginia</option>
+                    <option value='Wisconsin' id='Wisconsin' %%[IF @state == "Wisconsin" THEN]%%selected%%[ENDIF]%%>Wisconsin</option>
+                    <option value='Wyoming' id='Wyoming' %%[IF @state == "Wyoming" THEN]%%selected%%[ENDIF]%%>Wyoming</option>
+                </select>
+            </div>
+            %%[ENDIF]%%
+            <div style='font-family: Arial, helvetica, sans-serif;' class='frm_form_field form-field  frm_required_field frm_top_container'>
+                <label for='industry' class='frm_primary_label' style='max-width: 100%;font-size: 15px;;color: #3f4b5b;font-weight: bold;text-align: left;padding: 0 0 3px 0;margin: 0;width: auto;display: block;'>Industry
+                    <span class='frm_required' style='color: #B94A48;font-weight: bold;' aria-hidden='true'>*</span>
+                </label>
+                <select required style='border-width: 1px;border-style: solid;border-radius: 4px;line-height: 1.3;width:95%;padding: 6px 10px;background-color: #ffffff;border-color: #66afe9;color: #555555;box-shadow: 0px 0px 5px 0px rgba(102,175,233, 0.6);margin-bottom: 20px;' name='industry' id='industry' data-placeholder='Please Select' placeholder='Please Select' data-reqmsg='Industry cannot be blank.' aria-required='true' data-invmsg='Industry is invalid' aria-invalid='false' class='selectBox'>
+                    <option value='Agriculture' %%[IF @industry == "Agriculture" THEN]%%selected%%[ENDIF]%%>Agriculture</option>
+                    <option value='Apparel' %%[IF @industry == "Apparel" THEN]%%selected%%[ENDIF]%%>Apparel</option>
+                    <option value='Banking' %%[IF @industry == "Banking" THEN]%%selected%%[ENDIF]%%>Banking</option>
+                    <option value='Communications' %%[IF @industry == "Communications" THEN]%%selected%%[ENDIF]%%>Communications</option>
+                    <option value='Construction' %%[IF @industry == "Construction" THEN]%%selected%%[ENDIF]%%>Construction</option>
+                    <option value='Consulting' %%[IF @industry == "Consulting" THEN]%%selected%%[ENDIF]%%>Consulting</option>
+                    <option value='Developer' %%[IF @industry == "Developer" THEN]%%selected%%[ENDIF]%%>Developer</option>
+                    <option value='Education' %%[IF @industry == "Education" THEN]%%selected%%[ENDIF]%%>Education</option>
+                    <option value='Electrical Contractor' %%[IF @industry == "Electrical Contractor" THEN]%%selected%%[ENDIF]%%>Electrical Contractor</option>
+                    <option value='Electrical Distributor' %%[IF @industry == "Electrical Distributor" THEN]%%selected%%[ENDIF]%%>Electrical Distributor</option>
+                    <option value='Electronics' %%[IF @industry == "Electronics" THEN]%%selected%%[ENDIF]%%>Electronics</option>
+                    <option value='Energy' %%[IF @industry == "Energy" THEN]%%selected%%[ENDIF]%%>Energy</option>
+                    <option value='Engineering' %%[IF @industry == "Engineering" THEN]%%selected%%[ENDIF]%%>Engineering</option>
+                    <option value='Entertainment' %%[IF @industry == "Entertainment" THEN]%%selected%%[ENDIF]%%>Entertainment</option>
+                    <option value='Environmental' %%[IF @industry == "Environmental" THEN]%%selected%%[ENDIF]%%>Environmental</option>
+                    <option value='Finance' %%[IF @industry == "Finance" THEN]%%selected%%[ENDIF]%%>Finance</option>
+                    <option value='Food & Beverage' %%[IF @industry == "Food & Beverage" THEN]%%selected%%[ENDIF]%%>Food & Beverage</option>
+                    <option value='Government' %%[IF @industry == "Government" THEN]%%selected%%[ENDIF]%%>Government</option>
+                    <option value='Healthcare' %%[IF @industry == "Healthcare" THEN]%%selected%%[ENDIF]%%>Healthcare</option>
+                    <option value='Hospitality' %%[IF @industry == "Hospitality" THEN]%%selected%%[ENDIF]%%>Hospitality</option>
+                    <option value='Insurance' %%[IF @industry == "Insurance" THEN]%%selected%%[ENDIF]%%>Insurance</option>
+                    <option value='Machinery' %%[IF @industry == "Machinery" THEN]%%selected%%[ENDIF]%%>Machinery</option>
+                    <option value='Manufacturing' %%[IF @industry == "Manufacturing" THEN]%%selected%%[ENDIF]%%>Manufacturing</option>
+                    <option value='Media' %%[IF @industry == "Media" THEN]%%selected%%[ENDIF]%%>Media</option>
+                    <option value='Not For Profit' %%[IF @industry == "Not For Profit" THEN]%%selected%%[ENDIF]%%>Not For Profit</option>
+                    <option value='Other' %%[IF @industry == "Other" THEN]%%selected%%[ENDIF]%%>Other</option>
+                    <option value='Property manager' %%[IF @industry == "Property manager" THEN]%%selected%%[ENDIF]%%>Property manager</option>
+                    <option value='Recreation' %%[IF @industry == "Recreation" THEN]%%selected%%[ENDIF]%%>Recreation</option>
+                    <option value='Restaurant' %%[IF @industry == "Restaurant" THEN]%%selected%%[ENDIF]%%>Restaurant</option>
+                    <option value='Retail' %%[IF @industry == "Retail" THEN]%%selected%%[ENDIF]%%>Retail</option>
+                    <option value='Shipping' %%[IF @industry == "Shipping" THEN]%%selected%%[ENDIF]%%>Shipping</option>
+                    <option value='Technology' %%[IF @industry == "Technology" THEN]%%selected%%[ENDIF]%%>Technology</option>
+                    <option value='Telecommunications' %%[IF @industry == "Telecommunications" THEN]%%selected%%[ENDIF]%%>Telecommunications</option>
+                    <option value='Transportation' %%[IF @industry == "Transportation" THEN]%%selected%%[ENDIF]%%>Transportation</option>
+                    <option value='Utilities' %%[IF @industry == "Utilities" THEN]%%selected%%[ENDIF]%%>Utilities</option>
+                </select>
+            </div>
+            <div style='font-family: Arial, helvetica, sans-serif;' class='frm_form_field form-field  frm_required_field frm_top_container'>
+                <label for='marketSegment' class='frm_primary_label' style='max-width: 100%;font-size: 15px;;color: #3f4b5b;font-weight: bold;text-align: left;padding: 0 0 3px 0;margin: 0;width: auto;display: block;'>Market Segment
+                    <span class='frm_required' style='color: #B94A48;font-weight: bold;' aria-hidden='true'>*</span>
+                </label>
+                <select required style='border-width: 1px;border-style: solid;border-radius: 4px;line-height: 1.3;width:95%;padding: 6px 10px;background-color: #ffffff;border-color: #66afe9;color: #555555;box-shadow: 0px 0px 5px 0px rgba(102,175,233, 0.6);margin-bottom: 20px;' name='Market_segments__c' id='Market_segments__c' data-placeholder='Please Select' placeholder='Please Select' data-reqmsg='Market Segment cannot be blank.' aria-required='true' data-invmsg='Market Segment is invalid' aria-invalid='false' class='selectBox'>
+                    <option value='In-Transit' %%[IF @marketSegment == "In-Transit" THEN]%%selected%%[ENDIF]%%>Public - DC Fast Charging</option>
+                    <option value='Destination - Public' %%[IF @marketSegment == "Destination - Public" THEN]%%selected%%[ENDIF]%%>Public – Level 2 Charging</option>
+                    <option value='Destination - Workplace' %%[IF @marketSegment == "Destination - Workplace" THEN]%%selected%%[ENDIF]%%>Workplace</option>
+                    <option value='Engineering Firm' %%[IF @marketSegment == "Engineering Firm" THEN]%%selected%%[ENDIF]%%>Engineering Firm</option>
+                    <option value='Fleet' %%[IF @marketSegment == "Fleet" THEN]%%selected%%[ENDIF]%%>Fleet</option>
+                    <option value='Residential - MURB' %%[IF @marketSegment == "Residential - MURB" THEN]%%selected%%[ENDIF]%%>Residential – Apartment or Condo</option>
+                    <option value='Residential - Single Family' %%[IF @marketSegment == "Residential - Single Family" THEN]%%selected%%[ENDIF]%%>Residential - Single Family</option>
+                </select>
+            </div>
+                <input type="hidden" name="leadId" value="%%=v(@leadId)=%%">
+                <input type="hidden" name="language" value="%%=v(@language)=%%">
+                <input type="hidden" name="optout" value="%%=v(@optout)=%%">
+                <div class="frm_form_field  frm_html_container form-field">
+                <p><span style="color: #000000; font-size: 12px; font-weight: 400;">By clicking Submit, you agree to our <a href="https://www.flo.com/en-ca/terms-conditions/" target="_blank">terms and conditions</a> and <a href="https://www.flo.com/en-ca/privacy-policy/" target="_blank">privacy policy</a>.</span></p>
+                </div>
+                <div class="frm_form_field form-field ">
+                <div class="frm_submit">
+                    <button type="submit" style="width: auto;font-size: 16px;height: auto;line-height: normal;text-align: center;background: rgba(0,97,160,1);border-width: 1px;border-color: rgba(0,97,160,1);border-style: solid;color: #ffffff;cursor: pointer;font-weight: bold;border-radius: 8px;text-shadow: none;padding: 10px 20px;box-sizing: border-box;
+                                                box-shadow: 0 1px 1px #eeeeee;margin: 10px;margin-left: 0;margin-right: 0;vertical-align: middle;">Submit</button>
+                </div>
+                </div>
+            </fieldset>
+        </div>
+        <div class="frm__655b85b05bde0" style="overflow: hidden;width: 0px;height: 0px;position: absolute;">
+            <label for="frm_email_36">
+            If you are human, leave this field blank.
+            </label>
+            <input id="frm_email_36" type="text" class="frm_verify" name="frm__655b85b05bde0" value="" autocomplete="off">
+        </div>
+    </form>
+
+  </section>
+
+  <footer id="a-footer">
+
+  </footer>
+    %%=treatascontent(@scriptBeginning)=%%
+    function changeCountry() {
+        var e = document.getElementById("country");
+        var newCountry = e.options[e.selectedIndex].value;
+        if (newCountry == 'United States') {
+            document.getElementById('statesCanada').style.display = 'none';
+            document.getElementById('statesUSA').style.display = 'block';
+        } else {
+            document.getElementById('statesUSA').style.display = 'none';
+            document.getElementById('statesCanada').style.display = 'block';
+        }
+    }
+    %%=treatascontent(@scriptEnd)=%%
+
+</body>
+
+</html>

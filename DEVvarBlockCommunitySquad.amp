@@ -1,0 +1,61 @@
+%%[
+
+SET @referenceDE = "ENT.DEV_block_de_fields_squad"
+SET @fieldsSet = LookupRows(@referenceDE, "blocde_name", @blockDE)
+SET @sharedBlockedDE = Concat("ent.", @blockDE)
+SET @fieldsSetNb = rowcount(@fieldsSet)
+
+IF (@fieldsSetNb == 1) THEN
+
+    SET @fieldsRow = Row(@fieldsSet,1)
+    SET @fieldsList = Field(@fieldsRow, "fields_list")
+    SET @numRowSet = BuildRowsetFromString(@fieldsList,',')
+
+    /* If the community name data does not exist inside this block data DE
+    * Only Country / PC Code & Email Code
+    */
+    IF (IndexOf(@fieldsList, 'community_name') == 0) THEN
+        SET @rowsPcCode = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', @visitorPcCode, 'mail', @emailCode)
+        IF (Rowcount(@rowsPcCode) == 1) THEN
+            SET @rows = @rowsPcCode
+        ELSE
+            SET @rows = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', 'all', 'mail', @emailCode)
+            IF (Rowcount(@rows) != 1) THEN
+                RaiseError(Concat('1. sharedBlockedDE : ', @sharedBlockedDE, ' / visitor Community : ', @visitorCommunity, ' / rowCount : ', Rowcount(@rows), ' / Country : ', @centerCountry, ' / emailCode : ', @emailCode, ' / visitor PC Code : ', @visitorPcCode), true) 
+                RaiseError('No data in translation table (no community) / varMasterSquad forgot?', true)
+            ENDIF
+        ENDIF
+    /* Now with Country / PC Code / Email Code & Community */
+    ELSE
+        SET @rowsPcCode = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', @visitorPcCode, 'mail', @emailCode, 'community_name', @visitorCommunity)
+        SET @rowCountPcCode = Rowcount(@rowsPcCode)
+        IF (@rowCountPcCode == 1) THEN
+            SET @rows = @rowsPcCode
+        ELSE
+            SET @rowsCommunity = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', 'all', 'mail', @emailCode, 'community_name', @visitorCommunity)
+            SET @rowCountCo = Rowcount(@rowsCommunity)
+            IF (@rowCountCo == 1) THEN
+                SET @rows = @rowsCommunity
+            ELSE /* Everything by default */
+                SET @rows = LookupRows(@sharedBlockedDE, 'country', @centerCountry, 'pc_code', 'all', 'mail', @emailCode, 'community_name', 'all')
+                SET @rowCountAll = Rowcount(@rows)
+                IF (@rowCountAll != 1) THEN
+                    RaiseError(Concat('2. sharedBlockedDE : ', @sharedBlockedDE, ' / visitor Community : ', @visitorCommunity, ' / rowCount : ', Rowcount(@rows), ' / Country : ', @centerCountry, ' / emailCode : ', @emailCode, ' / visitor PC Code : ', @visitorPcCode), true) 
+                    RaiseError('No data in translation table (with community) / varMasterSquad forgot?', true)
+                ENDIF
+            ENDIF
+        ENDIF
+    ENDIF
+
+    FOR @i = 1 TO Rowcount(@numRowSet) DO
+        SET @row = Row(@numRowSet,@i)
+        SET @tempName = Field(@row,1,0)
+        SET @line = Row(@rows,1)
+        SET @value = Field(@line,@tempName)
+        SET @FieldSet = TreatAsContent(CONCAT('%','%[SET ', CONCAT('@',@tempName), ' = "', @value, '")]%', '%'))
+    NEXT @i
+
+ELSE
+    RaiseError('No block reference table', true)
+ENDIF
+]%%

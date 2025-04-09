@@ -1,0 +1,83 @@
+%%[
+    SET @blockDE = "data_trad_header"
+    TreatAsContent(ContentBlockByKey("varAllBlocksSet"))
+    SET @blockDE = "data_email_colors"
+    TreatAsContent(ContentBlockByKey("varGenericMaster"))
+    
+    /* Creating the Url to the Barcode LandingPage */
+    SET @barcodeCPURL = URLEncode(Concat(@barcodeBaseCPURL, '?visitorLPId=', URLEncode(@visitorId, 1, 1), '&titleVisitorBarcode=', URLEncode(@title_visitor_barcode, 1, 1)))
+    
+SET @centerStoresUrl = Concat(@centerHostName,"/",@url_title_stores)
+SET @centerOffersUrl = Concat(@centerHostName,"/",@url_title_offers)   
+
+    /* Setting up the background color for some blocks like AppDownloadBlock and SocialMediaBlock */    
+    IF @centerRebranded == TRUE THEN
+      SET @blocsBgColor = @genericBgColorGrey
+    ELSE
+      SET @blocsBgColor = @genericBgColorWhite
+    ENDIF
+
+   IF IndexOf(emailname_, "TR_") == 1 THEN
+        
+        IF @visitorAccountType == 'Full' THEN
+            SET @shoppingCenterlogo = @centerSCClub
+            SET @textbarcode = @title_visitor_barcode
+            SET @URLlogo = @centerLoyaltyPage
+            /*OLD
+            SET @centerclubsUrl = @centerMyAccount
+            */
+            /* NEW 24/03/25 loyalty / club new link */
+            SET @centerclubsUrl = @centerLoyaltyPage
+        ELSE
+            SET @shoppingCenterlogo = @centerLogo
+            SET @URLlogo = @centerHostName 
+            SET @centerclubsUrl = @upgradeAccountLink
+        ENDIF
+
+   ELSE
+   
+      IF @visitorAccountType == 'Full' THEN
+            SET @shoppingCenterlogo = @centerLogoSC
+            SET @textbarcode = @title_visitor_barcode
+            SET @URLlogo = @centerLoyaltyPage
+            /*OLD
+            SET @centerclubsUrl = @centerMyAccount
+            */
+            /* NEW 24/03/25 loyalty / club new link */
+            SET @centerclubsUrl = @centerLoyaltyPage
+        ELSE
+            SET @shoppingCenterlogo = @centerLogoSC
+            SET @URLlogo = @centerHostName 
+            SET @centerclubsUrl = @upgradeAccountLink
+        ENDIF
+  ENDIF
+  IF @visitorPcCode == 'FR-SC-90' THEN
+   SET @centerclubsUrl = Concat(@centerHostName,"/",@url_title_club)
+  ENDIF
+  
+  
+ /* US */
+IF IndexOf(@visitorPcCode,"US-SC") == 1 THEN
+    IF IndexOf(emailname_, "TR_") == 1 THEN /* Auto Emails */
+        IF @visitorAccountType == 'Full' THEN
+            SET @shoppingCenterlogo = @centerLogoSC
+            SET @URLlogo = @centerMyAccount 
+            SET @centerclubsUrl = Concat(@centerHostName,"/",@url_title_club)
+        ELSE
+            SET @shoppingCenterlogo = @centerLogo
+            SET @URLlogo = @centerHostName 
+            SET @centerclubsUrl = Concat(@centerHostName,"/",@url_title_club)
+        ENDIF
+    ELSE /* Manual Emails */
+            IF @visitorAccountType == 'Full' THEN
+            SET @shoppingCenterlogo = @centerLogoSC
+            SET @URLlogo = @centerMyAccount
+            SET @centerclubsUrl = Concat(@centerHostName,"/",@url_title_club)
+        ELSE
+            SET @shoppingCenterlogo = @centerLogoSC
+            SET @URLlogo = @centerHostName
+            SET @centerclubsUrl = Concat(@centerHostName,"/",@url_title_club)
+        ENDIF
+    ENDIF
+ENDIF
+]%%

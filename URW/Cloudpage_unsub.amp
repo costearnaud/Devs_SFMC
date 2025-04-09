@@ -1,0 +1,94 @@
+%%[
+set @encryptedUnsubQS = RequestParameter("encryptedQS")
+set @unsubQS = DecryptSymmetric(Base64Decode(@encryptedUnsubQS,'UTF-8', 1), "aes", "LP_INT_PWD", @null, "LP_INT_SALT", @null, "LP_INT_IV", @null)
+]%%
+
+<script runat="server">
+   
+    Platform.Load('core', '1');
+    
+    try {
+
+    var qsFieldsText =  Variable.GetValue("@unsubQS");
+    var qsFieldsJson = Platform.Function.ParseJSON(qsFieldsText);
+
+    var postData = Platform.Function.Stringify(qsFieldsJson.postData);
+    var unsubBaseUrl = qsFieldsJson.unsubBaseUrl;
+    var connectJwtUrl = qsFieldsJson.connectJwtUrl;
+    var type = qsFieldsJson.type;
+      
+    var countryCode = qsFieldsJson.postData.data.country_code;
+    Variable.SetValue("@countryCode",countryCode);
+
+    Variable.SetValue("@postData", postData);
+    Variable.SetValue("@unsubBaseUrl", unsubBaseUrl);
+    Variable.SetValue("@connectJwtUrl", connectJwtUrl);
+    Variable.SetValue("@type", type);
+
+    var req = new Script.Util.HttpRequest(connectJwtUrl);
+    req.emptyContentHandling = 0;
+    req.retries = 2;
+    req.continueOnError = true;
+    req.contentType = "application/json"
+    //req.setHeader("Authorization", auth);
+
+    req.method = "POST";
+    req.postData = postData;
+
+    var resp = req.send();
+    var resultStr = String(resp.content);
+    var resultJSON = Platform.Function.ParseJSON(String(resp.content));
+    var unsubJwt = String(resultJSON.access_token)
+    Variable.SetValue("@unsubJwt",unsubJwt);
+    } catch (error) {
+        Write(Platform.Function.Stringify(error));
+    }
+ 
+</script>
+
+%%[
+    SET @action = "unsubscribe"
+    IF @type == "1" THEN SET @action = "preferred-shopping-centers"
+    ELSEIF @type == "2" THEN SET @action = "newsletter-optin"
+    ELSEIF @type == "3" THEN SET @action = "account"
+    ELSEIF @type == "4" THEN SET @action = "accountdeletion"
+    ENDIF
+
+    SET @unsubscribeLink = URLEncode(Concat(@unsubBaseUrl, @action, "?tk=", @unsubJwt))
+    
+]%%
+
+%%[ IF @type == "0" THEN
+        IF @countryCode == "AT" THEN
+            SET @unsubscribeLink = 'https://www.westfield.com/de/austria/unsubscribe'
+        ENDIF
+        IF @countryCode == "CZ" THEN
+            SET @unsubscribeLink = 'https://www.westfield.com/cs-cz/unsubscribe'
+        ENDIF
+        IF @countryCode == "DE" THEN
+            SET @unsubscribeLink = 'https://www.westfield.com/de-de/unsubscribe'
+        ENDIF
+        IF @countryCode == "ES" THEN
+            SET @unsubscribeLink = 'https://www.westfield.com/es-es/unsubscribe'
+        ENDIF
+        IF @countryCode == "NL" THEN
+            SET @unsubscribeLink = 'https://www.westfield.com/nl/netherlands/unsubscribe'
+        ENDIF
+        IF @countryCode == "SE" THEN
+            SET @unsubscribeLink = 'https://www.westfield.com/sv-se/unsubscribe'
+        ENDIF
+        IF @countryCode == "DK" THEN
+            SET @unsubscribeLink = 'https://www.westfield.com/da/denmark/unsubscribe'
+        ENDIF
+        IF @countryCode == "PL" THEN
+            SET @unsubscribeLink = 'https://www.westfield.com/pl/poland/unsubscribe'
+        ENDIF
+        IF @countryCode == "UK" THEN
+            SET @unsubscribeLink = 'https://www.westfield.com/en/united-kingdom/unsubscribe'
+        ENDIF
+        IF @countryCode == "US" THEN
+            SET @unsubscribeLink = 'https://www.westfield.com/en/united-states/unsubscribe'
+        ENDIF
+    ENDIF
+    Redirect(@unsubscribeLink)
+]%%

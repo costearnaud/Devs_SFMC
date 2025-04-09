@@ -1,0 +1,29 @@
+<script runat="server">
+    Platform.Load('core', '1');
+    var method = Platform.Request.Method();
+
+    if (method == "GET") {
+        var booking = Variable.GetValue("@booking");
+        var status = [0];
+        var content = Platform.Function.HTTPGet('https://cloud.email.westfield.com/QRGenerator?booking='+booking,false,0,['x-request-id'],['sampleValue'],status);
+        if(status[0] == 0) {
+        /* DE Insert content
+        var rows = Platform.Function.UpsertData("test_qrcode",["ID"],["1"],["qrcode_html"],[response.Content]);
+        Write('rows: '+rows+'<br/>');*/
+            var qrCodeHTML = {'qrCodeHTML': content}
+            Write(Stringify(qrCodeHTML));
+        }
+    } else if (method == "POST") {
+        var postedData = Platform.Request.GetPostData();
+        // 4.1.2. Parse Stringified JSON back to Object
+        var parsedData = Platform.Function.ParseJSON(postedData);
+        var booking = parsedData.booking;
+        var status = [0];
+        var content = Platform.Function.HTTPGet('https://cloud.email.westfield.com/QRGenerator?booking='+booking,false,0,['x-request-id'],['sampleValue'],status);
+        if(status[0] == 0) {
+            var qrCodeHTML = {'qrCodeHTML': content}
+            Write(Stringify(qrCodeHTML));
+        }
+    }
+    
+</script>

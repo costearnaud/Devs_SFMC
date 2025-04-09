@@ -1,0 +1,30 @@
+<script runat="server">
+    Platform.Load('core', '1');
+    var booking = Variable.GetValue("@booking");
+    var qrCodeHTML = HTTPGet('https://cloud.email.westfield.com/QRGenerator?booking='+booking, true, 0);
+    Write ('qrCodeHTML: '+qrCodeHTML+'<br/>');
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(qrCodeHTML, 'text/html');
+    var qrCodeDIV = doc.getElementById("qrcode");
+    Write ('qrCodeDIV: '+qrCodeHTML+'<br/>');
+    var rows = Platform.Function.UpsertData("test_qrcode",["ID"],["1"],["qrcode_html"],[qrcodeDIV]);
+
+</script>
+
+%%[
+  Var @qrCodeHTML, @callStatus
+  Set @qrCodeHTML = HttpGet('https://cloud.email.westfield.com/QRGenerator?booking='+@booking, true, 0, @callStatus)
+  If @callStatus == 0 then
+]%%
+<p>%%=v(@qrCodeHTML)=%%</p>
+%%[
+  Else
+]%%
+<p>The requested content isn't available right now. Try again later.</p>
+%%[EndIf]%%
+
+%%[
+var @output, @status, @respheader
+set @status = HTTPPost2('https://cloud.email.westfield.com/QRGenerator?booking='+@booking,'text/html', '', true, @output, @respheader, 'Accept-Encoding', 'gzip, deflate, sdch, br')
+]%%
+Output: %%=v(@output)=%%

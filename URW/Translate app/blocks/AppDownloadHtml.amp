@@ -1,0 +1,92 @@
+%%[
+  SET @data_appdownload = 'ent.data_trad_appdownload'
+  ContentBlockByKey("varGenericAllBlocks")
+
+  SET @AppTextColor = @genericBgColorBlack
+  
+  IF @centerRebranded == TRUE THEN 
+    SET @AppTitleColor = @genericBgColorBlack
+    SET @AppBgColor = @genericBgColorGrey
+    SET @AppBannerColor = @genericBgColorGrey
+        
+  ELSE
+    SET @AppTitleColor = @genericBgColorBlack
+    SET @AppBannerColor = @genericBgColorYellow
+    SET @AppBgColor = @genericBgColorWhite
+  ENDIF
+
+  SET @DataAppDownload = LookupRows(@data_appdownload,'country',@DisplayCountry,'pc_code',@DisplayPcCode,'type',@DisplayCenterRebranded,'mail',@DisplayMail)
+  IF RowCount(@DataAppDownload) > 0 THEN
+      SET @DataADRow = Row(@DataAppDownload,1)
+      SET @app_title = Field(@DataADRow,'app_title')
+      SET @app_text = Field(@DataADRow,'app_text')
+      SET @image_ios = Field(@DataADRow,'image_ios')
+      SET @image_android = Field(@DataADRow,'image_android')
+  ELSE
+    SET @DataAppDownload = LookupRows(@data_appdownload,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail',@DisplayMail)
+    IF RowCount(@DataAppDownload) > 0 THEN
+        SET @DataADRow = Row(@DataAppDownload,1)
+        SET @app_title = Field(@DataADRow,'app_title')
+        SET @app_text = Field(@DataADRow,'app_text')
+        SET @image_ios = Field(@DataADRow,'image_ios')
+        SET @image_android = Field(@DataADRow,'image_android')
+    ELSE
+      SET @DataAppDownload = LookupRows(@data_appdownload,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail','all')
+      IF RowCount(@DataAppDownload) > 0 THEN
+          SET @DataADRow = Row(@DataAppDownload,1)
+          SET @app_title = Field(@DataADRow,'app_title')
+          SET @app_text = Field(@DataADRow,'app_text')
+          SET @image_ios = Field(@DataADRow,'image_ios')
+          SET @image_android = Field(@DataADRow,'image_android')
+      ENDIF
+    ENDIF
+  ENDIF
+]%%
+
+<div id="block">
+  <table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="margin:auto;background-color:%%=v(@blocsBgColor)=%%" class="d_w640px d_center t_flnone t_mauto 
+  t_w100p m_flnone m_mauto m_w100p" 
+  role="presentation">
+  <tr><td>                    
+  <table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+  <tr><td style="font-family:Helvetica,Arial,sans-serif;color:%%=v(@AppTitleColor)=%%;text-align:center;font-size:40px;
+  background-color:%%=v(@AppBannerColor)=%%;padding-top:32px;padding-bottom:24px;vertical-align:middle;
+  line-height:42px;font-weight:700"
+  class="t_fz38px t_lh40px m_fz30px m_pt30px m_pb20px m_lh32px"> %%=v(@app_title)=%% </td></tr></table>
+  <table cellpadding="0" cellspacing="0" border="0" width="608" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w95p" role="presentation">
+  <tr><td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;font-size:25px;padding-top:20px;
+  padding-bottom:24px;vertical-align:middle;line-height:27px"
+  class="t_fz22px t_lh24px m_fz18px m_pt10px m_pb28px m_lh20px"> %%=treatasContent(@app_text)=%% </td></tr></table>
+  <table cellpadding="0" cellspacing="0" border="0" width="467" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w75p m_flnone m_mauto m_w65p" role="presentation">
+  <tr><td>
+  <table cellpadding="0" cellspacing="0" border="0" width="228" align="left" class="d_left t_w49p t_flleft m_w100p m_flright" role="presentation">
+  <tr><td>
+  <table cellpadding="0" cellspacing="0" border="0" width="227" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+  <tr><td>
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" align="center" class="d_center t_w100p m_w100p" role="presentation">
+  <tr><td style="padding-bottom:32px;text-align:center;vertical-align:middle" class="m_pb0px">
+  <a href="%%=RedirectTo(@centerLinkdispatcher)=%%" width="227" style="color:#000000;outline:0;border:none;margin:auto;display:block" class="t_w100p m_w100p" alias="appDownloadIos">
+  <img src="%%=v(@image_ios)=%%" alt="" width="227" style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:16px;display:block;border:none" class="t_w100p m_w100p"/></a>
+  </td></tr></table>
+  </td></tr></table>
+  </td></tr></table>
+  <!--[if gte mso 9]> </td><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+  <table cellpadding="0" cellspacing="0" border="0" width="10" align="left" class="d_left t_w2p t_flleft m_w100p m_flright" role="presentation">
+  <tr><td>
+  <span>&nbsp;</span>
+  </td></tr></table>
+  <!--[if gte mso 9]> </td><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+  <table cellpadding="0" cellspacing="0" border="0" width="229" align="right" class="d_right t_w49p t_flright m_w100p m_flright" role="presentation">
+  <tr><td>
+  <table cellpadding="0" cellspacing="0" border="0" width="229" align="center" style="margin:auto" class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+  <tr><td>
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" align="center" class="d_center t_w100p m_w100p" role="presentation">
+  <tr><td style="padding-bottom:32px;text-align:center;vertical-align:middle" class="m_pb35px">
+  <a href="%%=RedirectTo(@centerLinkdispatcher)=%%" width="229" style="color:#000000;outline:0;border:none;margin:auto;display:block" class="t_w100p m_w100p" alias="appDownloadAndroid">
+  <img src="%%=v(@image_android)=%%" alt="" width="229" style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:16px;display:block;border:none" class="t_w100p m_w100p"/></a>
+  </td></tr></table>
+  </td></tr></table>
+  </td></tr></table>
+  </td></tr></table>
+  </td></tr></table>
+</div>

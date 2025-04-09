@@ -1,0 +1,225 @@
+<script runat='server'>
+Platform.Load('Core', '1.1.5');
+var api = new Script.Util.WSProxy();
+var MID = "524006077"
+
+// Positionne le MID pour la procédure Retrieve
+api.setClientId({"ID": MID});
+
+// Stockage des dates en UTC (donc décalage de 6h car stockage en UTC-6 par défaut)
+var decalage = 6;
+
+/* Recuperation de la liste des Automations depuis la DE source Supervision_Automation */
+try {
+    var ExternalKey = "Supervision_Automation";
+    var DE = DataExtension.Init(ExternalKey);
+
+    var filter = {
+        Property: "Active",
+        SimpleOperator: "equals",
+        Value: "Y"
+    }
+    var dataRows = DE.Rows.Retrieve(filter);
+    //Write('<br/><br/>dataRows length : '+dataRows.length);
+
+    var response = [];
+    var responsebyAutomation = {};
+    var automationName = '';
+    var line = {};
+
+    for (var i=0; i<dataRows.length; i++) {
+        responsebyAutomation = {}; // INIT indispensable pour chaque boucle
+        responsebyAutomation.name = dataRows[i].AutomationName;
+        responsebyAutomation.category = dataRows[i].AutomationCategory;
+        responsebyAutomation.statusInstance = getAutomationStatusbyName(dataRows[i].AutomationName);
+        if (responsebyAutomation.statusInstance.statusAutomation == 'Error' || responsebyAutomation.statusInstance.statusAutomation == 'Stopped') {
+            response.push(responsebyAutomation); // Ajoute chaque Automation en erreur
+        }
+    }
+    Write('<br/><br/>Response : '+Stringify(response));
+
+    // Insert DE Automation_errors (Sous Data Extensions >1. System >3. Technical DE >3.2 Monitoring des journeys)
+    // AutomationName <=> name, EventDate <=> statusInstance.eventDate, ActivityName <=> statusInstance.activityInError
+    // AutomationCategory <=> category
+    // Parcours tableau response pour upsert de chaque occurence du tableau dans la DE Automation_Errors
+
+    for(var i in response) {
+        line = response[i];
+        var eventDate = line.statusInstance.eventDate
+        var payload = {
+            Name: 'Automation_Errors',
+            Properties: [
+                {
+                    Name: 'AutomationName',
+                    Value: line.name
+                },
+                {
+                    Name: 'EventDate',
+                    Value: eventDate
+                },
+                {
+                    Name: 'ActivityName',
+                    Value: line.statusInstance.activityInError
+                },
+                {
+                    Name: 'AutomationCategory',
+                    Value: line.category
+                },
+                {
+                    Name: 'StatusMessage',
+                    Value: line.statusInstance.statusMessageActivity
+                }
+            ]
+	    };
+        var options = {
+            SaveOptions: [{
+                'PropertyName': '*',
+                SaveAction: 'UpdateAdd'
+            }]
+        };
+        var rows = api.updateItem('DataExtensionObject', payload, options);
+        Write('<br/><br/>rows updated : '+Stringify(rows));
+    }
+} catch(err) {
+    Write('<br/><br/>Main error : '+err);
+}
+
+function getAutomationStatusbyName(name) {
+    var tab = ["Inconnu","Inconnu"];
+    var dates = [];
+    var nbTasks = 0;
+    var objID = 'X';
+    var programInstanceID = 'Y';
+    var key = '';
+    var eventDate = '1901-01-01'
+    var activityInError = 'None';
+    var automationStatus = '';
+    var activityStatus = '';
+    var activityStatusMessage = '';
+    var resultActivity = '';
+    var resultInstance = '';
+    var statusA = '';
+    var statusB = '';
+    var cols = ["Name", "ObjectID", "CustomerKey", "Status", "StatusMessage", "StartTime", "CompletedTime"];
+    var filterName = {
+        Property: "Name",
+        SimpleOperator: "equals",
+        Value: name
+    };
+
+    try {
+        var col = ["Name", "CustomerKey", "ObjectID"]; // columns
+        var data = api.retrieve("Program", col, filterName);
+        if (data.Results.length > 0) {
+            objID = data.Results[0].ObjectID;
+            //Write('<br/><br/>getAutomationStatusbyName > api.retrieve("Program") : '+Stringify(objID));
+        }
+    } catch(err) {
+        Write('<br/><br/>catch > api.retrieve("Program") Error : '+Stringify(err));
+    }
+
+    try {
+        filterName = {
+            Property: "ProgramID",
+            SimpleOperator: "equals",
+            Value: objID
+        };
+        col = ["Name", "ProgramID", "ObjectID", "StatusMessage", "CreatedDate"]; // columns
+        var dataPI = api.retrieve("ProgramInstance", col, filterName);
+        nbTasks = dataPI.Results.length;
+        //Write('<br/><br/>getAutomationStatusbyName > data length de ProgramInstance = '+nbTasks);
+        var array = dataPI.Results;
+        // Tri par date descendante selon date de lancement : CreatedDate
+        array.sort(function compare(a, b) {
+            var dateA = new Date(a.CreatedDate);
+            var dateB = new Date(b.CreatedDate);
+            return dateA - dateB;
+        });
+        
+        if (nbTasks > 0) {
+            programInstanceID = array[nbTasks-1].ObjectID;
+            automationStatus = array[nbTasks-1].StatusMessage;
+            eventDate = new Date(array[nbTasks-1].CreatedDate);
+            eventDate = DateTime.SystemDateToLocalDate(eventDate);
+            Write('<br/><br/>eventDate : '+eventDate);
+        }
+    } catch(err) {
+        Write('<br/><br/>catch > api.retrieve("ProgramInstance") Error : '+Stringify(err));
+    }
+
+    //Write('<br/><br/>before retrieveActivity > automationStatus : '+automationStatus);
+
+    try {
+        if (programInstanceID != 'Y' && programInstanceID != undefined && (automationStatus == 'Error' || automationStatus == 'Stopped')) {
+            //Write('<br/><br/>programInstanceID OK : '+programInstanceID);
+            resultActivity = retrieveActivity(programInstanceID);
+            
+            if (resultActivity != null) {
+                //Write('<br/><br/>retrieveActivity not null : '+Stringify(resultActivity));
+                activityInError = resultActivity.Name;
+                activityStatus = resultActivity.Status;
+                activityStatusMessage = resultActivity.StatusMessage;
+            }
+        }
+    } catch(err) {
+        Write('<br/><br/>catch api.retrieve("Activity") Error : '+Stringify(err));
+    }
+
+    //Write('<br/><br/>eventDate before return : '+eventDate);
+
+    return {activityInError: activityInError, statusAutomation: automationStatus, statusActivity: activityStatus, statusMessageActivity: activityStatusMessage , eventDate: eventDate};
+}
+
+function retrieveActivity(automationInstance) {
+    var cols = [
+        "Name",
+        "CustomerKey",
+        "StatusMessage",
+        "Status",
+        "CreatedDate",
+        "ModifiedDate",
+        "StatusLastUpdate",
+        "ProgramID"
+    ];
+
+    var filter = {
+        LeftOperand:{
+            LeftOperand:{
+                Property:"Status",
+                SimpleOperator:"equals",
+                Value: -1
+            },
+            LogicalOperator:"OR",
+            RightOperand:{
+                Property:"Status",
+                SimpleOperator:"equals",
+                Value: 6
+            }
+        },
+        LogicalOperator:"AND",
+        RightOperand:{
+            Property: "ProgramInstance.ObjectID",
+            SimpleOperator: "equals",
+            Value: automationInstance
+        }
+    };
+
+    var dataAI = api.retrieve("ActivityInstance", cols, filter);
+    
+    if (dataAI.Results != null) {
+        return dataAI.Results[0];
+    }
+    else {
+        //Write('return nothing');
+        return null;
+    }
+}
+
+/* Manque le log de l'erreur de l'activité 
+
+testACO par Ex :
+ERROR:  Query failed during execution. Error: Invalid column name 'pc_code'.
+*/
+
+</script>
+

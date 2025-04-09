@@ -1,0 +1,138 @@
+%%[
+    SET @data_trad = 'ent.data_trad_walletdownload'
+    ContentBlockByKey("varGenericAllBlocks")
+
+    SET @walletTextColor = @genericBgColorBlack
+
+    IF @centerRebranded == TRUE THEN
+        SET @WalletTitleColor = @genericBgColorBlack
+        SET @WalletBgColor = @genericBgColorGrey
+        SET @WalletBannerColor = @genericBgColorGrey      
+    ELSE
+        SET @WalletTitleColor = @genericBgColorBlack
+        SET @WalletBannerColor = @genericBgColorYellow
+        SET @WalletBgColor = @genericBgColorWhite
+    ENDIF
+
+    SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code',@DisplayPcCode,'type',@DisplayCenterRebranded,'mail',@DisplayMail)
+    IF RowCount(@DataTrad) > 0 THEN
+        SET @DataTradRow = Row(@DataTrad,1)
+        SET @image_ios_wallet = Field(@DataTradRow,'image_ios_wallet')
+        SET @image_android_wallet = Field(@DataTradRow,'image_android_wallet')
+        SET @wallet_title = Field(@DataTradRow,'wallet_title')
+        SET @wallet_text = Field(@DataTradRow,'wallet_text')
+    ELSE
+        SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail',@DisplayMail)
+        IF RowCount(@DataTrad) > 0 THEN
+            SET @DataTradRow = Row(@DataTrad,1)
+            SET @image_ios_wallet = Field(@DataTradRow,'image_ios_wallet')
+            SET @image_android_wallet = Field(@DataTradRow,'image_android_wallet')
+            SET @wallet_title = Field(@DataTradRow,'wallet_title')
+            SET @wallet_text = Field(@DataTradRow,'wallet_text')
+        ELSE
+            SET @DataTrad = LookupRows(@data_trad,'country',@DisplayCountry,'pc_code','all','type',@DisplayCenterRebranded,'mail','all')
+            IF RowCount(@DataTrad) > 0 THEN
+            SET @DataTradRow = Row(@DataTrad,1)
+            SET @image_ios_wallet = Field(@DataTradRow,'image_ios_wallet')
+            SET @image_android_wallet = Field(@DataTradRow,'image_android_wallet')
+            SET @wallet_title = Field(@DataTradRow,'wallet_title')
+            SET @wallet_text = Field(@DataTradRow,'wallet_text')
+            ENDIF
+        ENDIF
+    ENDIF
+]%%
+<div id="block">
+    <table cellpadding="0" cellspacing="0" border="0" width="640" align="center" style="margin:auto"
+        class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+        <tr>
+            <td style="font-family:Helvetica,Arial,sans-serif;color:%%=v(@WalletTitleColor)=%%;text-align:center;font-size:40px;
+    background-color:%%=v(@WalletBannerColor)=%%;padding-top:32px;padding-bottom:24px;vertical-align:middle;
+    line-height:42px;font-weight:700" class="t_fz38px t_lh40px m_fz30px m_pt30px m_pb20px m_lh32px"> %%=v(@wallet_title)=%%
+            </td>
+        </tr>
+    </table>
+    <table cellpadding="0" cellspacing="0" border="0" width="608" align="center" style="margin:auto"
+        class="d_center t_flnone t_mauto t_w95p m_flnone m_mauto m_w95p" role="presentation">
+        <tr>
+            <td style="font-family:Helvetica,Arial,sans-serif;color:#000000;text-align:center;font-size:25px;padding-top:20px;
+    padding-bottom:24px;vertical-align:middle;line-height:27px"
+                class="t_fz22px t_lh24px m_fz18px m_pt10px m_pb28px m_lh20px"> %%=treatasContent(@wallet_text)=%% </td>
+        </tr>
+    </table>
+    <table cellpadding="0" cellspacing="0" border="0" width="467" align="center" style="margin:auto"
+        class="d_center t_flnone t_mauto t_w75p m_flnone m_mauto m_w65p" role="presentation">
+        <tr>
+            <td>
+                <table cellpadding="0" cellspacing="0" border="0" width="228" align="left"
+                    class="d_left t_w49p t_flleft m_w100p m_flright" role="presentation">
+                    <tr>
+                        <td>
+                            <table cellpadding="0" cellspacing="0" border="0" width="227" align="center" style="margin:auto"
+                                class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%" align="center"
+                                            class="d_center t_w100p m_w100p" role="presentation">
+                                            <tr>
+                                                <td style="padding-bottom:32px;text-align:center;vertical-align:middle"
+                                                    class="m_pb0px">
+                                                    <a href="%%=RedirectTo(@captainWalletLink)=%%" width="227"
+                                                        style="color:#000000;outline:0;border:none;margin:auto;display:block"
+                                                        class="t_w100p m_w100p" alias="appDownloadIos">
+                                                        <img src="%%=v(@image_ios_wallet)=%%" alt="" width="227"
+                                                            style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:16px;display:block;border:none"
+                                                            class="t_w100p m_w100p" /></a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <!--[if gte mso 9]> </td><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+                <table cellpadding="0" cellspacing="0" border="0" width="10" align="left"
+                    class="d_left t_w2p t_flleft m_w100p m_flright" role="presentation">
+                    <tr>
+                        <td>
+                            <span>&nbsp;</span>
+                        </td>
+                    </tr>
+                </table>
+                <!--[if gte mso 9]> </td><td style="vertical-align:top;border-collapse:collapse"><![endif]-->
+                <table cellpadding="0" cellspacing="0" border="0" width="229" align="right"
+                    class="d_right t_w49p t_flright m_w100p m_flright" role="presentation">
+                    <tr>
+                        <td>
+                            <table cellpadding="0" cellspacing="0" border="0" width="229" align="center" style="margin:auto"
+                                class="d_center t_flnone t_mauto t_w100p m_flnone m_mauto m_w100p" role="presentation">
+                                <tr>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%" align="center"
+                                            class="d_center t_w100p m_w100p" role="presentation">
+                                            <tr>
+                                                <td style="padding-bottom:32px;text-align:center;vertical-align:middle"
+                                                    class="m_pb35px">
+                                                    <a href="%%=RedirectTo(@captainWalletLink)=%%" width="229"
+                                                        style="color:#000000;outline:0;border:none;margin:auto;display:block"
+                                                        class="t_w100p m_w100p" alias="appDownloadAndroid">
+                                                        <img src="%%=v(@image_android_wallet)=%%" alt="" width="229"
+                                                            style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:16px;display:block;border:none"
+                                                            class="t_w100p m_w100p" /></a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    </td>
+    </tr>
+    </table>
+</div>
