@@ -1,0 +1,88 @@
+<script runat="server">
+    Platform.Load("core", "1.1");
+
+    var liveFolder = '04. Blocks Translation'
+    var draftFolder = 'Draft_data_translation'
+
+    // Retrieve Data Extensions within these 2 folders
+
+    // **1. Define the 2 Folder IDs
+    var reqSource = Folder.Retrieve({Property:'Name',SimpleOperator:'equals',Value:liveFolder});
+    var sourceFolderID = reqSource[0].ID;
+    var reqTarget = Folder.Retrieve({Property:'Name',SimpleOperator:'equals',Value:draftFolder});
+    var targetFolderID = reqTarget[0].ID;
+
+    // **2. Create the Retrieve Request:**
+    var objectType = "DataExtension";
+    var props = ["CustomerKey"];
+    var filter = {
+        LeftOperand:
+        {
+            Property: "CategoryID",
+            SimpleOperator: "equals",
+            Value: sourceFolderID
+        },
+        LogicalOperator: "OR",
+        RightOperand: {
+            Property: "CategoryID",
+            SimpleOperator: "equals",
+            Value: targetFolderID
+        }
+    };
+
+    var prox = new Script.Util.WSProxy();
+    var deNames = [];
+
+    // **3. Perform the Retrieve Operation:**
+    try {
+        var results = prox.retrieve(objectType, props, filter);
+        //Write("Retrieve done, results : "+Stringify(results));
+        // **4. Check for Success and Process Results:**
+        if (results.Status == "OK") {
+            var dataExtensions = results.Results;
+            if (dataExtensions && dataExtensions.length > 0) {
+                // **5. Display or Use the Data Extension Names:**
+                for (var i = 0; i < dataExtensions.length; i++) {
+                    if (dataExtensions[i].CustomerKey.indexOf('data_trad') === 0) {
+                        deNames.push(dataExtensions[i].CustomerKey);
+                    }
+                }
+                Write("<br/>Data Extensions well recovered");
+            } else {
+                Write("<br/>No Data Extensions found in folder " + folderID + ".");
+            }
+        } else {
+            Write("Error retrieving Data Extensions: " + results.StatusMessage);
+        }
+        Write("<br/>fin de boucle, deNames length : "+deNames.length);
+    } catch (e) {
+        Write("<br/>An error occurred during Retrieve Operation: " + e.message);
+    }
+
+    // loop on deNames to add two fields within each DE
+    Write("<br/>Begin loop on deNames : "+Stringify(deNames));
+
+    for (var i=0; i<deNames.length; i++) {
+        var de = DataExtension.Init(deNames[i]);
+
+        var firstField = {
+            Name : "lastModifiedBy",
+            CustomerKey : "lastModifiedBy",
+            FieldType : "Text",
+            IsRequired: false,
+            MaxLength : 100
+        };
+
+        var secondField = {
+            Name : "lastModifiedDate",
+            CustomerKey : "lastModifiedDate",
+            FieldType : "Date",
+            IsRequired: false
+        };
+
+        var statusFirst = de.Fields.Add(firstField);
+        var statusSecond = de.Fields.Add(secondField);
+    }
+    Write("<br/>End loop");
+
+</script>

@@ -1,7 +1,8 @@
 %%[
-  Var @now, @later
-  Set @now = Now()
-  Set @later = DateAdd(@now, '1','D')
+    VAR @now, @later
+    SET @now = Now()
+    SET @later = DateAdd(@now, '1','D')
+    SET @dateLocal = SystemDateToLocalDate(@now)
 ]%%
 <script runat="server">
 
@@ -60,6 +61,12 @@
     var centerDE = 'ent.PROD_center_details';
 
     var errorCode = 10;
+
+    var dateLocal = Variable.GetValue("@dateLocal");
+
+    var getUser = HTTP.Get('https://cloud.email.westfield.com/getUser');
+    var json = Platform.Function.ParseJSON(getUser.Content);
+    var connectedUser = json.Name;
 
     /* ----------------------------------------------------------------------- */
     /* ---------------------- 2. HELPER FUNCTIONS ---------------------------- */
@@ -211,7 +218,7 @@
                             ["email_code", "country"],
                             [email, country]
                         );
-                        response = { message: 'Hello getBlocks', rows: blocks };
+                        response = { message: 'Hello getBlocks', rows: blocks, user: connectedUser };
                         break;
                     case 'openBlock':
                         var email = parsedData.email;
@@ -283,6 +290,8 @@
                         var keys_values = parsedData.keys_values;
                         var data_columns = parsedData.data_columns;
                         var data_values = parsedData.data_values;
+                        data_columns.push('lastModifiedBy','lastModifiedDate');
+                        data_values.push(connectedUser, dateLocal);
                         var targetDE = 'ent.'+block+'_draft';
                         var result = Platform.Function.UpdateData(targetDE,
                                         keys_columns,
@@ -297,6 +306,8 @@
                         var keys_values = parsedData.keys_values;
                         var data_columns = parsedData.data_columns;
                         var data_values = parsedData.data_values;
+                        data_columns.push('lastModifiedBy','lastModifiedDate');
+                        data_values.push(connectedUser, dateLocal);
                         var targetDE = 'ent.'+block;
                         var result = Platform.Function.UpdateData(targetDE,
                                         keys_columns,

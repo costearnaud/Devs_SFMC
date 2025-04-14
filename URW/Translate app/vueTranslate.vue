@@ -10,7 +10,7 @@
     data() {
       return {
         cookieValue: '',
-        test: 'vueTranslate 74',
+        test: 'vueTranslate 75',
         trads: ref([]),
         refs: ref([]),
         type: ref('branded'),
@@ -637,7 +637,7 @@
           } else return []
       },
       condition(key) {
-          if (key !== 'snippetHTML' && !key.startsWith('_') && !key.startsWith('url_') && !key.startsWith('ctaurl_') && !key.startsWith('ctaUrl_') && !key.startsWith('image_') && !key.endsWith('_url') && !key.endsWith('_link') && !key.includes('_image')) {
+          if (!key.startsWith('lastModified') && key !== 'snippetHTML' && !key.startsWith('_') && !key.startsWith('url_') && !key.startsWith('ctaurl_') && !key.startsWith('ctaUrl_') && !key.startsWith('image_') && !key.endsWith('_url') && !key.endsWith('_link') && !key.includes('_image')) {
               return true
           } else return false;
       },

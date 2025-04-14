@@ -1,0 +1,20 @@
+%%[
+    SET @EmployeeID = AuthenticatedEmployeeID()
+]%%
+<script runat="server">
+    Platform.Load('core', '1.1.5');
+    var EmployeeID = Variable.GetValue("@EmployeeID");
+    try {
+        var prox = new Script.Util.WSProxy();
+        var cols = ["Name"];
+        var filter = {
+            Property: "ID",
+            SimpleOperator: "equals",
+            Value: EmployeeID
+        };
+        var desc = prox.retrieve("AccountUser", cols, filter);   
+        Write('{ "Name": "'+desc.Results[0].Name+'"}');
+    } catch(error) {
+        Write('Message: '+ error.message); 
+    }
+</script>
